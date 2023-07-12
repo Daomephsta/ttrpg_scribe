@@ -1,0 +1,61 @@
+@import url('./fonts/solbera-dnd-fonts-1.5/stylesheet.css');
+
+html {
+    display: flex;
+    justify-content: center;
+}
+body {
+    font-family: 'Bookinsanity', sans-serif;
+}
+main {
+    padding: 20px;
+    width: 850px;
+    box-shadow: 0px 0px 10px;
+}
+footer {
+    margin-top: 10px;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Mr Eaves Small Caps';
+    margin-bottom: 0
+}
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+table {
+    font-family: 'Scaly Sans';
+}
+.image_stack {
+    display: grid;
+}
+.image_stack > img {
+    grid-row: 1;
+    grid-column: 1;
+}
+blockquote {
+    background-color: #f8f3e8;
+    margin-left: 0;
+    padding: 5px 5px 5px 40px;
+}
+/*Center align data by default*/
+.bi_table td {
+    text-align: center;
+}
+/* Make row headers bold & right-aligned
+ * Overrides previous selector due to specificity */
+.bi_table td:first-of-type {
+    text-align: right;
+    font-weight: bold;
+}
+/* Pad column headers to clearly divide columns */
+.bi_table th {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+.error {
+    background-color: coral;
+    margin: 10px 0;
+    padding: 10px;
+}

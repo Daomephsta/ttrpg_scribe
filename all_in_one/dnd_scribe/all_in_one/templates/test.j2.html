@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<head>
+    <link href="{{ url_for('bestiary.static', filename='stat_block.css') }}" rel="stylesheet">
+    <link href="{{ url_for('core.static', filename='base.css') }}" rel="stylesheet">
+</head>
+<body>
+{% from 'creature.j2.html' import stat_block %}
+{% for creature in creatures %}
+{{ stat_block(creature) }}
+{% endfor %}
+</body>
