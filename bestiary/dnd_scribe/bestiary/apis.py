@@ -1,16 +1,12 @@
-from collections import namedtuple
-from dataclasses import dataclass
 import operator
 from abc import ABCMeta, abstractmethod
 from http import HTTPStatus
-from typing import Any, Callable, ClassVar, Generic, Never, Self, TypeAlias, TypeVar
+from typing import Any, Callable, Generic, Never, TypeAlias, TypeVar
 
 from requests import Session
-from pathlib import Path
-import platformdirs
+from requests_cache import CachedSession
 
 from .creature import *
-import shelve
 
 T = TypeVar('T')
 ErrorHandler: TypeAlias = Callable[[Exception], T]
@@ -32,7 +28,9 @@ class HttpApi(Api[T], metaclass=ABCMeta):
     __session = None
     def session(self) -> Session:
         if not self.__session:
-            self.__session = Session()
+            host_start = self.base_url.find('://') + 1
+            cache_name = re.sub(r'\W', '_', self.base_url[host_start:])
+            self.__session = CachedSession(cache_name)
             api_sessions.append(self.session)
         return self.__session
 
@@ -126,55 +124,11 @@ class Dnd5eApi(HttpApi[T]):
             'actions': actions
         }
 
-U = TypeVar('U')
-
-class Database(Api[T]):
-    DATABASES = {Creature: 'creature'}
-
-    def __init__(self, path: Path, error_handler: ErrorHandler):
-        super().__init__(error_handler)
-        path.mkdir(exist_ok=True)
-        self.path = path
-
-    def __cache(self, kind: type[U]) -> shelve.Shelf[U]:
-        path = self.path/self.DATABASES[kind]
-        return shelve.open(path.as_posix())
-
-    CreatureFactory: TypeAlias = Callable[[str], Creature | Exception]
-
-    def creature(self, index: str, 
-                 factory: CreatureFactory | None = None) -> Creature | T:
-        with self.__cache(Creature) as database:
-            if index in database:
-                return database[index]
-            elif factory:
-                match factory(index):
-                    case Creature() as creature:
-                        return creature
-                    case Exception() as exception:
-                        return self.error_handler(exception)
-                return database[index]
-        return self.error_handler(
-            KeyError(f'No creature with id {index} in system database'))
-    
-    def insert(self, index: str, record: Creature):
-        with self.__cache(type(record)) as database:
-            if index in database:
-                return self.error_handler(KeyError(f'{index} already exists'))
-            else:
-                database[index] = record
-    
-    def replace(self, index: str, record: Creature):
-        with self.__cache(type(record)) as database:
-            database[index] = record
-
-
 def return_error(ex: Exception) -> Exception:
     return ex
 
 def raise_error(ex: Exception) -> Never:
     raise ex
 
-GLOBAL_DATABASE = Database(platformdirs.user_cache_path('dnd_scribe', 
-        appauthor=False)/'bestiary', return_error)
-DND5EAPI = Dnd5eApi(return_error)
+# For use by helper scripts
+DND5EAPI = Dnd5eApi(raise_error)

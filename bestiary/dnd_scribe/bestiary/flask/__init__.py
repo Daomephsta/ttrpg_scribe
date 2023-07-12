@@ -9,7 +9,7 @@ blueprint = Blueprint('bestiary', __name__,
 
 @blueprint.get('/view/<string:id>')
 def creature(id: str):
-    creature = apis.GLOBAL_DATABASE.creature(id, apis.DND5EAPI.creature)
+    creature = apis.DND5EAPI.creature(id)
     return render_template('creature.j2.html',
                            creature=creature, render=True)
 
