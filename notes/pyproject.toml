@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "dnd_scribe_notes"
+version = "0.1.0"
+description = ""
+authors = ["Daomephsta <dtnilfisk@gmail.com>"]
+readme = "README.md"
+packages = [{include = "dnd_scribe/notes"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^2.3.2"
+dnd_scribe_bestiary = { path = "../bestiary", develop = true }
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

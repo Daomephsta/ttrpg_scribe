@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        {% block head %}
+        {% for sheet in extra_stylesheets %}
+            <link rel="stylesheet" href="{{ sheet }}"/>
+        {% endfor %}
+        <link rel="stylesheet" href="{{ url_for('core.static', filename='base.css') }}"/>
+        {% for script in extra_scripts %}
+            <script{{ script | xmlattr }}></script>
+        {% endfor %}
+        <script src="/assets/popup.js" defer></script>
+        {% endblock head %}
+    </head>
+    <body>
+        {% block main %}
+        <main>{{ content }}</main>
+        {% endblock main %}
+        {% block footer %}
+        <footer>
+            <a href="https://github.com/jonathonf/solbera-dnd-fonts">Fonts by Solbera</a>, used under <a href="/assets/fonts/solbera-dnd-fonts-1.5/LICENSE.txt">CC-BY-SA 4.0</a>
+        </footer>
+        {% endblock footer %}
+    </body>
+</html>

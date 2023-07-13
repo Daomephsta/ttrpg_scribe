@@ -1,9 +1,11 @@
 import re
+from typing import Any, TypedDict
 
 import frontmatter
 from flask import render_template
 from markdown import Markdown
 from markdown.extensions.toc import TocExtension
+from markupsafe import Markup
 
 MD_HEADER = re.compile('^# (.+)$', flags=re.MULTILINE)
 renderer = Markdown(extensions=['attr_list', 'md_in_html', 'tables',
@@ -15,11 +17,12 @@ def find_title(markdown: str):
     match = MD_HEADER.search(markdown)
     return match.group(1) if match else None
 
-def render(markdown: str):
-    metadata, markdown = frontmatter.parse(markdown)
-    # Convert Markdown to HTML fragment
-    html_fragment = renderer.convert(markdown)
-    # Parse metadata
+class Metadata(TypedDict):
+    layout: str
+    extra_scripts: list[str | dict]
+    extra_stylesheets: list[str]
+
+def parse_metadata(metadata: dict[str, Any]) -> Metadata:
     def as_list(name: str, element_type, default) -> list:
         candidate = metadata.get(name, default)
         match candidate:
@@ -36,24 +39,19 @@ def render(markdown: str):
                 return candidate
             case _:
                 raise TypeError(f'Value {candidate} of {name} must be a list')
-    layout = metadata.get('layout', 'base')
-    def script(element: str | dict) -> str:
-        match element:
-            case dict() as attributes:
-                return ' '.join(f'{key}="{value}"'
-                        if not isinstance(value, bool)
-                        else key # True boolean attributes just need the key
-                    for key, value in attributes.items()
-                    # Filter out false boolean attributes
-                    if not (isinstance(value, bool) and not value))
-            case str():
-                return f'src="{element}"'
-    extra_scripts=[script(s) for s in as_list('extra_scripts', str | dict, [])]
-    extra_stylesheets=as_list('extra_stylesheets', str, [])
-    assert isinstance(extra_scripts, list), 'extra_scripts must be a list'
-    # Render template using HTML fragment and metadata
-    return render_template(f"layout/{layout}.html.j2",
-        content=html_fragment,
+    return {
+        'layout': metadata.get('layout', 'base'),
+        'extra_scripts': [s if isinstance(s, dict) else dict(src=s)
+            for s in as_list('extra_scripts', str | dict, [])],
+        'extra_stylesheets': as_list('extra_stylesheets', str, []),
+    }
+
+def render(markdown: str):
+    metadata, markdown = frontmatter.parse(markdown)
+    html_fragment = renderer.convert(markdown)
+    metadata = parse_metadata(metadata)
+    return render_template(f"layout/{metadata['layout']}.j2.html",
+        content=Markup(html_fragment),
         toc=renderer.toc_tokens, # type: ignore
-        extra_stylesheets=extra_stylesheets,
-        extra_scripts=extra_scripts)
+        extra_stylesheets=metadata['extra_stylesheets'],
+        extra_scripts=metadata['extra_scripts'])
