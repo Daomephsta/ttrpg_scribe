@@ -6,9 +6,11 @@ from pathlib import Path
 import flask
 from jinja2 import ChoiceLoader, FileSystemLoader, TemplateNotFound
 
+import dnd_scribe.bestiary.apis
+import dnd_scribe.bestiary.flask
 import dnd_scribe.core.flask
+from dnd_scribe.notes import paths, data_cache, data_script
 from dnd_scribe.core import markdown
-from dnd_scribe.notes import data_cache, data_script, paths
 
 
 class Notes(flask.Flask):
@@ -34,18 +36,21 @@ class Notes(flask.Flask):
 def create_app(project_dir: str | Path | None = None):
     app = Notes(Path(project_dir) if project_dir else Path.cwd())
     app.register_blueprint(dnd_scribe.core.flask.blueprint)
-    data_cache.initialise(app)
+    app.register_blueprint(dnd_scribe.bestiary.flask.blueprint)
+    paths_obj = paths.for_app(app)
+    data_cache.initialise(paths_obj.build)
+    dnd_scribe.bestiary.apis.initialise(paths_obj.build)
 
     @app.get('/notes/<path:page>.html')
     def serve_html(page: str):
-        if (paths.current().pages/page).exists():
-            return flask.send_from_directory(paths.current().pages, page)
+        if (paths_obj.pages/page).exists():
+            return flask.send_from_directory(paths_obj.pages, page)
         templates = [f'{page}.j2.{ext}' for ext in ['html', 'md']]
         try:
             selected = app.jinja_env.select_template(templates)
             assert selected.name is not None
         except TemplateNotFound as e:
-            tried = ', '.join(str(paths.current().pages/template)
+            tried = ', '.join(str(paths_obj.pages/template)
                                       for template in templates)
             # Can be an error with other templates
             if e.templates == templates:

@@ -2,16 +2,14 @@ import pickle
 from pathlib import Path
 from typing import Any, Self
 
-import flask
-
 from dnd_scribe.notes import paths
 
 FILE_TIMES: Path
 file_times: dict[Path, float]
 
-def initialise(app: flask.Flask):
+def initialise(cache_dir: Path):
     global FILE_TIMES, file_times
-    FILE_TIMES = paths.for_app(app).build/'file_times.cache'
+    FILE_TIMES = cache_dir/'file_times.cache'
     file_times = {}
     if FILE_TIMES.exists():
         with open(FILE_TIMES, 'rb') as cache_file:
