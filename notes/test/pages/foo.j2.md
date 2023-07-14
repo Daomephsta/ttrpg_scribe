@@ -1,2 +1,8 @@
+---
+extra_stylesheets: 
+    - {{ url_for('bestiary.static', filename='stat_block.css') }}
+---
+{% from 'creature.j2.html' import stat_block %}
 # Foo
-Animal: {{ script.animal }}
+
+{{ stat_block(script.CHICKEN) }}

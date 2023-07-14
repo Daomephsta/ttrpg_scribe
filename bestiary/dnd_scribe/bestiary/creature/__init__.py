@@ -1,7 +1,6 @@
 import math
 import re
-from typing import Any, Callable, Iterable, Literal
-
+from typing import Any, Callable, Iterable, TypedDict, Unpack, Required, NotRequired
 from pluralizer import Pluralizer
 
 from .ability import Ability, Perception, Skill, mod
@@ -22,44 +21,42 @@ class Creature():
     ITALICISE_PATTERN = re.compile(r'(Melee Weapon Attack|Ranged Weapon Attack|Hit)')
     PLURALIZER = Pluralizer()
 
-    def __init__(self, name: str, size: str, type: str, alignment: str,
-        ac: int | list[ArmourClass], hp: tuple[int, int], speeds: Iterable[Movement],
-        statistics: tuple[int, int, int, int, int, int], cr: float,
-        saves: list[Ability]=[], skill_profs: list[Skill | tuple[Skill, int]]=[],
-        vulnerabilities: list[str]=[], resistances: list[str]=[],
-        immunities: list[str]=[], senses: list[Sense]=[],
-        languages: list[str]=[], traits: list[tuple[str, str] | TraitSupplier]=[],
-        actions: list[Action]=[], bonus_actions: list[Action]=[],
-        reactions: list[Action]=[], default_hp=None, lore=''):
-
-        self.name = name
-        self.size = size
-        self.type = type
-        self.alignment = alignment
-        self.ac = [ArmourClass(ac, str(ac))] if isinstance(ac, int) else ac
-        self.hp = hp
-        match default_hp:
-            case float() | int():
-                self.default_hp = Constant(default_hp)
+    def __init__(self, **args: Unpack['Creature.Args']):
+        self.name = args['name']
+        self.size = args['size']
+        self.type = args['type']
+        self.alignment = args['alignment']
+        match args['ac']:
+            case int() as ac:
+                self.ac = [ArmourClass(ac, str(ac))]
+            case _ as ac:
+                self.ac = ac
+        self.hp = args['hp']
+        match args.get('default_hp'):
+            case float() | int() as ac_num:
+                self.default_hp = Constant(ac_num)
             case None:
                 self.default_hp = Creature.mean_hp
-            case _:
-                self.default_hp = default_hp
-        self.speeds = speeds if isinstance(speeds, dict)\
-            else {speed.name: speed for speed in speeds}
-        self.statistics = statistics
-        self.cr = cr
+            case _ as func:
+                self.default_hp = func
+        match args['speeds']:
+            case dict() as speeds:
+                self.speeds = speeds
+            case _ as speeds:
+                self.speeds = {speed.name: speed for speed in speeds}
+        self.statistics = args['statistics']
+        self.cr = args['cr']
         self.prof = int(2 + (self.cr - 1) // 4) if self.cr >= 1 else 2
-        self.saves = saves
+        self.saves = args.get('saves', [])
         (self.str, self.dex, self.con,
-            self.int, self.wis, self.cha) = statistics
-        self.vulnerabilities = vulnerabilities
-        self.resistances = resistances
-        self.immunities = immunities
-        self.senses = senses
-        self.languages = languages
+            self.int, self.wis, self.cha) = args['statistics']
+        self.vulnerabilities = args.get('vulnerabilities', [])
+        self.resistances = args.get('resistances', [])
+        self.immunities = args.get('immunities', [])
+        self.senses = args.get('senses', [])
+        self.languages = args.get('languages', [])
         self.skill_profs: dict[Skill, int] = {}
-        for skill in skill_profs:
+        for skill in args.get('skill_profs', []):
             if isinstance(skill, Skill):
                 self.skill_profs[skill] = skill.mod(self) + self.prof
             else:
@@ -67,14 +64,17 @@ class Creature():
         def realise(suppliers):
             return [supplier if isinstance(supplier, tuple) else supplier(self)
             for supplier in suppliers]
-        self.traits = realise(traits)
-        self.actions = realise(actions)
-        self.bonus_actions = realise(bonus_actions)
-        self.reactions = realise(reactions)
+        self.traits = realise(args.get('traits', []))
+        self.actions = realise(args.get('actions', []))
+        self.bonus_actions = realise(args.get('bonus_actions', []))
+        self.reactions = realise(args.get('reactions', []))
         self.xp = XP_BY_CR[self.cr]
-        self.lore = lore
+        self.lore = args.get('lore')
 
-    def derive(self, **overrides):
+    Template = Callable[[dict[str, Any]], None]
+
+    def derive(self, merge: dict[str, Any]={}, templates: list[Template]=[], 
+               **overrides: Unpack['Creature.DeriveArgs']):
         args: dict[str, Any] = dict(
             name=self.name,
             size=self.size,
@@ -96,13 +96,13 @@ class Creature():
             traits=self.traits,
             actions=self.actions
         )
-        if 'merge' in overrides:
-            for key, values in overrides['merge'].items():
-                # += mutates self.key
-                # + creates a new array
-                args[key] = args[key] + values
-            del overrides['merge']
+        for key, values in merge.items():
+            # += mutates self.key
+            # + creates a new array
+            args[key] = args[key] + values
         args.update(overrides)
+        for template in templates:
+            template(args)
         return Creature(**args)
 
     def plural(self, count) -> str:
@@ -200,3 +200,39 @@ class Creature():
 
     def str_cr(self):
         return str(self.cr) if self.cr >= 1 or self.cr == 0 else f'1/{1 / self.cr:.0f}'
+
+    # These ensure the args of the constructor and derive() don't become out of sync
+    class Args(TypedDict, total=False):
+        name: Required[str]
+        size: Required[str]
+        type: Required[str]
+        alignment: Required[str]
+        ac: Required[int | list[ArmourClass]]
+        hp: Required[tuple[int, int]]
+        speeds: Required[Iterable[Movement]]
+        statistics: Required[tuple[int, int, int, int, int, int]]
+        cr: Required[float]
+        saves: list[Ability]
+        skill_profs: list[Skill | tuple[Skill, int]]
+        vulnerabilities: list[str]
+        resistances: list[str]
+        immunities: list[str]
+        senses: list[Sense]
+        languages: list[str]
+        traits: list[tuple[str, str] | TraitSupplier]
+        actions: list[Action]
+        bonus_actions: list[Action]
+        reactions: list[Action]
+        default_hp: Callable[['Creature'], int]
+        lore: str
+
+    class DeriveArgs(Args):
+        name: NotRequired[str]
+        size: NotRequired[str]
+        type: NotRequired[str]
+        alignment: NotRequired[str]
+        ac: NotRequired[int | list[ArmourClass]]
+        hp: NotRequired[tuple[int, int]]
+        speeds: NotRequired[Iterable[Movement]]
+        statistics: NotRequired[tuple[int, int, int, int, int, int]]
+        cr: NotRequired[float]
