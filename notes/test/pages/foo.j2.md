@@ -1,0 +1,2 @@
+# Foo
+Animal: {{ script.animal }}
