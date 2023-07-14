@@ -1,0 +1,20 @@
+{% extends "layout/base.j2.html" %}
+{% block head %}
+    {{ super() }}
+    <title>{{ toc[0].name }}</title>
+    <link rel="stylesheet" href="/assets/article.css"/>
+{% endblock head %}
+{% block content %}
+<nav class="toc">
+    <ul>
+        <li><a href="/index.html">Site Index</a></li>
+    {% for element in toc recursive %}
+        <li><a href="#{{ element.id }}">{{ element.name }}</a></li>
+        {% if element.children %}
+        <ul>{{ loop(element.children) }}</ul>
+        {% endif  %}
+    {% endfor %}
+    </ul>
+</nav>
+{{ super() }}
+{% endblock content %}
