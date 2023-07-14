@@ -1,6 +1,7 @@
 import operator
 from abc import ABCMeta, abstractmethod
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any, Callable, Generic, Never, TypeAlias, TypeVar
 
 from requests import Session
@@ -13,6 +14,12 @@ ErrorHandler: TypeAlias = Callable[[Exception], T]
 Template: TypeAlias = Callable[[Creature], None]
 
 api_sessions = []
+cache_dir: Path
+
+def initialise(_cache_dir: Path):
+    global cache_dir
+    cache_dir = _cache_dir
+    cache_dir.mkdir(exist_ok=True)
 
 class Api(Generic[T], metaclass=ABCMeta):
     def __init__(self, error_handler: ErrorHandler[T]) -> None:
@@ -30,7 +37,7 @@ class HttpApi(Api[T], metaclass=ABCMeta):
         if not self.__session:
             host_start = self.base_url.find('://') + 1
             cache_name = re.sub(r'\W', '_', self.base_url[host_start:])
-            self.__session = CachedSession(cache_name)
+            self.__session = CachedSession((cache_dir/cache_name).as_posix())
             api_sessions.append(self.session)
         return self.__session
 
