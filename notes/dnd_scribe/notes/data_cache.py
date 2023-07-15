@@ -57,5 +57,5 @@ class DataCache:
         return False
 
 def for_file(name: str, *dependencies: Path) -> DataCache:
-    cache = paths.current().build/f'{name}.data'
+    cache = paths.build()/f'{name}.data'
     return DataCache(cache, set(dependencies))

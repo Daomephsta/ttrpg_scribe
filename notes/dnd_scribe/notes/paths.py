@@ -25,3 +25,24 @@ def for_app(app: flask.Flask) -> Paths:
 
 def current() -> Paths:
     return for_app(flask.current_app)
+
+def project_dir():
+    return current().project_dir
+
+def pages():
+    return current().pages
+
+def assets():
+    return current().assets
+
+def templates():
+    return current().templates
+
+def config():
+    return current().config
+
+def build():
+    return current().build
+
+def built_assets():
+    return current().built_assets

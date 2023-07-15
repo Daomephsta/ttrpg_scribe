@@ -1,0 +1,18 @@
+.collapsible {
+    transition: height 0.2s;
+    max-height: 0px;
+    overflow-y: clip;
+}
+.collapser {
+    appearance: none;
+}
+.collapser::after {
+    content: '\02c3  ' attr(data-name);
+}
+.collapser:checked:after {
+    content: '\02c5  ' attr(data-name);
+}
+.collapser:checked + .collapsible {
+    max-height: initial;
+    overflow-y: initial;
+}

@@ -20,9 +20,9 @@ def _bind_data(template_file, name, script, module) -> dict[str, Any]:
 
 def bind(template: str) -> dict[str, Any]:
     # Bind helper script to template
-    template_file = paths.current().pages/template
+    template_file = paths.pages()/template
     [name, _] = template.split('.', maxsplit=1)
-    script = paths.current().pages/f'{name}.py'
+    script = paths.pages()/f'{name}.py'
     if script.exists():
         module = script_loader.load(name, script, execute=True)
         return _bind_data(template_file, name, script, module)

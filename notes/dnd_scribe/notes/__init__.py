@@ -9,8 +9,8 @@ from jinja2 import ChoiceLoader, FileSystemLoader, TemplateNotFound
 import dnd_scribe.bestiary.apis
 import dnd_scribe.bestiary.flask
 import dnd_scribe.core.flask
-from dnd_scribe.notes import paths, data_cache, data_script
 from dnd_scribe.core import markdown
+from dnd_scribe.notes import content_tree, data_cache, data_script, paths
 
 
 class Notes(flask.Flask):
@@ -19,6 +19,7 @@ class Notes(flask.Flask):
         self.jinja_options.update(
             trim_blocks = True,
             lstrip_blocks = True)
+        self.config['dnd_scribe.notes.index.tools'] = []
         paths.initialise(self, project_dir)
 
     @cached_property
@@ -27,10 +28,7 @@ class Notes(flask.Flask):
         assert super_loader
         return ChoiceLoader([
             super_loader,
-            FileSystemLoader([
-                paths.current().pages,
-                paths.current().templates
-            ])
+            FileSystemLoader([paths.pages(), paths.templates()])
         ])
 
 def create_app(project_dir: str | Path | None = None):
@@ -40,6 +38,13 @@ def create_app(project_dir: str | Path | None = None):
     paths_obj = paths.for_app(app)
     data_cache.initialise(paths_obj.build)
     dnd_scribe.bestiary.apis.initialise(paths_obj.build)
+
+    @app.get('/')
+    @app.get('/index.html')
+    def index():
+        return flask.render_template('index.j2.html',
+            content_tree=content_tree.walk(),
+            tools=app.config['dnd_scribe.notes.index.tools'])
 
     @app.get('/notes/<path:page>.html')
     def serve_html(page: str):
