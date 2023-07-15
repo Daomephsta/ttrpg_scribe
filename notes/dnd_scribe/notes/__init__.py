@@ -5,6 +5,7 @@ from pathlib import Path
 
 import flask
 from jinja2 import ChoiceLoader, FileSystemLoader, TemplateNotFound
+from werkzeug.exceptions import NotFound
 
 import dnd_scribe.bestiary.apis
 import dnd_scribe.bestiary.flask
@@ -70,5 +71,12 @@ def create_app(project_dir: str | Path | None = None):
                 raise NotImplementedError
             return markdown.render(rendered)
         return rendered
+
+    @app.get('/assets/<path:asset>')
+    def assets(asset: str):
+        try:
+            return flask.send_from_directory(paths.assets(), asset)
+        except NotFound as e:
+            raise NotFound(f'{asset} not found in {paths.assets()}')
 
     return app
