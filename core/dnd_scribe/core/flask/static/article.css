@@ -1,0 +1,40 @@
+body {
+    display: grid;
+    grid-template-areas:
+        'toc content'
+        '. footer';
+    column-gap: 1em;
+    justify-content: center;
+    font-family: 'Bookinsanity', sans-serif;
+}
+.toc {
+    grid-area: toc;
+    position: sticky;
+    top: 10px;
+    height: calc(100vh - 20px);
+    overflow-y: scroll;
+    box-shadow: 0px 0px 10px;
+}
+.toc > ul {
+    padding-left: 20px;
+}
+.toc ul {
+    padding-right: 5px;
+    list-style: none;
+}
+.toc li {
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+.toc a {
+    font-family: 'Mr Eaves Small Caps';
+    font-size: large;
+    color: black;
+    text-decoration: none;
+}
+main {
+    grid-area: content;
+}
+footer {
+    grid-area: footer;
+}
