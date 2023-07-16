@@ -1,6 +1,7 @@
 import math
 import re
-from typing import Any, Callable, Iterable, TypedDict, Unpack, Required, NotRequired
+from typing import Any, Callable, Iterable, Required, TypedDict, Unpack
+
 from pluralizer import Pluralizer
 
 from .ability import Ability, Perception, Skill, mod
@@ -21,7 +22,7 @@ class Creature():
     ITALICISE_PATTERN = re.compile(r'(Melee Weapon Attack|Ranged Weapon Attack|Hit)')
     PLURALIZER = Pluralizer()
 
-    def __init__(self, **args: Unpack['Creature.Args']):
+    def __init__(self, **args: Unpack['Creature.ConstructorArgs']):
         self.name = args['name']
         self.size = args['size']
         self.type = args['type']
@@ -69,33 +70,36 @@ class Creature():
         self.bonus_actions = realise(args.get('bonus_actions', []))
         self.reactions = realise(args.get('reactions', []))
         self.xp = XP_BY_CR[self.cr]
-        self.lore = args.get('lore')
+        self.lore = args.get('lore', '')
 
-    Template = Callable[[dict[str, Any]], None]
+    Template = Callable[['Creature.TemplateArgs'], None]
 
-    def derive(self, merge: dict[str, Any]={}, templates: list[Template]=[], 
+    def derive(self, merge: dict[str, Any]={}, templates: list[Template]=[],
                **overrides: Unpack['Creature.DeriveArgs']):
-        args: dict[str, Any] = dict(
-            name=self.name,
-            size=self.size,
-            type=self.type,
-            alignment=self.alignment,
-            ac=self.ac,
-            hp=self.hp,
-            default_hp=self.default_hp,
-            speeds=self.speeds,
-            statistics=self.statistics,
-            cr=self.cr,
-            saves=self.saves,
-            skill_profs=list(self.skill_profs.items()),
-            vulnerabilities=self.vulnerabilities,
-            resistances=self.resistances,
-            immunities=self.immunities,
-            senses=self.senses,
-            languages=self.languages,
-            traits=self.traits,
-            actions=self.actions
-        )
+        args: 'Creature.TemplateArgs' = {
+            'name': self.name,
+            'size': self.size,
+            'type': self.type,
+            'alignment': self.alignment,
+            'ac': self.ac,
+            'hp': self.hp,
+            'default_hp': self.default_hp,
+            'speeds': self.speeds.values(),
+            'statistics': self.statistics,
+            'cr': self.cr,
+            'saves': self.saves,
+            'skill_profs': list(self.skill_profs.items()),
+            'vulnerabilities': self.vulnerabilities,
+            'resistances': self.resistances,
+            'immunities': self.immunities,
+            'senses': self.senses,
+            'languages': self.languages,
+            'traits': [*self.traits],
+            'actions': [*self.actions],
+            'bonus_actions': [*self.bonus_actions],
+            'reactions': [*self.reactions],
+            'lore': self.lore
+        }
         for key, values in merge.items():
             # += mutates self.key
             # + creates a new array
@@ -141,7 +145,8 @@ class Creature():
             'traits': self.traits,
             'actions': self.actions,
             'bonus_actions': self.bonus_actions,
-            'reactions': self.reactions
+            'reactions': self.reactions,
+            'lore': self.lore
         }
 
     @staticmethod
@@ -169,7 +174,8 @@ class Creature():
             traits = [tuple(trait) for trait in json['traits']],
             actions = [tuple(action) for action in json['actions']],
             bonus_actions = [tuple(action) for action in json['bonus_actions']],
-            reactions = [tuple(action) for action in json['reactions']]
+            reactions = [tuple(action) for action in json['reactions']],
+            lore = json['lore']
         )
 
     def str_hp(self):
@@ -201,38 +207,9 @@ class Creature():
     def str_cr(self):
         return str(self.cr) if self.cr >= 1 or self.cr == 0 else f'1/{1 / self.cr:.0f}'
 
-    # These ensure the args of the constructor and derive() don't become out of sync
-    class Args(TypedDict, total=False):
-        name: Required[str]
-        size: Required[str]
-        type: Required[str]
-        alignment: Required[str]
-        ac: Required[int | list[ArmourClass]]
-        hp: Required[tuple[int, int]]
-        speeds: Required[Iterable[Movement]]
-        statistics: Required[tuple[int, int, int, int, int, int]]
-        cr: Required[float]
-        saves: list[Ability]
-        skill_profs: list[Skill | tuple[Skill, int]]
-        vulnerabilities: list[str]
-        resistances: list[str]
-        immunities: list[str]
-        senses: list[Sense]
-        languages: list[str]
-        traits: list[tuple[str, str] | TraitSupplier]
-        actions: list[Action]
-        bonus_actions: list[Action]
-        reactions: list[Action]
-        default_hp: Callable[['Creature'], int]
-        lore: str
-
-    class DeriveArgs(Args):
-        name: NotRequired[str]
-        size: NotRequired[str]
-        type: NotRequired[str]
-        alignment: NotRequired[str]
-        ac: NotRequired[int | list[ArmourClass]]
-        hp: NotRequired[tuple[int, int]]
-        speeds: NotRequired[Iterable[Movement]]
-        statistics: NotRequired[tuple[int, int, int, int, int, int]]
-        cr: NotRequired[float]
+    TemplateArgs = TypedDict('TemplateArgs', {'name': str, 'size': str, 'type': str, 'alignment': str, 'ac': int | list[ArmourClass], 'hp': tuple[int, int], 'speeds': Iterable[Movement], 'statistics': tuple[int, int, int, int, int, int], 'cr': float, 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[tuple[str, str] | TraitSupplier], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': Callable[['Creature'], int], 'lore': str},
+                             total=True)
+    ConstructorArgs = TypedDict('ConstructorArgs', {'name': Required[str], 'size': Required[str], 'type': Required[str], 'alignment': Required[str], 'ac': Required[int | list[ArmourClass]], 'hp': Required[tuple[int, int]], 'speeds': Required[Iterable[Movement]], 'statistics': Required[tuple[int, int, int, int, int, int]], 'cr': Required[float], 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[tuple[str, str] | TraitSupplier], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': Callable[['Creature'], int], 'lore': str},
+                                total=False)
+    DeriveArgs = TypedDict('DeriveArgs', {'name': str, 'size': str, 'type': str, 'alignment': str, 'ac': int | list[ArmourClass], 'hp': tuple[int, int], 'speeds': Iterable[Movement], 'statistics': tuple[int, int, int, int, int, int], 'cr': float, 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[tuple[str, str] | TraitSupplier], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': Callable[['Creature'], int], 'lore': str},
+                           total=False)
