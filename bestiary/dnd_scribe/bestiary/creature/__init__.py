@@ -11,9 +11,6 @@ from .sense import Sense
 
 XP_BY_CR = {0: 10, 1/8: 25, 1/4: 50, 1/2: 100, 1: 200, 2: 450, 3: 700, 4: 1_100, 5: 1_800, 6: 2_300, 7: 2_900, 8: 3_900, 9: 5_000, 10: 5_900, 11: 7_200, 12: 8_400, 13: 10_000, 14: 11_500, 15: 13_000, 16: 15_000, 17: 18_000, 18: 20_000, 19: 22_000, 20: 25_000, 21: 33_000, 22: 41_000, 23: 50_000, 24: 62_000, 25: 75_000, 26: 90_000, 27: 105_000, 28: 120_000, 29: 135_000, 30: 155_000}
 
-TraitSupplier = Callable[['Creature'], tuple[str, str]]
-Action = tuple[str, str] | Callable[['Creature'], tuple[str, str]]
-
 class Constant(int):
     def __call__(self, _) -> int:
         return self
@@ -21,18 +18,32 @@ class Constant(int):
 class Creature():
     ITALICISE_PATTERN = re.compile(r'(Melee Weapon Attack|Ranged Weapon Attack|Hit)')
     PLURALIZER = Pluralizer()
+    DefaultHp = Callable[['Creature'], int]
+    Statistics = tuple[int, int, int, int, int, int]
+    Trait = tuple[str, str] | Callable[['Creature'], tuple[str, str]]
+    Action = tuple[str, str] | Callable[['Creature'], tuple[str, str]]
+    TemplateArgs = TypedDict('TemplateArgs', {'name': str, 'size': str, 'type': str, 'alignment': str, 'ac': int | list[ArmourClass], 'hp': tuple[int, int], 'speeds': Iterable[Movement], 'statistics': Statistics, 'cr': float, 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[Trait], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': DefaultHp | int, 'lore': str},
+                             total=True)
+    ConstructorArgs = TypedDict('ConstructorArgs', {'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[Trait], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': DefaultHp | int, 'lore': str},
+                                total=False)
+    DeriveArgs = TypedDict('DeriveArgs', {'name': str, 'size': str, 'type': str, 'alignment': str, 'ac': int | list[ArmourClass], 'hp': tuple[int, int], 'speeds': Iterable[Movement], 'statistics': Statistics, 'cr': float, 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[Trait], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': DefaultHp | int, 'lore': str},
+                           total=False)
 
-    def __init__(self, **args: Unpack['Creature.ConstructorArgs']):
-        self.name = args['name']
-        self.size = args['size']
-        self.type = args['type']
-        self.alignment = args['alignment']
-        match args['ac']:
+    def __init__(self, name: str, size: str, type: str, alignment: str,
+                 ac: int | list[ArmourClass], hp: tuple[int, int],
+                 speeds: Iterable[Movement],
+                 statistics: Statistics, cr: float,
+                 **args: Unpack[ConstructorArgs]):
+        self.name = name
+        self.size = size
+        self.type = type
+        self.alignment = alignment
+        match ac:
             case int() as ac:
                 self.ac = [ArmourClass(ac, str(ac))]
             case _ as ac:
                 self.ac = ac
-        self.hp = args['hp']
+        self.hp = hp
         match args.get('default_hp'):
             case float() | int() as ac_num:
                 self.default_hp = Constant(ac_num)
@@ -40,17 +51,17 @@ class Creature():
                 self.default_hp = Creature.mean_hp
             case _ as func:
                 self.default_hp = func
-        match args['speeds']:
+        match speeds:
             case dict() as speeds:
                 self.speeds = speeds
             case _ as speeds:
                 self.speeds = {speed.name: speed for speed in speeds}
-        self.statistics = args['statistics']
-        self.cr = args['cr']
+        self.statistics = statistics
+        self.cr = cr
         self.prof = int(2 + (self.cr - 1) // 4) if self.cr >= 1 else 2
         self.saves = args.get('saves', [])
         (self.str, self.dex, self.con,
-            self.int, self.wis, self.cha) = args['statistics']
+            self.int, self.wis, self.cha) = statistics
         self.vulnerabilities = args.get('vulnerabilities', [])
         self.resistances = args.get('resistances', [])
         self.immunities = args.get('immunities', [])
@@ -72,11 +83,11 @@ class Creature():
         self.xp = XP_BY_CR[self.cr]
         self.lore = args.get('lore', '')
 
-    Template = Callable[['Creature.TemplateArgs'], None]
+    Template = Callable[[TemplateArgs], None]
 
     def derive(self, merge: dict[str, Any]={}, templates: list[Template]=[],
-               **overrides: Unpack['Creature.DeriveArgs']):
-        args: 'Creature.TemplateArgs' = {
+               **overrides: Unpack[DeriveArgs]):
+        args: Creature.TemplateArgs = {
             'name': self.name,
             'size': self.size,
             'type': self.type,
@@ -206,10 +217,3 @@ class Creature():
 
     def str_cr(self):
         return str(self.cr) if self.cr >= 1 or self.cr == 0 else f'1/{1 / self.cr:.0f}'
-
-    TemplateArgs = TypedDict('TemplateArgs', {'name': str, 'size': str, 'type': str, 'alignment': str, 'ac': int | list[ArmourClass], 'hp': tuple[int, int], 'speeds': Iterable[Movement], 'statistics': tuple[int, int, int, int, int, int], 'cr': float, 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[tuple[str, str] | TraitSupplier], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': Callable[['Creature'], int], 'lore': str},
-                             total=True)
-    ConstructorArgs = TypedDict('ConstructorArgs', {'name': Required[str], 'size': Required[str], 'type': Required[str], 'alignment': Required[str], 'ac': Required[int | list[ArmourClass]], 'hp': Required[tuple[int, int]], 'speeds': Required[Iterable[Movement]], 'statistics': Required[tuple[int, int, int, int, int, int]], 'cr': Required[float], 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[tuple[str, str] | TraitSupplier], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': Callable[['Creature'], int], 'lore': str},
-                                total=False)
-    DeriveArgs = TypedDict('DeriveArgs', {'name': str, 'size': str, 'type': str, 'alignment': str, 'ac': int | list[ArmourClass], 'hp': tuple[int, int], 'speeds': Iterable[Movement], 'statistics': tuple[int, int, int, int, int, int], 'cr': float, 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[tuple[str, str] | TraitSupplier], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': Callable[['Creature'], int], 'lore': str},
-                           total=False)
