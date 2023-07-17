@@ -25,7 +25,6 @@ class Content:
                 name = relative_path.name.removesuffix(''.join(suffixes))
                 relative_path = relative_path.with_name(name).with_suffix('.html')
         self.relative_path = relative_path.as_posix()
-        print(self.relative_path)
         self.title = title
         self.type = Content.Type.File if absolute_path.is_file()\
             else Content.Type.Directory
