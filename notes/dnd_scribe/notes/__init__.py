@@ -15,13 +15,18 @@ from dnd_scribe.notes import content_tree, data_cache, data_script, paths
 
 
 class Notes(flask.Flask):
+    TOOLS_KEY = 'dnd_scribe.notes.index.tools'
+
     def __init__(self, project_dir: Path):
         super().__init__('dnd_scribe.notes')
         self.jinja_options.update(
             trim_blocks = True,
             lstrip_blocks = True)
-        self.config['dnd_scribe.notes.index.tools'] = []
+        self.config[self.TOOLS_KEY] = []
         paths.initialise(self, project_dir)
+
+    def add_tool(self, path: str, title: str, **form_attrs):
+        self.config[self.TOOLS_KEY].append((path, title, form_attrs))
 
     @cached_property
     def jinja_loader(self) -> ChoiceLoader:
@@ -34,7 +39,7 @@ class Notes(flask.Flask):
 
 def create_app(project_dir: str | Path | None = None):
     app = Notes(Path(project_dir) if project_dir else Path.cwd())
-    app.register_blueprint(dnd_scribe.core.flask.blueprint)
+    dnd_scribe.core.flask.extend(app)
     app.register_blueprint(dnd_scribe.bestiary.flask.blueprint)
     paths_obj = paths.for_app(app)
     data_cache.initialise(paths_obj.build)
@@ -45,7 +50,7 @@ def create_app(project_dir: str | Path | None = None):
     def index():
         return flask.render_template('index.j2.html',
             content_tree=content_tree.walk(),
-            tools=app.config['dnd_scribe.notes.index.tools'])
+            tools=app.config[Notes.TOOLS_KEY])
 
     @app.get('/notes/<path:page>.html')
     def serve_html(page: str):

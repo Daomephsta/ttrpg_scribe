@@ -89,7 +89,7 @@
 <head>
     <title>{{ creature.name | title }}</title>
     <link href="{{ url_for('core.static', filename='base.css') }}" rel="stylesheet">
-    <link href="{{ url_for('.static', filename='stat_block.css') }}" rel="stylesheet">
+    <link href="{{ url_for('bestiary.static', filename='stat_block.css') }}" rel="stylesheet">
 </head>
 <body>{{stat_block(creature)}}</body>
 {% endif %}

@@ -3,6 +3,7 @@ extra_stylesheets:
     - {{ url_for('bestiary.static', filename='stat_block.css') }}
 ---
 {% from 'creature.j2.html' import stat_block %}
+{% from 'encounter.j2.html' import encounter %}
 # Foo
 
-{{ stat_block(script.CHICKEN) }}
+{{ encounter([(1, script.CHICKEN)]) }}

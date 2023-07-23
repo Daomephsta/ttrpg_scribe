@@ -11,9 +11,18 @@ python = "^3.11"
 dnd_scribe_core = { path = "../core", develop = true }
 dnd_scribe_bestiary = { path = "../bestiary", develop = true }
 dnd_scribe_notes = { path = "../notes", develop = true }
-matplotlib = "^3.7.2"
-pandas = "^2.0.3"
-tabulate = "^0.9.0"
+dnd_scribe_encounter = { path = "../encounter", develop = true }
+waitress = "^2.1.2"
+# Runtime only dependencies
+matplotlib = {version = "^3.7.2", optional = true}
+pandas = {version = "^2.0.3", optional = true}
+tabulate = {version = "^0.9.0", optional = true}
+
+[tool.poetry.extras]
+runtime = ["matplotlib", "pandas", "tabulate"]
+
+[tool.poetry.scripts]
+dnd_scribe = {callable = "dnd_scribe.all_in_one:start_production()", extras = ["runtime"]}
 
 [build-system]
 requires = ["poetry-core"]

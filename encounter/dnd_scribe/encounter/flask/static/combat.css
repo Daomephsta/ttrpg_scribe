@@ -1,0 +1,62 @@
+#container {
+    display: flex;
+    flex-direction: row;
+    border-spacing: 1em;
+}
+#tracker {
+    margin-top: 1em;
+    margin-right: 1em;
+}
+#tracker > table {
+    border-collapse: collapse;
+    text-align: center;
+}
+#tracker th {
+    font-weight: bold;
+}
+.name {
+    text-transform: capitalize;
+}
+.damage,.initiative {
+    font-size: 16px;
+    text-align: center;
+    width: 3em;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.damage {
+    border: none;
+}
+.initiative {
+    appearance: textfield;
+}
+.dead {
+    color: whitesmoke;
+}
+#buttons {
+    display: flex;
+}
+#sort_initiative, #next_turn, #add_reinforcements {
+    flex-grow: 1;
+}
+#current_turn {
+    background: lightgrey;
+}
+#reinforcements {
+    display: flex;
+    flex-direction: column;
+}
+input[name="quantity"], input[name="initiative_mod"], input[name="max_hp"] {
+    width: 4em;
+}
+#stat_blocks_pane {
+    max-width: 580px;
+    overflow-y: scroll;
+}
+/* Makes input elements follow parent colors */
+input {
+    color: inherit;
+}
+.collapsed {
+    visibility: collapse;
+}

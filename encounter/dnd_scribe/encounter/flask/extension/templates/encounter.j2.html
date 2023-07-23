@@ -1,0 +1,29 @@
+{% macro encounter(npcs, show_xp=True) %}
+<section class="encounter">
+    <ul>
+        {% set xp = namespace(total=0) %}
+        {% for count, creature in npcs %}
+            <li>{{ count }} {{ creature.plural(count) }}</li>
+            {% set xp.total = xp.total + count * creature.xp %}
+        {% endfor %}
+        {% if show_xp %}
+        <li><hr/></li>
+            {% if config.party %}
+            <li><strong>Total XP</strong> {{ xp.total }} ({{ xp.total // config.party | length }} per player)</li>
+            {% else %}
+            <li><strong>Total XP</strong> {{ xp.total }}</li>
+            {% endif %}
+        {% endif %}
+    </ul>
+    <!--
+    assets/launch_encounter.js adds a click listener to this,
+    it sends data-encounter as the body of a POST request to /encounter
+    -->
+    <button data-encounter="{{ dict(pcs=config.party, npcs=npcs) | tojson | forceescape }}"
+        class="launch_encounter">Launch</button>
+</section>
+{% endmacro %}
+
+{% macro random_encounter(size, creature) -%}
+<button data-size="{{ size }}"  data-creature="{{ creature.to_json() | tojson | forceescape }}" data-party="{{ config.party | tojson | forceescape }}"  onclick="launchRandomEncounter(event)">Launch</button> |
+{% endmacro %}

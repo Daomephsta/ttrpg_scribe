@@ -15,7 +15,7 @@ class Constant(int):
     def __call__(self, _) -> int:
         return self
 
-class Creature():
+class Creature:
     ITALICISE_PATTERN = re.compile(r'(Melee Weapon Attack|Ranged Weapon Attack|Hit)')
     PLURALIZER = Pluralizer()
     DefaultHp = Callable[['Creature'], int]

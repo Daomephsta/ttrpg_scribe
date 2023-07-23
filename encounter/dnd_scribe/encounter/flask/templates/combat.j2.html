@@ -1,0 +1,89 @@
+{% extends "layout/base.j2.html" %}
+{% from 'creature.j2.html' import stat_block %}
+{% block head %}
+    <title>Initiative Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('core.static', filename='base.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('.static', filename='combat.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('bestiary.static', filename='stat_block.css') }}">
+    <script src="{{ url_for('.static', filename='combat.js') }}"></script>
+{% endblock head %}
+{% block main %}
+<dialog id="health_dialog">
+    <form method="dialog">
+        <input class="dialog_value" type="number" value="0" min="0" autofocus/>
+        <button type="submit" value="damage_button">Damage</button>
+        <button type="submit" value="heal_button">Heal</button>
+    </form>
+</dialog>
+<div id="container">
+    <div id="tracker">
+        <table>
+            <thead>
+                <th>Name</th>
+                <th>Initiative</th>
+                <th>Damage</th>
+                <th>Max HP</th>
+            </thead>
+            <tbody>
+                {% for name in pcs %}
+                <tr>
+                    <td class="name">{{ name }}</td>
+                    <td><input class="initiative" type="number"/></td>
+                    <!-- Empty cells so background shows -->
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+                {% for npc in npcs %}
+                <tr>
+                    <td class="name">{{ npc.name }}</td>
+                    <td>{{ npc.initiative }}</td>
+                    <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
+                    <td class="max_hp">{{ npc.initial_hp }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div id="buttons">
+            <button onclick="sortInitiative()" id="sort_initiative">Sort</button>
+            <button onclick="nextTurn()" id="next_turn">Next Turn</button>
+        </div>
+        <fieldset id="reinforcements">
+            <legend>Reinforce With</legend>
+            <label>
+                New
+                <input type="radio" oninput="updateReinforcementControls()" name="reinforcement_type" id="reinforce_with_new">
+            </label>
+            <label>
+                Existing
+                <input type="radio" oninput="updateReinforcementControls()" checked="true" name="reinforcement_type" id="reinforce_with_existing">
+            </label>
+            <form method="post" id="reinforce_with_new_controls" class="collapsed">
+                <input type="hidden" name="reinforcement_type" value="with_new">
+                <input type="submit" value="Add" class="add_reinforcements">
+                <input type="number" name="quantity" value="1" min="1">
+                &#x00D7;
+                <input type="text" name="name" placeholder="Name" required="true">
+                <input type="number" name="initiative_mod" placeholder="DEX" min="-10" max="10" required="true">
+                <input type="number" name="max_hp" placeholder="&#x2764;" min="0" required="true">
+            </form>
+            <form method="post" id="reinforce_with_existing_controls">
+                <input type="hidden" name="reinforcement_type" value="with_existing">
+                <input type="submit" value="Add" class="add_reinforcements">
+                <input type="number" name="quantity" value="1" min="1">
+                &#x00D7;
+                <select name="creature" class="feature_value" required="true">
+                    {% for creature in creatures %}
+                    <option value="{{ creature.name }}">{{ creature.name | capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </fieldset>
+    </div>
+    <div id="stat_blocks_pane">
+    {% for creature in creatures %}
+        {{ stat_block(creature, collapsible=True) }}
+    {% endfor %}
+    </div>
+</div>
+{% endblock main %}

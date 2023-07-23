@@ -1,5 +1,5 @@
 import re
-from typing import Any, TypedDict
+from typing import Any, TypedDict, TypeVar, cast
 
 import frontmatter
 from flask import render_template
@@ -22,9 +22,11 @@ class Metadata(TypedDict):
     extra_scripts: list[str | dict]
     extra_stylesheets: list[str]
 
+E = TypeVar('E')
+
 def parse_metadata(metadata: dict[str, Any]) -> Metadata:
-    def as_list(name: str, element_type, default) -> list:
-        candidate = metadata.get(name, default)
+    def as_list(name: str, element_type: type[E], default: list[E]) -> list[E]:
+        candidate = cast(list[E], metadata.get(name, default))
         match candidate:
             case []:
                 return candidate
