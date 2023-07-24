@@ -54,14 +54,14 @@ def create_app(project_dir: str | Path | None = None):
 
     @app.get('/notes/<path:page>.html')
     def serve_html(page: str):
-        if (paths_obj.pages/page).exists():
-            return flask.send_from_directory(paths_obj.pages, page)
+        if (paths.pages()/page).exists():
+            return flask.send_from_directory(paths.pages(), page)
         templates = [f'{page}.j2.{ext}' for ext in ['html', 'md']]
         try:
             selected = app.jinja_env.select_template(templates)
             assert selected.name is not None
         except TemplateNotFound as e:
-            tried = ', '.join(str(paths_obj.pages/template)
+            tried = ', '.join(str(paths.pages()/template)
                                       for template in templates)
             # Can be an error with other templates
             if e.templates == templates:
@@ -69,12 +69,16 @@ def create_app(project_dir: str | Path | None = None):
                     description=f"None of [{tried}] found")
             else:
                 raise
+        def dump(folder: str, extension: str):
+            if os.getenv(f'DND_SCRIBE_DUMP_{extension.upper()}') == '1':
+                dump = paths.build()/f'{folder}/{page}.{extension}'
+                dump.parent.mkdir(parents=True, exist_ok=True)
+                dump.write_text(rendered)
         rendered = flask.render_template(selected,
             script=data_script.bind(selected.name))
         if selected.name.endswith('.md'):
-            if os.getenv('DND_SCRIBE_DUMP_MD') == '1':
-                raise NotImplementedError
-            return markdown.render(rendered)
+            dump('markdown', 'md')
+            rendered = markdown.render(rendered)
         return rendered
 
     @app.get('/assets/<path:asset>')
