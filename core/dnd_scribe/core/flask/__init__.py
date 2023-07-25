@@ -2,6 +2,7 @@ import traceback
 from typing import Any
 
 import flask
+from markupsafe import Markup
 
 import dnd_scribe.core.markdown
 
@@ -27,4 +28,6 @@ def handle_exception(ex: Exception):
 
 @_blueprint.app_template_filter()
 def markdown(s: str):
-    return dnd_scribe.core.markdown.renderer.convert(s)[len('<p>'):-len('</p>')]
+    md = dnd_scribe.core.markdown.renderer.convert(s)
+    return Markup('\n'.join(line.removeprefix('<p>').removesuffix('</p>')
+             for line in md.splitlines()))
