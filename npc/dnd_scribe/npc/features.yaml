@@ -1,0 +1,236 @@
+appearance:
+  - Distinctive jewellery
+  - Piercings
+  - Flamboyant/outlandish clothes
+  - Clean formal clothes
+  - Scar
+  - Missing teeth
+  - Missing fingers
+  - Eyepatch
+  - Tattoos
+  - Birthmark
+  - Bushy Hair
+  - Bald
+  - Very short hair
+  - Very long hair
+  - Braided beard or hair
+  - Unusual hair colour
+  - Nervous eye twitch
+  - Distinctive nose
+  - Distinctive posture
+  - Medals
+  - Big nose
+  - Buckteeth
+  - Freckles
+  - Glasses
+  - Androgynous
+positive_personality:
+  - Adaptable
+  - Adventurous
+  - Alert
+  - Ambitious
+  - Approachable
+  - Articulate
+  - Attentive
+  - Bold
+  - Calm
+  - Careful
+  - Cheerful
+  - Clean
+  - Clever
+  - Compassionate
+  - Confident
+  - Considerate
+  - Cooperative
+  - Coordinated
+  - Courteous
+  - Creative
+  - Curious
+  - Dependable
+  - Determined
+  - Dignified
+  - Disciplined
+  - Earnest
+  - Easygoing
+  - Educated
+  - Efficient
+  - Elegant
+  - Energetic
+  - Entertaining
+  - Enthusiastic
+  - Fair
+  - Faithful
+  - Fashionable
+  - Focused
+  - Forgiving
+  - Friendly
+  - Frugal
+  - Funny
+  - Generous
+  - Good cook
+  - Happy
+  - Hard-working
+  - Honest
+  - Honorable
+  - Humble
+  - Independent
+  - Intuitive
+  - Lawful
+  - Logical
+  - Loyal
+  - Merciful
+  - Musical
+  - Observant
+  - Open-minded
+  - Optimistic
+  - Organized
+  - Passionate
+  - Patient
+  - Perceptive
+  - Persuasive
+  - Pious
+  - Practical
+  - Prepared
+  - Prompt
+  - Prudent
+  - Quick-thinking
+  - Quiet
+  - Ready to teach
+  - Resilient
+  - Resourceful
+  - Self-aware
+  - Self-sacrificing
+  - Sober
+  - Sophisticated
+  - Spontaneous
+  - Stoic
+  - Studious
+  - Talkative
+  - Unconventional
+  - Witty
+  - Wise
+negative_personality:
+  - Absent-minded
+  - Aimless
+  - Anxious
+  - Argumentative
+  - Arrogant
+  - Audacious
+  - Bigmouth
+  - Bigot
+  - Blunt
+  - Callous
+  - Childish
+  - Cruel
+  - Dishonest
+  - Disloyal
+  - Eccentric
+  - Egotistical
+  - Envious
+  - Fanatical
+  - Fickle
+  - Fierce
+  - Finicky
+  - Fixated
+  - Gluttonous
+  - Gruff
+  - Gullible
+  - Hard
+  - Hedonistic
+  - Humourless
+  - Hypocritical
+  - Idiotic
+  - Ignorant
+  - Immature
+  - Impatient
+  - Impious
+  - Impish
+  - Incompetent
+  - Indecisive
+  - Indifferent
+  - Infamous
+  - Intolerant
+  - Irritable
+  - Judgemental
+  - Klutz
+  - Lazy
+  - Liar
+  - Meddlesome
+  - Meek
+  - Megalomaniac
+  - Naïve
+  - Nervous
+  - Nosey
+  - Obsessive
+  - Overambitious
+  - Overconfident
+  - Overemotional
+  - Overprotective
+  - Overzealous
+  - Paranoid
+  - Peevish
+  - Perfectionist
+  - Pessimist
+  - Pest
+  - Phobic
+  - Ponderous
+  - Practical
+  - Predictable
+  - Proud
+  - Quiet
+  - Rebellious
+  - Reckless
+  - Remorseless
+  - Rigorous
+  - Rude
+  - Sarcastic
+  - Sceptic
+  - Selfish
+  - Senile
+  - Shallow
+  - Soft
+  - Solemn
+  - Spineless
+  - Spiteful
+  - Spoiled
+  - Squeamish
+  - Stubborn
+  - Superstitious
+  - Suspicious
+  - Tactless
+  - Temperamental
+  - Theatrical
+  - Timid
+  - Tongue-tied
+  - Troublemaker
+  - Unlucky
+  - Unpredictable
+  - Untrustworthy
+  - Vain
+  - Weak
+  - Withdrawn
+  - Zealous
+mannerism:
+  - Quietly sings/whistles/hums
+  - Speaks in rhyme
+  - Unusually low voice
+  - Unusually high voice
+  - Slurs
+  - Lisps
+  - Stutters
+  - Enunciates overly clearly
+  - Speaks loudly
+  - Whispers
+  - Flowerly speech/long words
+  - Often uses the wrong word
+  - Uses colourful oaths and exclamations
+  - Constant jokes/puns
+  - Pessimistic
+  - Fidgets
+  - Squints
+  - Stares into the distance
+  - Chews something
+  - Paces
+  - Taps fingers
+  - Bites fingernails
+  - Twirls hair or tugs beard

@@ -1,0 +1,24 @@
+body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: row;
+}
+#controls {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+}
+#features {
+  width: 320px;
+}
+.control_button {
+  width: 320px;
+}
+#result_frame {
+  width: 50%;
+  border: none;
+}
+.feature_value {
+  width: 100%;
+}

@@ -11,12 +11,10 @@ import dnd_scribe.bestiary.apis
 import dnd_scribe.bestiary.flask
 import dnd_scribe.core.flask
 from dnd_scribe.core import markdown
-from dnd_scribe.notes import content_tree, data_cache, data_script, paths
+from dnd_scribe.notes import content_tree, data_script, paths
 
 
 class Notes(flask.Flask):
-    TOOLS_KEY = 'dnd_scribe.notes.index.tools'
-
     def __init__(self, project_dir: Path):
         super().__init__('dnd_scribe.notes',
             instance_path=project_dir.absolute().as_posix(),
@@ -24,11 +22,7 @@ class Notes(flask.Flask):
         self.jinja_options.update(
             trim_blocks = True,
             lstrip_blocks = True)
-        self.config[self.TOOLS_KEY] = []
         self.config.from_pyfile('config.py')
-
-    def add_tool(self, path: str, title: str, **form_attrs):
-        self.config[self.TOOLS_KEY].append((path, title, form_attrs))
 
     @cached_property
     def jinja_loader(self) -> ChoiceLoader:
@@ -48,8 +42,7 @@ def create_app(project_dir: str | Path | None = None):
     @app.get('/index.html')
     def index():
         return flask.render_template('index.j2.html',
-            content_tree=content_tree.walk(),
-            tools=app.config[Notes.TOOLS_KEY])
+    content_tree=content_tree.walk())
 
     @app.get('/notes/<path:page>.html')
     def serve_html(page: str):

@@ -1,0 +1,184 @@
+{% macro ability_options() %}
+<option value=""></option>
+<option value="str">STR</option>
+<option value="dex">DEX</option>
+<option value="con">CON</option>
+<option value="int">INT</option>
+<option value="wis">WIS</option>
+<option value="cha">CHA</option>
+{% endmacro %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>NPC Generator</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='npc_generator.css')}}"/>
+        <script>
+        function updateSubrace()
+        {
+            race_selector = document.getElementById("race")
+            subrace_selector = document.getElementById("subrace")
+            subrace_selector.value = race_selector.selectedOptions[0].getAttribute('subrace')
+        }
+
+        function reset()
+        {
+            for (const element of document.querySelector("form").elements)
+            {
+                if (element instanceof HTMLInputElement && element.type == "text")
+                    element.value = ""
+                else if (element instanceof HTMLSelectElement)
+                    element.selectedIndex = 0
+            }
+        }
+
+        let currentNpc;
+
+        function generate()
+        {
+            fetch("{{ url_for('generate_npc') }}",
+            {
+                method: "POST",
+                body: new FormData(document.getElementById("features"))
+            })
+            .then(response => response.json())
+            .then(json =>
+            {
+                resultDocument = document.getElementById("result_frame").contentDocument
+                resultDocument.body.replaceChildren() // Clear body
+                table = resultDocument.body.appendChild(resultDocument.createElement("table"))
+                csv = ""
+                for (feature in json) {
+                    row = table.appendChild(document.createElement("tr"))
+                    row.appendChild(document.createElement("th")).textContent = feature
+                    row.appendChild(document.createElement("td")).textContent = json[feature]
+                    csv += `${feature},${json[feature]}\n`
+                }
+                let link = document.getElementById("save")
+                // Clean up previous link
+                if (link.hasAttribute("href"))
+                    URL.revokeObjectURL(link.href)
+                link.href = URL.createObjectURL(new Blob([csv]))
+                link.download = `${json["Name"]}.csv`
+                currentNpc = json
+            })
+        }
+        </script>
+    </head>
+    <body>
+        <div id="controls">
+            <form id="features">
+                <table>
+                    <tr>
+                        <td>Region</td>
+                        <td>
+                            <select name="region" class="feature_value">
+                                {% for region_id, region_name in regions %}
+                                <option value="{{ region_id }}">{{ region_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Name</td>
+                        <td><input type="text" name="name" class="feature_value"></td>
+                    </tr>
+                    <tr>
+                        <td>Age</td>
+                        <td>
+                            <select name="age" class="feature_value">
+                                <option value=""></option>
+                                <option>Young Adult</option>
+                                <option>Middle Aged</option>
+                                <option>Old</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Race</td>
+                        <td>
+                            <select name="race" id="race" class="feature_value" onchange="updateSubrace()">
+                                <option value=""></option>
+                                {% for race, subraces in races %}
+                                    {% if subraces %}
+                                    <optgroup label="{{ race }}">
+                                        <option>{{ race }}</option>
+                                        {% for subrace in subraces %}
+                                        <option value="{{ race }}" subrace="{{ subrace.subname }}">{{ subrace.name }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% else %}
+                                    <option>{{ race }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <input name="subrace" id="subrace" type="hidden">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Sex</td>
+                        <td>
+                            <select name="sex" class="feature_value">
+                                <option value=""></option>
+                                <option>Male</option>
+                                <option>Female</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Height</td>
+                        <td>
+                            <select name="height" class="feature_value">
+                                <option value=""></option>
+                                <option>Short</option>
+                                <option>Average</option>
+                                <option>Tall</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Weight</td>
+                        <td>
+                            <select name="weight" class="feature_value">
+                                <option value=""></option>
+                                <option>Thin</option>
+                                <option>Average</option>
+                                <option>Plump</option>
+                                <option>Fat</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>High</td>
+                        <td><select name="high_stat" class="feature_value">{{ ability_options() }}</select></td>
+                    </tr>
+                    <tr>
+                        <td>Low</td>
+                        <td><select name="low_stat" class="feature_value">{{ ability_options() }}</select></td>
+                    </tr>
+                    <tr>
+                        <td>Appearance</td>
+                        <td><input type="text" name="appearance" class="feature_value"></td>
+                    </tr>
+                    <tr>
+                        <td>Positive Personality</td>
+                        <td><input type="text" name="positive_personality" class="feature_value"></td>
+                    </tr>
+                    <tr>
+                        <td>Negative Personality</td>
+                        <td><input type="text" name="negative_personality" class="feature_value"></td>
+                    </tr>
+                    <tr>
+                        <td>Mannerism</td>
+                        <td><input type="text" name="mannerism" class="feature_value"></td>
+                    </tr>
+                </table>
+            </form>
+            <button onclick="generate()" class="control_button">Generate</button>
+            <a id="save"><button class="control_button">Save</button></a>
+            <button onclick="reset()" class="control_button">Reset</button>
+        </div>
+        <iframe name="result_frame" id="result_frame">
+        </iframe>
+    </body>
+</html>

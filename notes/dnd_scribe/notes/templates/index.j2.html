@@ -28,7 +28,7 @@
     </ul>
     <h2>Tools</h2>
     <ul style="line-height: 1.5em;">
-        {% for path, title, form_attrs in tools %}
+        {% for path, title, form_attrs in config.TOOLS %}
         <li>
             <form action="{{ path }}"{{ form_attrs | xmlattr }}>
                 <input type="submit" value="{{ title }}"/>
