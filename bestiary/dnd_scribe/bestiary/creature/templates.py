@@ -7,10 +7,10 @@ from dnd_scribe.bestiary.creature.armour import ArmourClass
 
 def adjust_scores(abilities: set[str], adjuster: Callable[[str, int], int]):
     # Apply filter to adjuster
-    adjuster = lambda ability, value: (adjuster(ability, value)\
+    filtered_adjuster = lambda ability, value: (adjuster(ability, value)\
         if ability in abilities else value)
     def template(args: Creature.TemplateArgs):
-        args['statistics'] = tuple(adjuster(ability.abbreviation, value)
+        args['statistics'] = tuple(filtered_adjuster(ability.abbreviation, value)
             for ability, value in zip(Ability, args['statistics']))
     return template
 
