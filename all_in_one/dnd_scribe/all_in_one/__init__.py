@@ -10,7 +10,7 @@ import dnd_scribe.notes
 
 def make_app(project_dir: str):
     app = dnd_scribe.notes.create_app(project_dir)
-    dnd_scribe.encounter.flask.extension.extend(app)
+    dnd_scribe.encounter.flask.extension.extend(app, '/combat_extension')
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
         '/combat': dnd_scribe.encounter.flask.app
     })

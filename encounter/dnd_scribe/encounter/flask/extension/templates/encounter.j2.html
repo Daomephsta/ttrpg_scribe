@@ -1,5 +1,6 @@
 {% macro encounter(npcs, show_xp=True) %}
 <section class="encounter">
+    <link rel="stylesheet" href="{{ url_for('encounter_extension.static', filename='encounter.css') }}">
     <ul>
         {% set xp = namespace(total=0) %}
         {% for count, creature in npcs %}

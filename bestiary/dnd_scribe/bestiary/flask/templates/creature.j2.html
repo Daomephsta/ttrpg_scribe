@@ -5,6 +5,7 @@
 {% else %}
 {# Output a stat block otherwise #}
 <section id="{{ creature.name | replace(' ', '_') }}" class="stat_block">
+    <link rel="stylesheet" href="{{ url_for('bestiary.static', filename='stat_block.css') }}">
     {% if collapsible %}
     <input type="checkbox" class="stat_block_collapser name" data-name="{{ creature.name }}">
     <div class="stat_block_content">

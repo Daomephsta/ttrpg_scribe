@@ -1,0 +1,12 @@
+.encounter {
+    display: inline-flex;
+    font-family: 'Scaly Sans';
+    background-color: #f8f3e8;
+    padding: 10px;
+    gap: 10px;
+}
+.encounter > ul {
+    text-transform: capitalize;
+    list-style: none;
+    padding-left: 0;
+}
