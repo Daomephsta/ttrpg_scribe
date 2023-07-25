@@ -18,14 +18,14 @@ class Notes(flask.Flask):
     TOOLS_KEY = 'dnd_scribe.notes.index.tools'
 
     def __init__(self, project_dir: Path):
-        super().__init__('dnd_scribe.notes')
+        super().__init__('dnd_scribe.notes',
+            instance_path=project_dir.absolute().as_posix(),
+            instance_relative_config=True)
         self.jinja_options.update(
             trim_blocks = True,
             lstrip_blocks = True)
         self.config[self.TOOLS_KEY] = []
-        config_file = (project_dir/'config.py').absolute().as_posix()
-        self.config.from_pyfile(config_file)
-        paths.initialise(self, project_dir)
+        self.config.from_pyfile('config.py')
 
     def add_tool(self, path: str, title: str, **form_attrs):
         self.config[self.TOOLS_KEY].append((path, title, form_attrs))
@@ -43,9 +43,6 @@ def create_app(project_dir: str | Path | None = None):
     app = Notes(Path(project_dir) if project_dir else Path.cwd())
     dnd_scribe.core.flask.extend(app)
     app.register_blueprint(dnd_scribe.bestiary.flask.blueprint)
-    paths_obj = paths.for_app(app)
-    data_cache.initialise(paths_obj.build)
-    dnd_scribe.bestiary.apis.initialise(paths_obj.build)
 
     @app.get('/')
     @app.get('/index.html')

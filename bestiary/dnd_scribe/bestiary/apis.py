@@ -1,9 +1,11 @@
 import operator
 from abc import ABCMeta, abstractmethod
+from functools import cache
 from http import HTTPStatus
 from pathlib import Path
 from typing import Any, Callable, Generic, Never, TypeAlias, TypeVar
 
+import flask
 from requests import Session
 from requests_cache import CachedSession
 
@@ -14,12 +16,9 @@ ErrorHandler: TypeAlias = Callable[[Exception], T]
 Template: TypeAlias = Callable[[Creature], None]
 
 api_sessions = []
-cache_dir: Path
-
-def initialise(_cache_dir: Path):
-    global cache_dir
-    cache_dir = _cache_dir
-    cache_dir.mkdir(exist_ok=True)
+@cache
+def cache_dir():
+    return Path(flask.current_app.instance_path)/'cache'
 
 class Api(Generic[T], metaclass=ABCMeta):
     def __init__(self, error_handler: ErrorHandler[T]) -> None:
@@ -37,7 +36,7 @@ class HttpApi(Api[T], metaclass=ABCMeta):
         if not self.__session:
             host_start = self.base_url.find('://') + 1
             cache_name = re.sub(r'\W', '_', self.base_url[host_start:])
-            self.__session = CachedSession((cache_dir/cache_name).as_posix())
+            self.__session = CachedSession((cache_dir()/cache_name).as_posix())
             api_sessions.append(self.session)
         return self.__session
 

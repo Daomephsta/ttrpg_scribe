@@ -1,48 +1,33 @@
-import sys
+from functools import cache
 from pathlib import Path
 
 import flask
 
 
-class Paths:
-    def __init__(self, project_dir: Path) -> None:
-        self.project_dir = project_dir
-        self.pages = project_dir/'pages'
-        self.assets = project_dir/'assets'
-        self.templates = project_dir/'templates'
-        self.config = project_dir/'config.py'
-        self.build = project_dir/'_build'
-        self.built_assets = self.build/'assets'
-        if not self.pages.exists():
-            print(f'{project_dir} is not a dnd_scribe project')
-            sys.exit(-1)
-
-def initialise(app: flask.Flask, project_dir: Path):
-    app.config['dnd_scribe.notes.paths'] = Paths(project_dir)
-
-def for_app(app: flask.Flask) -> Paths:
-    return app.config['dnd_scribe.notes.paths']
-
-def current() -> Paths:
-    return for_app(flask.current_app)
-
+@cache
 def project_dir():
-    return current().project_dir
+    return Path(flask.current_app.instance_path)
 
+@cache
 def pages():
-    return current().pages
+    return project_dir()/'pages'
 
+@cache
 def assets():
-    return current().assets
+    return project_dir()/'assets'
 
+@cache
 def templates():
-    return current().templates
+    return project_dir()/'templates'
 
+@cache
 def config():
-    return current().config
+    return project_dir()/'config.py'
 
+@cache
 def build():
-    return current().build
+    return project_dir()/'_build'
 
+@cache
 def built_assets():
-    return current().built_assets
+    return build()/'assets'
