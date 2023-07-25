@@ -23,6 +23,8 @@ class Notes(flask.Flask):
             trim_blocks = True,
             lstrip_blocks = True)
         self.config[self.TOOLS_KEY] = []
+        config_file = (project_dir/'config.py').absolute().as_posix()
+        self.config.from_pyfile(config_file)
         paths.initialise(self, project_dir)
 
     def add_tool(self, path: str, title: str, **form_attrs):

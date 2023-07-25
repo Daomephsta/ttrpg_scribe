@@ -65,7 +65,7 @@ class Encounter(metaclass=__Encounter):
 @app.post('/')
 def create_encounter():
     encounter = Encounter.from_json(flask.request.json) if flask.request.is_json\
-        else Encounter([], [])#TODO config.party)
+        else Encounter([], flask.current_app.config['PARTY'])
     return flask.redirect(flask.url_for('view_encounter',
         id=Encounter.add(encounter),
         code=HTTPStatus.SEE_OTHER))

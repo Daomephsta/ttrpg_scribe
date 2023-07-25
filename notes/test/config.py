@@ -1,0 +1,1 @@
+PARTY = ['Alice', 'Bob', 'Charlie', 'Danielle']

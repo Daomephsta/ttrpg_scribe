@@ -8,8 +8,8 @@
         {% endfor %}
         {% if show_xp %}
         <li><hr/></li>
-            {% if config.party %}
-            <li><strong>Total XP</strong> {{ xp.total }} ({{ xp.total // config.party | length }} per player)</li>
+            {% if config.PARTY %}
+            <li><strong>Total XP</strong> {{ xp.total }} ({{ xp.total // config.PARTY | length }} per player)</li>
             {% else %}
             <li><strong>Total XP</strong> {{ xp.total }}</li>
             {% endif %}
@@ -19,11 +19,11 @@
     assets/launch_encounter.js adds a click listener to this,
     it sends data-encounter as the body of a POST request to /encounter
     -->
-    <button data-encounter="{{ dict(pcs=config.party, npcs=npcs) | tojson | forceescape }}"
+    <button data-encounter="{{ dict(pcs=[], npcs=npcs) | tojson | forceescape }}"
         class="launch_encounter">Launch</button>
 </section>
 {% endmacro %}
 
 {% macro random_encounter(size, creature) -%}
-<button data-size="{{ size }}"  data-creature="{{ creature.to_json() | tojson | forceescape }}" data-party="{{ config.party | tojson | forceescape }}"  onclick="launchRandomEncounter(event)">Launch</button> |
+<button data-size="{{ size }}"  data-creature="{{ creature | tojson | forceescape }}" data-party="{{ config.PARTY | tojson | forceescape }}"  onclick="launchRandomEncounter(event)">Launch</button> |
 {% endmacro %}
