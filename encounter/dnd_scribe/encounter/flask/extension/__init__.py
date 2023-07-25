@@ -8,4 +8,4 @@ def extend(app: flask.Flask, url_prefix: str):
     app.register_blueprint(_blueprint, url_prefix=url_prefix)
     if 'dnd_scribe.notes.index.tools' in app.config:
         app.config['dnd_scribe.notes.index.tools'].append(
-            ('/combat', 'Launch Combat', {'method': 'post'}))
+            ('/encounter', 'Launch Encounter', {'method': 'post'}))

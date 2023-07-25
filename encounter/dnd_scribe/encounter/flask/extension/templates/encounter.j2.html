@@ -17,10 +17,10 @@
         {% endif %}
     </ul>
     <!--
-    assets/launch_encounter.js adds a click listener to this,
+    launch_encounter.js adds a click listener to this,
     it sends data-encounter as the body of a POST request to /encounter
     -->
-    <button data-encounter="{{ dict(pcs=[], npcs=npcs) | tojson | forceescape }}"
+    <button data-encounter="{{ dict(pcs=config.PARTY, npcs=npcs) | tojson | forceescape }}"
         class="launch_encounter">Launch</button>
 </section>
 {% endmacro %}

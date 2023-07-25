@@ -1,2 +1,2 @@
 # D&DScribe Encounter
-Combat tracker
+Encounter tracker

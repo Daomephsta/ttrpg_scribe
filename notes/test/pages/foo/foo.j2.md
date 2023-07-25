@@ -1,3 +1,6 @@
+---
+layout: session
+---
 {% from 'creature.j2.html' import stat_block %}
 {% from 'encounter.j2.html' import encounter %}
 # Foo

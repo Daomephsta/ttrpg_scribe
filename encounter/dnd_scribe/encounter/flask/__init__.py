@@ -32,7 +32,7 @@ def create_app(instance_path: str):
     def view_encounter(id: int):
         if Encounter.exists(id):
             encounter = Encounter.get(id)
-            return flask.render_template('combat.j2.html',
+            return flask.render_template('encounter_engine.j2.html',
                 npcs=encounter.npcs, pcs=encounter.pcs,
                 creatures=encounter.creatures.values(), encounter_id=id)
         return (f'Encounter {id} not found', HTTPStatus.NOT_FOUND)
@@ -86,12 +86,12 @@ def create_app(instance_path: str):
     class Encounter(metaclass=__Encounter):
         def __init__(self, npc_specs: list[tuple[int, Creature]], pcs: list[str]):
             self.npcs = []
-            for count, creature in npc_specs:
-                for _ in range(count):
-                    self.add_npc(creature)
             self.creatures = {creature.name: creature for _, creature in npc_specs}
             self.pcs = pcs
             self.npc_ids = itertools.count(start=1)
+            for count, creature in npc_specs:
+                for _ in range(count):
+                    self.add_npc(creature)
 
         @staticmethod
         def from_json(json):
