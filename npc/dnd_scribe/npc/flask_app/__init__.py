@@ -1,19 +1,24 @@
 from pathlib import Path
-from typing import OrderedDict
 
 import flask
+from flask_session import Session
+from werkzeug.exceptions import Forbidden
 
 import dnd_scribe.core.flask
+import dnd_scribe.npc.database
 from dnd_scribe.npc import Features
+from dnd_scribe.npc.race import Race
 from dnd_scribe.npc.template import Template
-from npc.dnd_scribe.npc.race import Race
 
 
 def create_app(instance_path: str):
+    instance_path = Path(instance_path).absolute().as_posix()
     app = flask.Flask('dnd_scribe.npc.flask_app',
-        instance_path=Path(instance_path).absolute().as_posix(),
+        instance_path=instance_path,
         instance_relative_config=True)
     app.config.from_pyfile('config.py')
+    app.config['SESSION_FILE_DIR'] = instance_path
+    Session().init_app(app)
     dnd_scribe.core.flask.extend(app)
 
     @app.get('/gui')
@@ -31,15 +36,14 @@ def create_app(instance_path: str):
 
     @app.post('/generate')
     def generate_npc():
-        read_features = OrderedDict()
+        features_by_id = dict()
         for feature_id, value in flask.request.form.items():
-            feature = Features.BY_NAME[feature_id]
-            read_features[feature] = feature.from_str(read_features, value) if value else None
+            Features[feature_id].read_into(features_by_id, value)
         template_features = ((feature, value) if value else feature
-            for feature, value in read_features.items())
-        entity = Template(*template_features).into_entity()
-        entity_features={feature.display: feature.to_str(entity[feature])
-            for feature in entity.feature_order if feature != Features.REGION}
-        return entity_features
+            for feature, value in features_by_id.items())
+        entity = Template.from_entries(*template_features).into_entity()
+        flask.session['current_npc'] = entity
+        return {feature.display: feature.to_str(value)
+            for feature, value in entity if feature != Features.REGION}
 
     return app
