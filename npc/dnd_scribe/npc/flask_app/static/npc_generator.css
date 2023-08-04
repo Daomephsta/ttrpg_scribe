@@ -22,3 +22,7 @@ body {
 .feature_value {
   width: 100%;
 }
+#feedback {
+  width: 320px;
+  text-align: center;
+}

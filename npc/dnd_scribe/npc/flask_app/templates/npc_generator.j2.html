@@ -21,6 +21,13 @@
             subrace_selector.value = race_selector.selectedOptions[0].getAttribute('subrace')
         }
 
+        function setFeedback(text, duration) 
+        {
+            const feedback = document.getElementById("feedback")
+            feedback.textContent = text
+            setTimeout(() => feedback.textContent = "", duration)
+        }
+
         function reset()
         {
             for (const element of document.querySelector("form").elements)
@@ -31,8 +38,6 @@
                     element.selectedIndex = 0
             }
         }
-
-        let currentNpc;
 
         function generate()
         {
@@ -47,20 +52,26 @@
                 resultDocument = document.getElementById("result_frame").contentDocument
                 resultDocument.body.replaceChildren() // Clear body
                 table = resultDocument.body.appendChild(resultDocument.createElement("table"))
-                csv = ""
-                for (feature in json) {
+                for (const [feature, value] of json) {
                     row = table.appendChild(document.createElement("tr"))
                     row.appendChild(document.createElement("th")).textContent = feature
-                    row.appendChild(document.createElement("td")).textContent = json[feature]
-                    csv += `${feature},${json[feature]}\n`
+                    row.appendChild(document.createElement("td")).textContent = value
                 }
-                let link = document.getElementById("save")
-                // Clean up previous link
-                if (link.hasAttribute("href"))
-                    URL.revokeObjectURL(link.href)
-                link.href = URL.createObjectURL(new Blob([csv]))
-                link.download = `${json["Name"]}.csv`
-                currentNpc = json
+                document.getElementById("save").disabled = false
+            })
+        }
+
+        function save() 
+        {
+            fetch("{{ url_for('save_npc') }}",
+            {
+                method: "POST"
+            })
+            .then(response => response.text())
+            .then(text =>
+            {
+                setFeedback(text, 1000)
+                document.getElementById("save").disabled = true
             })
         }
         </script>
@@ -175,8 +186,9 @@
                 </table>
             </form>
             <button onclick="generate()" class="control_button">Generate</button>
-            <a id="save"><button class="control_button">Save</button></a>
+            <button id="save" onclick="save()" class="control_button" disabled>Save</button>
             <button onclick="reset()" class="control_button">Reset</button>
+            <p id="feedback"></p>
         </div>
         <iframe name="result_frame" id="result_frame">
         </iframe>

@@ -5,10 +5,8 @@ from flask_session import Session
 from werkzeug.exceptions import Forbidden
 
 import dnd_scribe.core.flask
-import dnd_scribe.npc.database
-from dnd_scribe.npc import Features
+from dnd_scribe.npc import EntityGenerator, Features
 from dnd_scribe.npc.race import Race
-from dnd_scribe.npc.template import Template
 
 
 def create_app(instance_path: str):
@@ -17,12 +15,15 @@ def create_app(instance_path: str):
         instance_path=instance_path,
         instance_relative_config=True)
     app.config.from_pyfile('config.py')
-    app.config['SESSION_FILE_DIR'] = instance_path
+    app.config.update(SESSION_TYPE = 'filesystem',
+                      SESSION_PERMANENT = False,
+                      SESSION_FILE_DIR = f'{instance_path}/_build/_session')
     Session().init_app(app)
     dnd_scribe.core.flask.extend(app)
+    npc_generator = EntityGenerator(config=app.config)
 
     @app.get('/gui')
-    def npc_generator():
+    def npc_generator_gui():
         race_weights: dict[str, dict[Race, int]] = app.config['RACE_WEIGHTS']
         races = [(race.name, list(race.subraces.values()))
                 for race in race_weights['']]
@@ -41,9 +42,22 @@ def create_app(instance_path: str):
             Features[feature_id].read_into(features_by_id, value)
         template_features = ((feature, value) if value else feature
             for feature, value in features_by_id.items())
-        entity = Template.from_entries(*template_features).into_entity()
-        flask.session['current_npc'] = entity
-        return {feature.display: feature.to_str(value)
-            for feature, value in entity if feature != Features.REGION}
+        entity = npc_generator.generate(*template_features)
+        flask.session['current_npc'] = entity.to_json()
+        return entity.for_display(
+            order=list(features_by_id.keys()),
+            exclude=[Features.REGION])
+
+    npcs = Path(app.instance_path)/'npcs'
+    npcs.mkdir(exist_ok=True)
+
+    @app.post('/save')
+    def save_npc():
+        if 'current_npc' in flask.session:
+            npc = flask.session['current_npc']
+            path = npcs/f"{npc['name']}.json"
+            path.write_text(flask.json.dumps(npc, indent=4))
+            return f"Saved {npc['name']}"
+        raise Forbidden('No NPCs have been generated during this session')
 
     return app
