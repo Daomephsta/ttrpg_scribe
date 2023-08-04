@@ -2,10 +2,10 @@ from pathlib import Path
 
 import flask
 from flask_session import Session
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, NotFound
 
 import dnd_scribe.core.flask
-from dnd_scribe.npc import EntityGenerator, Features
+from dnd_scribe.npc import Entity, EntityGenerator, Features
 from dnd_scribe.npc.race import Race
 
 
@@ -54,10 +54,29 @@ def create_app(instance_path: str):
     @app.post('/save')
     def save_npc():
         if 'current_npc' in flask.session:
-            npc = flask.session['current_npc']
+            npc: Entity = flask.session['current_npc']
             path = npcs/f"{npc.name}.json"
-            path.write_text(flask.json.dumps(npc, indent=4))
+            path.write_text(flask.json.dumps(npc.for_display(order=[
+                Features.NAME, Features.AGE, Features.RACE, Features.SUBRACE,
+                Features.SEX, Features.HEIGHT, Features.WEIGHT,
+                Features.HIGH_STAT, Features.LOW_STAT, Features.APPEARANCE,
+                Features.POSITIVE_PERSONALITY, Features.NEGATIVE_PERSONALITY,
+                Features.MANNERISM]), indent=4))
             return f"Saved {npc.name}"
         raise Forbidden('No NPCs have been generated during this session')
+
+    @app.get('/view')
+    def list_npcs():
+        return flask.render_template('npc_list.j2.html',
+            npcs=[(path.stem, path.stem) for path in npcs.glob('*.json')])
+
+    @app.get('/view/<name>')
+    def view_npc(name):
+        path = npcs/f'{name}.json'
+        if not path.exists():
+            raise NotFound(f'No NPC named {name}')
+        npc=[tuple(pair) for pair in flask.json.loads(path.read_text())]
+        [name]=[v for f, v in npc if f == 'Name']
+        return flask.render_template('npc.j2.html', name=name, npc=npc)
 
     return app

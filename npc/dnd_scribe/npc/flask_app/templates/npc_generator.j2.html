@@ -188,6 +188,9 @@
             <button onclick="generate()" class="control_button">Generate</button>
             <button id="save" onclick="save()" class="control_button" disabled>Save</button>
             <button onclick="reset()" class="control_button">Reset</button>
+            <a href="{{ url_for('list_npcs')}}">
+                <button class="control_button">List</button>
+            </a>
             <p id="feedback"></p>
         </div>
         <iframe name="result_frame" id="result_frame">

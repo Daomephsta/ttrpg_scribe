@@ -1,0 +1,14 @@
+{% extends "layout/base.j2.html" %}
+
+{% block head %}
+{{super()}}
+    <title>NPC List</title>
+{% endblock head %}
+
+{% block main %}
+<ul>
+{% for name, id in npcs %}
+    <li><a href="{{ url_for('view_npc', name=id) }}">{{ name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock main %}
