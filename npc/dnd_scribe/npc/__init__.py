@@ -6,7 +6,7 @@ from typing import (Any, Callable, Generic, Mapping, Optional, Self, Sequence,
 
 import yaml
 
-from dnd_scribe.npc import race
+import dnd_scribe.npc.race
 from dnd_scribe.npc.character import ABILITIES, SEXES, Ability, Sex
 from dnd_scribe.npc.race import Race, Subrace
 
@@ -85,7 +85,8 @@ class __Features(type):
             features_yaml = yaml.safe_load(file)
         cls.REGION: Feature[str] = Feature('region', lambda *_: '')
 
-        def race(generator: 'EntityGenerator', features: FeatureMapping) -> Race:
+        def race(generator: 'EntityGenerator',
+                          features: FeatureMapping) -> Race:
             region_race_weights: dict[Race, int] =\
                 generator.config['RACE_WEIGHTS'][features[Features.REGION]]
             races = list(region_race_weights.keys())
@@ -93,7 +94,7 @@ class __Features(type):
                 for weights in region_race_weights.values()]
             return generator.choose(races, weights=race_weights)
         cls.RACE: Feature[Race] = Feature('race', race,
-            from_str=lambda s, _: race.BY_NAME[s],
+            from_str=lambda s, _: dnd_scribe.npc.race.BY_NAME[s],
             dependencies=[cls.REGION])
 
         def subrace(generator: 'EntityGenerator',
@@ -111,7 +112,8 @@ class __Features(type):
                             weights=[race_weight / len(race.subraces)] * len(race.subraces))
             return None
         cls.SUBRACE = Feature('subrace', subrace,
-            from_str=lambda s, features: features[cls.RACE].subraces[s],
+            from_str=lambda s, features:
+                features[cls.RACE].subraces[s] if s != 'None' else None,
             dependencies=[cls.REGION, cls.RACE])
 
         cls.SEX: Feature[Sex] = Feature.choice('sex', SEXES)
