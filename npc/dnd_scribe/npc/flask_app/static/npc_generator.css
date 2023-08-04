@@ -9,11 +9,17 @@ body {
   flex-direction: column;
   align-items: end;
 }
+#controls input, select {
+  height: 32px;
+}
 #features {
   width: 320px;
 }
 .control_button {
   width: 320px;
+  height: 32px;
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 #result_frame {
   width: 50%;
