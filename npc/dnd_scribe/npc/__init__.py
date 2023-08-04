@@ -1,3 +1,4 @@
+from functools import reduce
 from importlib import resources
 from random import _inst as default_random
 from typing import (Any, Callable, Generic, Mapping, Optional, Self, Sequence,
@@ -38,11 +39,12 @@ class Feature(Generic[T]):
         features[self] = self.generator(entity_generator, features)
 
     def read_into(self, destination: 'FeatureMap',
-                  value: str | None):
+                  value: str | None) -> 'FeatureMap':
         if value:
             destination[self] = self.from_str(value, destination)
         else:
             destination[self] = None
+        return destination
 
     @classmethod
     def choice(cls, name: str, choices: list[T], *, weights: list[float]=[],
@@ -180,8 +182,13 @@ class Entity:
                 for feature in order
                 if feature not in exclude}
 
-    def to_json(self) -> dict[str, str]:
+    def __getstate__(self) -> dict[str, str]:
         return {feature.name: feature.to_str(value) for feature, value in self}
+
+    def __setstate__(self, state: dict[str, str]):
+        self.feature_values = reduce(lambda features, feature:
+                Features[feature[0]].read_into(features, feature[1]),
+            state.items(), {})
 
     def for_display(self, order: list[Feature[Any]]=[],
                     exclude: list[Feature[Any]]=[]):

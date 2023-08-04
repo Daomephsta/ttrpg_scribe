@@ -43,7 +43,7 @@ def create_app(instance_path: str):
         template_features = ((feature, value) if value else feature
             for feature, value in features_by_id.items())
         entity = npc_generator.generate(*template_features)
-        flask.session['current_npc'] = entity.to_json()
+        flask.session['current_npc'] = entity
         return entity.for_display(
             order=list(features_by_id.keys()),
             exclude=[Features.REGION])
@@ -55,9 +55,9 @@ def create_app(instance_path: str):
     def save_npc():
         if 'current_npc' in flask.session:
             npc = flask.session['current_npc']
-            path = npcs/f"{npc['name']}.json"
+            path = npcs/f"{npc.name}.json"
             path.write_text(flask.json.dumps(npc, indent=4))
-            return f"Saved {npc['name']}"
+            return f"Saved {npc.name}"
         raise Forbidden('No NPCs have been generated during this session')
 
     return app
