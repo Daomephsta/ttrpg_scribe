@@ -18,7 +18,7 @@ Template: TypeAlias = Callable[[Creature], None]
 api_sessions = []
 @cache
 def cache_dir():
-    return Path(flask.current_app.instance_path)/'cache'
+    return Path(flask.current_app.instance_path)/'_build/cache'
 
 class Api(Generic[T], metaclass=ABCMeta):
     def __init__(self, error_handler: ErrorHandler[T]) -> None:
