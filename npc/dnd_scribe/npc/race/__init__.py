@@ -33,7 +33,7 @@ class Namer:
                 case str():
                     return part
                 case list():
-                    return rng.choice(part)
+                    return part_type(rng.choice(part))
         return ' '.join(rng.choice(self.names[part_type(part)])
             for part in self.format)
 

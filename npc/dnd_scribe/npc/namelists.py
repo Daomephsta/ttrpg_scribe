@@ -1,13 +1,15 @@
-from collections import defaultdict
 from typing import Mapping, TypeAlias
 
 Names: TypeAlias = Mapping[str, list[str]]
 
 def combine(*namelists: Names) -> Names:
-    combined = defaultdict(list)
+    combined = dict()
     for namelist in namelists:
         for kind, names in namelist.items():
-            combined[kind] += names
+            if kind not in combined:
+                combined[kind] = names.copy()
+            else:
+                combined[kind] += names
     return combined
 
 Dragonborn: Names = {
