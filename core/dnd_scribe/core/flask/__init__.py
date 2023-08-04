@@ -9,12 +9,19 @@ import dnd_scribe.core.markdown
 _blueprint = flask.Blueprint('core', __name__, static_folder='static',
                       template_folder='templates', url_prefix='/core')
 
-def extend(app: flask.Flask):
+class ExtensibleJSONProvider(flask.json.provider.DefaultJSONProvider):
+    @staticmethod
     def encode_json(obj: Any) -> Any:
         if hasattr(obj, 'to_json'):
             return obj.to_json()
         return flask.json.provider.DefaultJSONProvider.default(obj)
-    app.jinja_env.policies['json.dumps_kwargs'].update(default=encode_json)
+
+    default = staticmethod(encode_json)
+
+def extend(app: flask.Flask):
+    app.json = ExtensibleJSONProvider(app)
+    app.jinja_env.policies['json.dumps_kwargs'].update(
+        default=ExtensibleJSONProvider.encode_json)
     app.register_blueprint(_blueprint)
 
 @_blueprint.app_template_test()

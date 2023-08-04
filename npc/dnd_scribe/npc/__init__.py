@@ -184,8 +184,11 @@ class Entity:
                 for feature in order
                 if feature not in exclude}
 
-    def __getstate__(self) -> dict[str, str]:
+    def to_json(self) -> dict[str, str]:
         return {feature.name: feature.to_str(value) for feature, value in self}
+
+    def __getstate__(self) -> dict[str, str]:
+        return self.to_json()
 
     def __setstate__(self, state: dict[str, str]):
         self.feature_values = reduce(lambda features, feature:
