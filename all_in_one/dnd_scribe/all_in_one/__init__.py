@@ -1,3 +1,4 @@
+import logging
 import shutil
 from argparse import ArgumentParser
 from pathlib import Path
@@ -29,6 +30,8 @@ def make_app(project_dir: str | Path):
 
 def start(args):
     app = make_app(args.project_dir)
+    logging.basicConfig(level=logging.INFO,
+                        format='%(name)s @ %(levelname)s: %(message)s')
     waitress.serve(app, listen='127.0.0.1:48164')
 
 def clean(args):

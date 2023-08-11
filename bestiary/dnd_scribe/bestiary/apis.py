@@ -1,3 +1,4 @@
+import logging
 import operator
 from abc import ABCMeta, abstractmethod
 from functools import cache
@@ -56,7 +57,7 @@ class HttpApi(Api[T], metaclass=ABCMeta):
 
     def creature(self, index: str) -> Creature | T:
         url = self.base_url + index
-        print(f'GET {url}')
+        logging.debug('GET %s', url)
         try:
             response = self.session().get(url, verify=True)
         except Exception as ex:
