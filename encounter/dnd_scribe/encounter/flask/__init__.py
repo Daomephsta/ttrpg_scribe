@@ -8,11 +8,10 @@ import dnd_scribe.bestiary.flask
 import dnd_scribe.core.flask
 from dnd_scribe.bestiary.creature import Creature
 from dnd_scribe.bestiary.creature.ability import DEX
-#from dnd_scribe import config
 from dnd_scribe.core import dice
 
 
-def create_app(instance_path: str):
+def create_app(instance_path: str | Path):
     app = flask.Flask('dnd_scribe.encounter.flask',
         instance_path=Path(instance_path).absolute().as_posix(),
         instance_relative_config=True)

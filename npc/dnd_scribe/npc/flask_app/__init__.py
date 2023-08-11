@@ -9,7 +9,7 @@ from dnd_scribe.npc import Entity, EntityGenerator, Features
 from dnd_scribe.npc.race import Race
 
 
-def create_app(instance_path: str):
+def create_app(instance_path: str | Path):
     instance_path = Path(instance_path).absolute().as_posix()
     app = flask.Flask('dnd_scribe.npc.flask_app',
         instance_path=instance_path,

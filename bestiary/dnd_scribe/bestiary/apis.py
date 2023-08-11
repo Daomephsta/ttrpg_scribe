@@ -9,13 +9,14 @@ import flask
 from requests import Session
 from requests_cache import CachedSession
 
+from dnd_scribe.core import signals
+
 from .creature import *
 
 T = TypeVar('T')
 ErrorHandler: TypeAlias = Callable[[Exception], T]
 Template: TypeAlias = Callable[[Creature], None]
 
-api_sessions = []
 @cache
 def cache_dir():
     if flask.current_app:
@@ -33,14 +34,24 @@ class Api(Generic[T], metaclass=ABCMeta):
 
 class HttpApi(Api[T], metaclass=ABCMeta):
     base_url: str
+    __session: Session | None = None
 
-    __session = None
+    def __init__(self, error_handler: Callable[[Exception], T]) -> None:
+        super().__init__(error_handler)
+        def clean(sender):
+            self.session().close()
+            self.__session = None
+        self.__clean = clean
+        signals.clean.connect(self.__clean)
+
+    def __del__(self):
+        signals.clean.disconnect(self.__clean)
+
     def session(self) -> Session:
         if not self.__session:
             host_start = self.base_url.find('://') + 1
             cache_name = re.sub(r'\W', '_', self.base_url[host_start:])
             self.__session = CachedSession((cache_dir()/cache_name).as_posix())
-            api_sessions.append(self.session)
         return self.__session
 
     def creature(self, index: str) -> Creature | T:
