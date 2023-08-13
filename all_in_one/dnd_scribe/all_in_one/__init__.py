@@ -39,7 +39,11 @@ def start(args):
     app = make_app(args.project_dir)
     logging.basicConfig(level=logging.INFO,
                         format='%(name)s @ %(levelname)s: %(message)s')
-    waitress.serve(app, listen='127.0.0.1:48164')
+    host, port = '127.0.0.1', 48164
+    if args.debug:
+        app.run(host, port, debug=True)
+    else:
+        waitress.serve(app, listen=f'{host}:{port}')
 
 def clean(project_dir: Path):
     signals.send_clean()
@@ -52,6 +56,7 @@ def main():
     subcommands = parser.add_subparsers()
 
     start_parser = subcommands.add_parser('start')
+    start_parser.add_argument('--debug', action = 'store_true')
     start_parser.set_defaults(subcommand = start)
 
     clean_parser = subcommands.add_parser('clean')
