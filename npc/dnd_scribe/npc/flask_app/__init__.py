@@ -56,6 +56,8 @@ def create_app(instance_path: str | Path):
         if 'current_npc' in flask.session:
             npc: Entity = flask.session['current_npc']
             path = npcs/f"{npc.name}.json"
+            if path.exists():
+                raise Forbidden(f'{npc.name} is already in use')
             path.write_text(flask.json.dumps(npc.for_display(order=[
                 Features.NAME, Features.AGE, Features.RACE, Features.SUBRACE,
                 Features.SEX, Features.HEIGHT, Features.WEIGHT,
