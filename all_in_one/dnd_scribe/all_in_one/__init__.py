@@ -1,5 +1,7 @@
+import importlib.resources
 import logging
 import shutil
+import zipfile
 from argparse import ArgumentParser
 from http import HTTPStatus
 from pathlib import Path
@@ -35,8 +37,26 @@ def make_app(project_dir: str | Path):
         return '', HTTPStatus.NO_CONTENT
     return app
 
+def check_structure(project_dir: Path) -> bool:
+    issues = []
+    if not project_dir.exists():
+        issues.append(f'Does not exist')
+    else:
+        if not (project_dir/'pages').exists():
+            issues.append(f'{project_dir.absolute()}/pages does not exist')
+        if not (project_dir/'config.py').exists():
+            issues.append(f'{project_dir.absolute()}/config.py does not exist')
+    if issues:
+        print(f'{project_dir.absolute()} is not a valid dnd_scribe project:')
+        for issue in issues:
+            print(f'\t{issue}')
+        return False
+    return True
+
 def start(args):
-    app = make_app(args.project_dir)
+    if not check_structure(args.project):
+        return
+    app = make_app(args.project)
     logging.basicConfig(level=logging.INFO,
                         format='%(name)s @ %(levelname)s: %(message)s')
     host, port = '127.0.0.1', 48164
@@ -46,13 +66,24 @@ def start(args):
         waitress.serve(app, listen=f'{host}:{port}')
 
 def clean(project_dir: Path):
+    if not check_structure(project_dir):
+        return
     signals.send_clean()
     if (project_dir/'_build').exists():
         shutil.rmtree(project_dir/'_build')
 
+def new(project_dir: Path):
+    if not project_dir.exists():
+        project_dir.mkdir()
+    with importlib.resources.path('dnd_scribe.all_in_one',
+                                  'project_template.zip') as template:
+        with zipfile.ZipFile(template) as template:
+            template.extractall(project_dir)
+
 def main():
     parser = ArgumentParser('dnd_scribe.all_in_one')
-    parser.add_argument('project_dir', type=Path)
+    parser.add_argument('-p', '--project', type=Path, default=Path.cwd())
+    parser.set_defaults(subcommand = lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
 
     start_parser = subcommands.add_parser('start')
@@ -60,6 +91,10 @@ def main():
     start_parser.set_defaults(subcommand = start)
 
     clean_parser = subcommands.add_parser('clean')
-    clean_parser.set_defaults(subcommand = lambda args: clean(args.project_dir))
+    clean_parser.set_defaults(subcommand = lambda args: clean(args.project))
+
+    new_parser = subcommands.add_parser('new')
+    new_parser.set_defaults(subcommand = lambda args: new(args.project))
+
     args = parser.parse_args()
     args.subcommand(args)
