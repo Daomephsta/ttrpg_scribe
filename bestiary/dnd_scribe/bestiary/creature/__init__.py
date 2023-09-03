@@ -1,6 +1,7 @@
 import math
 import re
-from typing import Any, Callable, Iterable, Required, TypedDict, Unpack
+from typing import (Any, Callable, Iterable, Required, TypedDict, TypeVar,
+                    Unpack, cast)
 
 from pluralizer import Pluralizer
 
@@ -160,6 +161,7 @@ class Creature:
             'lore': self.lore
         }
 
+    P = TypeVar('P')
     @staticmethod
     def from_json(json):
         return Creature(
@@ -168,11 +170,11 @@ class Creature:
             type = json['type'],
             alignment = json['alignment'],
             ac = [ArmourClass.from_json(ac_data) for ac_data in json['ac']],
-            hp = tuple(json['hp']),
+            hp = cast(tuple[int, int], tuple(json['hp'])),
             default_hp = Constant(json['default_hp']) if isinstance(json['default_hp'], int)
                 else getattr(Creature, json['default_hp']),
             speeds = [Movement.from_json(speed) for speed in json['speeds']],
-            statistics = tuple(json['statistics']),
+            statistics = cast(Creature.Statistics, tuple(json['statistics'])),
             cr = json['cr'],
             saves = [Ability.from_json(save) for save in json['saves']],
             skill_profs = [(Skill.from_json(skill), mod)
@@ -182,10 +184,14 @@ class Creature:
             immunities = json['immunities'],
             senses = [Sense.from_json(sense) for sense in json['senses']],
             languages = json['languages'],
-            traits = [tuple(trait) for trait in json['traits']],
-            actions = [tuple(action) for action in json['actions']],
-            bonus_actions = [tuple(action) for action in json['bonus_actions']],
-            reactions = [tuple(action) for action in json['reactions']],
+            traits = [cast(Creature.Trait, tuple(trait))
+                for trait in json['traits']],
+            actions = [cast(Creature.Action, tuple(action))
+                for action in json['actions']],
+            bonus_actions = [cast(Creature.Action, tuple(action))
+                for action in json['bonus_actions']],
+            reactions = [cast(Creature.Action, tuple(action))
+                for action in json['reactions']],
             lore = json['lore']
         )
 

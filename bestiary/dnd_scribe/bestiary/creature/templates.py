@@ -1,4 +1,4 @@
-from typing import Callable, TypedDict, Unpack
+from typing import Callable, TypedDict, Unpack, cast
 
 from dnd_scribe.bestiary.creature import Creature, ability
 from dnd_scribe.bestiary.creature.ability import Ability
@@ -10,8 +10,9 @@ def adjust_scores(abilities: set[str], adjuster: Callable[[str, int], int]):
     filtered_adjuster = lambda ability, value: (adjuster(ability, value)\
         if ability in abilities else value)
     def template(args: Creature.TemplateArgs):
-        args['statistics'] = tuple(filtered_adjuster(ability.abbreviation, value)
-            for ability, value in zip(Ability, args['statistics']))
+        args['statistics'] = cast(Creature.Statistics,
+            tuple(filtered_adjuster(ability.abbreviation, value)
+            for ability, value in zip(Ability, args['statistics'])))
     return template
 
 def civilised(args: Creature.TemplateArgs):
