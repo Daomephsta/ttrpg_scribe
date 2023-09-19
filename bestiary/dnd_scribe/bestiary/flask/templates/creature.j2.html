@@ -56,27 +56,27 @@
         <strong>Challenge</strong> {{ creature.str_cr() }} ({{ creature.xp }} XP)<br/>
         <hr/>
         {% for trait, desc in creature.traits %}
-        <em><strong>{{ trait }}</strong></em>. {{ desc | markdown }}<br/>
+        <em><strong>{{ trait }}</strong></em>. {{ desc | inline_markdown }}<br/>
         {% endfor %}
         <p class="actions_heading">Actions</p>
         {% for action, desc in creature.actions %}
-        <em><strong>{{ action }}</strong></em>. {{ desc | markdown }}<br/>
+        <em><strong>{{ action }}</strong></em>. {{ desc | inline_markdown }}<br/>
         {% endfor %}
         {% if creature.bonus_actions %}
             <p class="actions_heading">Bonus Actions</p>
             {% for action, desc in creature.bonus_actions %}
-            <em><strong>{{ action }}</strong></em>. {{ desc | markdown }}<br/>
+            <em><strong>{{ action }}</strong></em>. {{ desc | inline_markdown }}<br/>
             {% endfor %}
         {% endif %}
         {% if creature.reactions %}
             <p class="actions_heading">Reactions</p>
             {% for action, desc in creature.reactions %}
-            <em><strong>{{ action }}</strong></em>. {{ desc | markdown }}<br/>
+            <em><strong>{{ action }}</strong></em>. {{ desc | inline_markdown }}<br/>
             {% endfor %}
         {% endif %}
         {% if creature.lore %}
         <hr/>
-        {{ creature.lore | markdown }}
+        {{ creature.lore | block_markdown }}
         {% endif %}
     {% if collapsible %}
     </div>

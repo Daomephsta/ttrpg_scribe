@@ -34,7 +34,12 @@ def handle_exception(ex: Exception):
     return ''.join(traceback.format_exception_only(type(ex), ex))
 
 @_blueprint.app_template_filter()
-def markdown(s: str):
+def block_markdown(s: str):
     md = dnd_scribe.core.markdown.renderer.convert(s)
-    return Markup('\n'.join(line.removeprefix('<p>').removesuffix('</p>')
-             for line in md.splitlines()))
+    return Markup('\n'.join(md.splitlines()))
+
+@_blueprint.app_template_filter()
+def inline_markdown(s: str):
+    md = dnd_scribe.core.markdown.renderer.convert(s)
+    return Markup('\n'.join(line.removeprefix('<p>').removesuffix('</p>') 
+        for line in md.splitlines()))
