@@ -1,23 +1,34 @@
-from typing import Callable, TypedDict, Unpack, cast
+from typing import Callable, TypedDict, Unpack
 
 from dnd_scribe.bestiary.creature import Creature, ability
-from dnd_scribe.bestiary.creature.ability import Ability
 from dnd_scribe.bestiary.creature.armour import ArmourClass
 
+Score = int | Callable[[int], int]
+Scores = TypedDict('Scores', {'str': Score, 'dex': Score, 'con': Score, 'int': Score, 'wis': Score, 'cha': Score}, total=False)
+def scores(**values: Unpack[Scores]):
+    def template(creature: Creature.TemplateArgs):
+        def adjust_score(ability: str, current: int) -> int:
+            if ability not in values:
+                return current
+            return values[ability] if isinstance(values[ability], int)\
+                else values[ability](current)
 
-def adjust_scores(abilities: set[str], adjuster: Callable[[str, int], int]):
-    # Apply filter to adjuster
-    filtered_adjuster = lambda ability, value: (adjuster(ability, value)\
-        if ability in abilities else value)
-    def template(args: Creature.TemplateArgs):
-        args['statistics'] = cast(Creature.Statistics,
-            tuple(filtered_adjuster(ability.abbreviation, value)
-            for ability, value in zip(Ability, args['statistics'])))
+        str, dex, con, int, wis, cha = values
+        creature['statistics'] = (
+            adjust_score('str', str),
+            adjust_score('dex', dex),
+            adjust_score('con', con),
+            adjust_score('int', int),
+            adjust_score('wis', wis),
+            adjust_score('cha', cha),
+        )
     return template
 
-Scores = TypedDict('Scores', {'str': int, 'dex': int, 'con': int, 'int': int, 'wis': int, 'cha': int}, total=False)
-def scores(**values: Unpack[Scores]):
-    return adjust_scores(set(values.keys()), values.get)
+def score(modifier: int, fallback: int=0) -> Callable[[int], int]:
+    if modifier >= 0:
+        return lambda value: min(value + modifier, 20)
+    else:
+        return lambda value: max(max(fallback, 0), value + modifier)
 
 def armour(base_ac: int, reason: str, dex_limit: int = 10):
     def template(args: Creature.TemplateArgs):
