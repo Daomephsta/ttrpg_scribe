@@ -15,10 +15,6 @@ def adjust_scores(abilities: set[str], adjuster: Callable[[str, int], int]):
             for ability, value in zip(Ability, args['statistics'])))
     return template
 
-def civilised(args: Creature.TemplateArgs):
-    args['name'] = f"'Civilised' {args['name']}"
-    adjust_scores({'int'}, lambda _, val: max(6, val))(args)
-
 Scores = TypedDict('Scores', {'str': int, 'dex': int, 'con': int, 'int': int, 'wis': int, 'cha': int}, total=False)
 def scores(**values: Unpack[Scores]):
     return adjust_scores(set(values.keys()), values.get)
