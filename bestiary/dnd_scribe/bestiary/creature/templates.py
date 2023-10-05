@@ -1,7 +1,14 @@
-from typing import Callable, TypedDict, Unpack
+from typing import Callable, Iterable, TypedDict, Unpack
 
 from dnd_scribe.bestiary.creature import Creature, ability
 from dnd_scribe.bestiary.creature.armour import ArmourClass
+
+
+def compose(*templates: Creature.Template) -> Creature.Template:
+    def composed(creature: Creature.TemplateArgs):
+        for template in templates:
+            template(creature)
+    return composed
 
 Score = int | Callable[[int], int]
 Scores = TypedDict('Scores', {'str': Score, 'dex': Score, 'con': Score, 'int': Score, 'wis': Score, 'cha': Score}, total=False)
@@ -24,11 +31,11 @@ def scores(**values: Unpack[Scores]):
         )
     return template
 
-def score(modifier: int, fallback: int=0) -> Callable[[int], int]:
-    if modifier >= 0:
-        return lambda value: min(value + modifier, 20)
-    else:
-        return lambda value: max(max(fallback, 0), value + modifier)
+def bonus(modifier: int, limit: int = 20) -> Callable[[int], int]:
+    return lambda value: min(value + modifier, limit)
+
+def malus(modifier: int, fallback: int = 0) -> Callable[[int], int]:
+    return lambda value: max(max(fallback, 0), value + modifier)
 
 def armour(base_ac: int, reason: str, dex_limit: int = 10):
     def template(args: Creature.TemplateArgs):
