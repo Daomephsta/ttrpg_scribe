@@ -20,12 +20,12 @@ def scores(**values: Unpack[Scores]):
             return values[ability] if isinstance(values[ability], int)\
                 else values[ability](current)
 
-        str, dex, con, int, wis, cha = values
+        str_, dex, con, int_, wis, cha = creature['statistics']
         creature['statistics'] = (
-            adjust_score('str', str),
+            adjust_score('str', str_),
             adjust_score('dex', dex),
             adjust_score('con', con),
-            adjust_score('int', int),
+            adjust_score('int', int_),
             adjust_score('wis', wis),
             adjust_score('cha', cha),
         )
