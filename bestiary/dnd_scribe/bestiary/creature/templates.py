@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, TypedDict, Unpack
+from typing import Callable, TypedDict, Unpack
 
 from dnd_scribe.bestiary.creature import Creature, ability
 from dnd_scribe.bestiary.creature.armour import ArmourClass
@@ -64,3 +64,24 @@ ring_mail_armour = armour(1, 'ring mail')
 chain_mail_armour = armour(1, 'chain mail')
 splint_armour = armour(1, 'splint')
 plate_armour = armour(1, 'plate')
+
+def rename(full: str, *other_names: tuple[str, str]):
+    replacements = list(other_names)
+    def process(target: str) -> str:
+        for replacement in replacements:
+            target = target.replace(*replacement)
+        return target
+    def process_feature(x: Creature.Feature):
+        match x:
+            case (n, d):
+                return process(n), process(d)
+            case _ as template:
+                return lambda creature: process_feature(template(creature))
+    def template(creature: Creature.TemplateArgs):
+        for case in [str.lower, str.title]:
+            replacements.append((case(creature['name']), case(full)))
+        creature['name'] = full
+        for feature in ['traits', 'actions', 'bonus_actions', 'reactions']:
+            creature[feature] = [process_feature(x) for x in creature[feature]]
+        creature['lore'] = process(creature['lore'])
+    return template

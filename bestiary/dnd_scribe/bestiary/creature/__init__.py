@@ -1,6 +1,7 @@
+import json
 import math
 import re
-from typing import (Any, Callable, Iterable, Required, TypedDict, TypeVar,
+from typing import (Any, Callable, Iterable, TypeAlias, TypedDict, TypeVar,
                     Unpack, cast)
 
 from pluralizer import Pluralizer
@@ -21,8 +22,9 @@ class Creature:
     PLURALIZER = Pluralizer()
     DefaultHp = Callable[['Creature'], int]
     Statistics = tuple[int, int, int, int, int, int]
-    Trait = tuple[str, str] | Callable[['Creature'], tuple[str, str]]
-    Action = tuple[str, str] | Callable[['Creature'], tuple[str, str]]
+    Feature = tuple[str, str] | Callable[['Creature'], tuple[str, str]]
+    Trait = Feature
+    Action = Feature
     TemplateArgs = TypedDict('TemplateArgs', {'name': str, 'size': str, 'type': str, 'alignment': str, 'ac': int | list[ArmourClass], 'hp': tuple[int, int], 'speeds': Iterable[Movement], 'statistics': Statistics, 'cr': float, 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[Trait], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': DefaultHp | int, 'lore': str},
                              total=True)
     ConstructorArgs = TypedDict('ConstructorArgs', {'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[Trait], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': DefaultHp | int, 'lore': str},
