@@ -195,6 +195,14 @@ class Creature:
             lore = json['lore']
         )
 
+    def pretty_print(self) -> str:
+        def default(o):
+            if hasattr(o, 'to_json'):
+                return o.to_json()
+            else:
+                raise TypeError(f'{o} doesn\'t define to_json()')
+        return json.dumps(self, indent=1, default=default)
+
     def str_hp(self):
         count, size = self.hp
         con_bonus = count * mod(self.con)
