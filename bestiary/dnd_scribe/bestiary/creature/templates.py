@@ -38,10 +38,29 @@ def malus(modifier: int, fallback: int = 0) -> Callable[[int], int]:
     return lambda value: max(max(fallback, 0), value + modifier)
 
 def armour(base_ac: int, reason: str, dex_limit: int = 10):
-    def template(args: Creature.TemplateArgs):
-        ac = base_ac + min(dex_limit, ability.mod(args['statistics'][1]))
-        args['ac'] = [ArmourClass(ac, f'{ac} ({reason})')]
-    return template
+    def template_factory(shield: bool=False):
+        def template(args: Creature.TemplateArgs):
+            ac = base_ac + min(dex_limit, ability.mod(args['statistics'][1]))
+            if shield:
+                ac += 2
+                args['ac'] = [ArmourClass(ac, f'{ac} ({reason}, shield)')]
+            else:
+                args['ac'] = [ArmourClass(ac, f'{ac} ({reason})')]
+        return template
+    return template_factory
 
+# Light armour
+padded_armour = armour(11, 'padded')
 leather_armour = armour(11, 'leather')
 studded_leather_armour = armour(12, 'studded leather')
+# Medium armour
+hide_armour = armour(12, 'hide')
+chain_shirt_armour = armour(13, 'chain shirt', dex_limit=2)
+scale_mail_armour = armour(14, 'scale mail', dex_limit=2)
+breastplate_armour = armour(14, 'breastplate', dex_limit=2)
+half_plate_armour = armour(15, 'half plate', dex_limit=2)
+# Heavy armour
+ring_mail_armour = armour(1, 'ring mail')
+chain_mail_armour = armour(1, 'chain mail')
+splint_armour = armour(1, 'splint')
+plate_armour = armour(1, 'plate')
