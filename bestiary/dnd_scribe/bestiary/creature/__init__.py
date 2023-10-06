@@ -88,7 +88,7 @@ class Creature:
 
     Template = Callable[[TemplateArgs], None]
 
-    def derive(self, merge: dict[str, Any]={}, templates: list[Template]=[],
+    def derive(self, *templates: Template, merge: dict[str, Any]={},
                **overrides: Unpack[DeriveArgs]):
         args: Creature.TemplateArgs = {
             'name': self.name,
