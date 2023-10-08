@@ -4,19 +4,24 @@ from abc import ABCMeta, abstractmethod
 from functools import cache
 from http import HTTPStatus
 from pathlib import Path
+import re
 from typing import Any, Callable, Generic, Never, TypeAlias, TypeVar
 
 import flask
 from requests import Session
 from requests_cache import CachedSession
 
+from dnd_scribe.bestiary.creature import Creature
+from dnd_scribe.bestiary.creature.ability import Ability, Skill
+from dnd_scribe.bestiary.creature.armour import ArmourClass
+from dnd_scribe.bestiary.creature.movement import Movement
+from dnd_scribe.bestiary.creature.sense import Sense
 from dnd_scribe.core import signals
-
-from .creature import *
 
 T = TypeVar('T')
 ErrorHandler: TypeAlias = Callable[[Exception], T]
 Template: TypeAlias = Callable[[Creature], None]
+
 
 @cache
 def cache_dir():
@@ -24,6 +29,7 @@ def cache_dir():
         return Path(flask.current_app.instance_path)/'_build/cache'
     else:
         return Path.cwd()/'_build/cache'
+
 
 class Api(Generic[T], metaclass=ABCMeta):
     def __init__(self, error_handler: ErrorHandler[T]) -> None:
@@ -33,12 +39,14 @@ class Api(Generic[T], metaclass=ABCMeta):
     def creature(self, index: str) -> Creature | T:
         raise NotImplementedError
 
+
 class HttpApi(Api[T], metaclass=ABCMeta):
     base_url: str
     __session: Session | None = None
 
     def __init__(self, error_handler: Callable[[Exception], T]) -> None:
         super().__init__(error_handler)
+
         def clean(sender):
             self.session().close()
             self.__session = None
@@ -63,7 +71,9 @@ class HttpApi(Api[T], metaclass=ABCMeta):
         except Exception as ex:
             return self.error_handler(ex)
         if response.status_code != HTTPStatus.OK:
-            return self.error_handler(KeyError(f'{url} returned {response.status_code} {response.reason}', response.status_code))
+            return self.error_handler(
+                KeyError(f'{url} returned {response.status_code} {response.reason}',
+                         response.status_code))
         data = response.json()
 
         try:
@@ -75,6 +85,7 @@ class HttpApi(Api[T], metaclass=ABCMeta):
     @abstractmethod
     def _parse_creature_data(self, data: dict[str, Any]) -> dict[str, Any]:
         raise NotImplementedError
+
 
 class Dnd5eApi(HttpApi[T]):
     base_url = 'https://www.dnd5eapi.co/api/monsters/'
@@ -96,28 +107,27 @@ class Dnd5eApi(HttpApi[T]):
             if not name == 'passive_perception']
         traits = [(trait['name'], trait['desc'])
             for trait in data['special_abilities']]
-        actions = [(action['name'],action['desc'])
+        actions = [(action['name'], action['desc'])
             for action in data['actions']]
 
         def parse_ac(ac_data: dict[str, Any]) -> ArmourClass:
             value = ac_data['value']
-            def desc() -> str:
-                match ac_data['type']:
-                    case 'dex':
-                        return ac_data.get('desc', str(value))
-                    case 'natural':
-                        return ac_data.get('desc', f'{value} (Natural Armor)')
-                    case 'armor':
-                        if 'desc' in ac_data:
-                            return ac_data['desc']
-                        armor = ', '.join(armor['name'] for armor in ac_data['armor'])
-                        return f'{value} ({armor})'
-                    case ('condition' | 'spell') as type:
-                        condition = ac_data[type]['name']
-                        return ac_data.get('desc', f'{value} ({condition})')
-                    case type:
-                        raise ValueError(f'Unknown AC type {type}')
-            return ArmourClass(value, desc())
+            match ac_data['type']:
+                case 'dex':
+                    desc = ac_data.get('desc', str(value))
+                case 'natural':
+                    desc = ac_data.get('desc', f'{value} (Natural Armor)')
+                case 'armor':
+                    if 'desc' in ac_data:
+                        desc = ac_data['desc']
+                    armor = ', '.join(armor['name'] for armor in ac_data['armor'])
+                    desc = f'{value} ({armor})'
+                case ('condition' | 'spell') as type:
+                    condition = ac_data[type]['name']
+                    desc = ac_data.get('desc', f'{value} ({condition})')
+                case type:
+                    raise ValueError(f'Unknown AC type {type}')
+            return ArmourClass(value, desc)
 
         return {
             'name': data['name'].lower(),
@@ -145,11 +155,14 @@ class Dnd5eApi(HttpApi[T]):
             'actions': actions
         }
 
+
 def return_error(ex: Exception) -> Exception:
     return ex
 
+
 def raise_error(ex: Exception) -> Never:
     raise ex
+
 
 # For use by helper scripts
 DND5EAPI = Dnd5eApi(raise_error)

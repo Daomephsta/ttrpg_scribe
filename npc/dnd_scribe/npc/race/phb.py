@@ -15,6 +15,7 @@ HALF_ELF = Race('Half-Elf', ['Gender', 'Group'],
 HALF_ORC = Race('Half-Orc', ['Gender', 'Group'],
     namelists.combine(namelists.Human, namelists.Orc))
 DRAGONBORN = Race('Dragonborn', ['Gender', 'Child', 'Group'], namelists.Dragonborn,
-    subraces={'Black': {}, 'Blue': {}, 'Green': {}, 'Red': {}, 'White': {}, 'Brass': {}, 'Bronze': {}, 'Copper': {}, 'Gold': {}, 'Silver': {}})
+    subraces={'Black': {}, 'Blue': {}, 'Green': {}, 'Red': {}, 'White': {},
+              'Brass': {}, 'Bronze': {}, 'Copper': {}, 'Gold': {}, 'Silver': {}})
 TIEFLING = Race('Tiefling', [['Gender', 'Virtue'], 'Group'],
     namelists.combine(namelists.Tiefling, namelists.Human))

@@ -15,9 +15,9 @@ def create_app(instance_path: str | Path):
         instance_path=instance_path,
         instance_relative_config=True)
     app.config.from_pyfile('config.py')
-    app.config.update(SESSION_TYPE = 'filesystem',
-                      SESSION_PERMANENT = False,
-                      SESSION_FILE_DIR = f'{instance_path}/_build/_session')
+    app.config.update(SESSION_TYPE='filesystem',
+                      SESSION_PERMANENT=False,
+                      SESSION_FILE_DIR=f'{instance_path}/_build/_session')
     Session().init_app(app)
     dnd_scribe.core.flask.extend(app)
     npc_generator = EntityGenerator(config=app.config)
@@ -77,8 +77,8 @@ def create_app(instance_path: str | Path):
         path = npcs/f'{name}.json'
         if not path.exists():
             raise NotFound(f'No NPC named {name}')
-        npc=[tuple(pair) for pair in flask.json.loads(path.read_text())]
-        [name]=[v for f, v in npc if f == 'Name']
+        npc = [tuple(pair) for pair in flask.json.loads(path.read_text())]
+        [name] = [v for f, v in npc if f == 'Name']
         return flask.render_template('npc.j2.html', name=name, npc=npc)
 
     return app

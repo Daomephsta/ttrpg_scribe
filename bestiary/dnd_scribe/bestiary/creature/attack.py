@@ -3,14 +3,15 @@ from dnd_scribe.core.dice import Dice, d
 from . import Creature
 from .ability import DEX, STR, Ability
 
-DamageType: TypeAlias = Literal['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder']
+DamageType: TypeAlias = Literal['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder']  # noqa: E501
+
 
 class Attack:
     default_ability = STR
 
-    def __init__(self, name: str, dice: Dice, type: DamageType, ability: Ability | None,
-        attack: int, damage_bonus: int, range: str, extra: str):
-
+    def __init__(self, name: str, dice: Dice, type: DamageType,
+                 ability: Ability | None, attack: int, damage_bonus: int,
+                 range: str, extra: str):
         self.name = name
         self.dice = dice
         self.type = type
@@ -21,7 +22,7 @@ class Attack:
         self.extra = extra
 
     def describe(self, attack_mod: int, damage: str) -> str:
-        raise NotImplemented
+        raise NotImplementedError
 
     def __call__(self, creature: Creature) -> tuple[str, str]:
         if self.damage_bonus:
@@ -39,10 +40,11 @@ class Attack:
             desc += '.'
         return (self.name, desc)
 
+
 class Melee(Attack):
     def __init__(self, name: str, dice: Dice, type: DamageType,
-        ability: Ability | None = None, attack: int = 0, damage_bonus: int = 0,
-        reach: int = 5, extra: str = ''):
+                 ability: Ability | None = None, attack: int = 0,
+                 damage_bonus: int = 0, reach: int = 5, extra: str = ''):
 
         super().__init__(name, dice, type, ability, attack, damage_bonus,
             f'{reach} ft.', extra)
@@ -51,12 +53,13 @@ class Melee(Attack):
         return f'*Melee Weapon Attack*: {attack_mod:+d} to hit, '\
                f'reach {self.range}, one target. *Hit*: {damage} damage'
 
+
 class Ranged(Attack):
     default_ability = DEX
 
-    def __init__(self, name: str, range: tuple[int, int], dice: Dice, type: DamageType,
-        ability: Ability | None = None, attack: int = 0, damage_bonus: int = 0,
-        extra: str = ''):
+    def __init__(self, name: str, range: tuple[int, int], dice: Dice,
+                 type: DamageType, ability: Ability | None = None,
+                 attack: int = 0, damage_bonus: int = 0, extra: str = ''):
 
         super().__init__(name, dice, type, ability,  attack, damage_bonus,
             f"{range[0]}/{range[1]} ft.", extra)
@@ -64,6 +67,7 @@ class Ranged(Attack):
     def describe(self, attack_mod: int, damage: str) -> str:
         return f'*Ranged Weapon Attack*: {attack_mod:+d} to hit, '\
                f'range {self.range}, one target. *Hit*: {damage} damage'
+
 
 def thrown(name: str, range: tuple[int, int], dice: Dice, type: DamageType):
     def weapon(ability: Ability = DEX) -> list[Attack]:
@@ -73,11 +77,13 @@ def thrown(name: str, range: tuple[int, int], dice: Dice, type: DamageType):
         ]
     return weapon
 
+
 def versatile(name: str, dice_1h: Dice, dice_2h: Dice, type: DamageType):
     return [
         Melee(f'{name} (1H)', dice_1h, type),
         Melee(f'{name} (2H)', dice_2h, type),
     ]
+
 
 # Simple Melee Weapons
 club = Melee('Club', d(4), 'bludgeoning')
@@ -90,16 +96,18 @@ mace = Melee('Mace', d(6), 'bludgeoning')
 quarterstaff = versatile('Quarterstaff', d(6), d(8), 'bludgeoning')
 sickle = Melee('Sickle', d(4), 'slashing')
 spear = [
-    Melee(f'Spear (1H)', d(6), 'piercing'),
+    Melee('Spear (1H)', d(6), 'piercing'),
     Melee('Spear (2H)', d(8), 'piercing'),
     Ranged('Throw Spear', (20, 60), d(6), 'piercing', STR)
 ]
+
 # Simple Ranged Weapons
 light_crossbow = Ranged('Light Crossbow', (80, 320), d(8), 'piercing')
-def dart(ability: Ability = DEX):
+def dart(ability: Ability = DEX):  # noqa: E302
     return Ranged('Dart', (20, 60), d(4), 'piercing', ability)
-shortbow = Ranged('Shortbow', (80, 320), d(6), 'piercing')
+shortbow = Ranged('Shortbow', (80, 320), d(6), 'piercing')  # noqa: E305
 sling = Ranged('Sling', (30, 120), d(4), 'bludgeoning')
+
 # Martial Melee Weapons
 battleaxe = versatile('Battleaxe', d(8), d(10), 'slashing')
 flail = Melee('Flail', d(8), 'bludgeoning')
@@ -112,22 +120,23 @@ longsword = Melee('Longsword', d(8), 'slashing')
 maul = Melee('Maul', 2 * d(6), 'bludgeoning')
 morningstar = Melee('Morningstar', 1 * d(8), 'piercing')
 pike = Melee('Pike', 1 * d(10), 'piercing')
-def rapier(ability: Ability = DEX):
+def rapier(ability: Ability = DEX):  # noqa: E302
     return Melee('Rapier', 1 * d(8), 'piercing', ability)
-def scimitar(ability: Ability = DEX):
+def scimitar(ability: Ability = DEX):  # noqa: E302
     return Melee('Scimitar', 1 * d(6), 'slashing', ability)
-def shortsword(ability: Ability = DEX):
+def shortsword(ability: Ability = DEX):  # noqa: E302
     return Melee('Shortsword', 1 * d(6), 'piercing', ability)
-trident = [
-    Melee(f'Trident (1H)', d(6), 'piercing'),
+trident = [  # noqa: E305
+    Melee('Trident (1H)', d(6), 'piercing'),
     Melee('Trident (2H)', d(8), 'piercing'),
     Ranged('Throw Trident', (20, 60), d(6), 'piercing', STR)
 ]
 war_pick = Melee('War pick', 1 * d(8), 'piercing')
 warhammer = versatile('Warhammer', d(8), d(10), 'bludgeoning')
-def whip(ability: Ability = DEX):
+def whip(ability: Ability = DEX):  # noqa: E302
     return Melee('Whip', 1 * d(4), 'slashing', ability)
+
 # Martial Ranged Weapons
-hand_crossbow = Ranged('Hand crossbow', (30, 120), d(6), 'piercing')
+hand_crossbow = Ranged('Hand crossbow', (30, 120), d(6), 'piercing')  # noqa: E305
 heavy_crossbow = Ranged('Heavy crossbow', (100, 400), d(10), 'piercing')
 longbow = Ranged('Longbow', (150, 600), d(8), 'piercing')

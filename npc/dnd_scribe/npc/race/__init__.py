@@ -5,6 +5,7 @@ from dnd_scribe.npc.character import Sex
 
 BY_NAME: dict[str, 'Race'] = {}
 
+
 class Subrace:
     def __init__(self, parent: 'Race', subname: str) -> None:
         self.parent = parent
@@ -19,8 +20,10 @@ class Subrace:
 
     __repr__ = __str__
 
+
 class Namer:
     Format = list[str | list[str]]
+
     def __init__(self, format: Format, names: Mapping[str, list[str]]):
         self.format = format
         self.names = names
@@ -36,6 +39,7 @@ class Namer:
                     return part_type(rng.choice(part))
         return ' '.join(rng.choice(self.names[part_type(part)])
             for part in self.format)
+
 
 class Race:
     name: str
@@ -53,7 +57,8 @@ class Race:
         BY_NAME[name] = self
 
     def derive(self, **overrides) -> Self:
-        return Race(name=self.name, format=self.namer.format, names=self.namer.names, subraces={**self.subraces})
+        return Race(name=self.name, format=self.namer.format,
+                    names=self.namer.names, subraces={**self.subraces})
 
     def gen_name(self, sex: Sex, rng: Random) -> str:
         return self.namer.name(sex, rng)

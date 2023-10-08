@@ -20,8 +20,8 @@ class Notes(flask.Flask):
             instance_path=project_dir.absolute().as_posix(),
             instance_relative_config=True)
         self.jinja_options.update(
-            trim_blocks = True,
-            lstrip_blocks = True)
+            trim_blocks=True,
+            lstrip_blocks=True)
         self.config.from_pyfile('config.py')
 
     @cached_property
@@ -32,6 +32,7 @@ class Notes(flask.Flask):
             super_loader,
             FileSystemLoader([paths.pages(), paths.templates()])
         ])
+
 
 def create_app(project_dir: str | Path | None = None):
     app = Notes(Path(project_dir) if project_dir else Path.cwd())
@@ -54,18 +55,20 @@ def create_app(project_dir: str | Path | None = None):
             assert selected.name is not None
         except TemplateNotFound as e:
             tried = ', '.join(str(paths.pages()/template)
-                                      for template in templates)
+                              for template in templates)
             # Can be an error with other templates
             if e.templates == templates:
                 return flask.abort(HTTPStatus.NOT_FOUND,
                     description=f"None of [{tried}] found")
             else:
                 raise
+
         def dump(folder: str, extension: str):
             if os.getenv(f'DND_SCRIBE_DUMP_{extension.upper()}') == '1':
                 dump = paths.build()/f'{folder}/{page}.{extension}'
                 dump.parent.mkdir(parents=True, exist_ok=True)
                 dump.write_text(rendered)
+
         rendered = flask.render_template(selected,
             script=data_script.bind(selected.name))
         if selected.name.endswith('.md'):
@@ -77,7 +80,7 @@ def create_app(project_dir: str | Path | None = None):
     def assets(asset: str):
         try:
             return flask.send_from_directory(paths.assets(), asset)
-        except NotFound as e:
+        except NotFound:
             raise NotFound(f'{asset} not found in {paths.assets()}')
 
     return app

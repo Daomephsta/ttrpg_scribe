@@ -25,13 +25,16 @@ class Sense:
 
     def __str__(self) -> str:
         return f'{self.name} {self.range} ft. {self.condition}'\
-        if self.condition else f'{self.name} {self.range} ft.'
+            if self.condition else f'{self.name} {self.range} ft.'
+
 
 def Blindsight(range: int):
     return Sense('Blindsight', range)
 
+
 def Darkvision(range: int):
     return Sense('Darkvision', range)
+
 
 def Truesight(range: int):
     return Sense('Truesight', range)

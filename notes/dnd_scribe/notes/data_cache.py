@@ -10,12 +10,16 @@ from dnd_scribe.notes import paths
 def FILE_TIMES():
     return paths.build()/'file_times.cache'
 
+
 _file_times: dict[Path, float] = {}
+
+
 def file_times():
     global _file_times
     if not _file_times and FILE_TIMES().exists():
         _file_times = pickle.loads(FILE_TIMES().read_bytes())
     return _file_times
+
 
 class DataCache:
     def __init__(self, cache: Path, dependencies: set[Path]) -> None:
@@ -54,6 +58,7 @@ class DataCache:
                 self.cache.write_bytes(pickle.dumps(self.data))
             FILE_TIMES().write_bytes(pickle.dumps(file_times()))
         return False
+
 
 def for_file(name: str, *dependencies: Path) -> DataCache:
     cache = paths.build()/f'{name}.data'

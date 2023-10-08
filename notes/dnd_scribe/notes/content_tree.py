@@ -12,6 +12,7 @@ from dnd_scribe.notes import paths
 class Content:
     relative_path: str
     title: str
+
     class Type(Enum):
         Directory = auto()
         File = auto()
@@ -31,6 +32,7 @@ class Content:
         self.children = {}
 
     HTML_TITLE = re.compile(r'<title>(.+)<\/title>')
+
     def __find_title(self, path: Path) -> str:
         match path.suffixes:
             case ['.j2', '.md']:
@@ -52,6 +54,7 @@ class Content:
 
     def __iter__(self):
         return iter(self.children.items())
+
 
 def walk() -> Content:
     def walk_subtree(dir: Path, subtree: Content):

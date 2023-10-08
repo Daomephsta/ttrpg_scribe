@@ -13,16 +13,20 @@ renderer = Markdown(extensions=['attr_list', 'md_in_html', 'tables',
     TocExtension(marker='')],
     output_format='html')
 
+
 def find_title(markdown: str):
     match = MD_HEADER.search(markdown)
     return match.group(1) if match else None
+
 
 class Metadata(TypedDict):
     layout: str
     extra_scripts: list[str | dict]
     extra_stylesheets: list[str]
 
+
 E = TypeVar('E')
+
 
 def parse_metadata(metadata: dict[str, Any]) -> Metadata:
     def as_list(name: str, element_type: type[E], default: list[E]) -> list[E]:
@@ -36,7 +40,7 @@ def parse_metadata(metadata: dict[str, Any]) -> Metadata:
                 if type_errors:
                     args = ', '.join(str(e) for e in type_errors)
                     arg_types = ', '.join(type(e).__name__ for e in type_errors)
-                    raise TypeError(f'Elements [{args}] in {name} must each be'\
+                    raise TypeError(f'Elements [{args}] in {name} must each be'
                                     f' {element_type} not [{arg_types}]')
                 return candidate
             case _:
@@ -48,12 +52,13 @@ def parse_metadata(metadata: dict[str, Any]) -> Metadata:
         'extra_stylesheets': as_list('extra_stylesheets', str, []),
     }
 
+
 def render(markdown: str):
     metadata, markdown = frontmatter.parse(markdown)
     html_fragment = renderer.convert(markdown)
     metadata = parse_metadata(metadata)
     return render_template(f"layout/{metadata['layout']}.j2.html",
         content=Markup(html_fragment),
-        toc=renderer.toc_tokens, # type: ignore
+        toc=renderer.toc_tokens,  # type: ignore
         extra_stylesheets=metadata['extra_stylesheets'],
         extra_scripts=metadata['extra_scripts'])

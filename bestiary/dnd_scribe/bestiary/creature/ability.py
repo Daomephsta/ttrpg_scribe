@@ -5,12 +5,15 @@ from typing import ClassVar, Self
 def mod(stat: int):
     return stat // 2 - 5
 
+
 def mod_str(stat: int):
     return f'{mod(stat):+d}'
+
 
 class _AbilityMeta(type):
     def __iter__(self):
         return iter(Ability.BY_ID.values())
+
 
 @dataclass
 class Ability(metaclass=_AbilityMeta):
@@ -36,12 +39,14 @@ class Ability(metaclass=_AbilityMeta):
     def __iter__():
         return iter(Ability.BY_ID.values())
 
+
 STR = Ability('Strength')
 DEX = Ability('Dexterity')
 CON = Ability('Constitution')
 INT = Ability('Intelligence')
 WIS = Ability('Wisdom')
 CHA = Ability('Charisma')
+
 
 @dataclass
 class Skill:
@@ -66,6 +71,7 @@ class Skill:
 
     def __hash__(self) -> int:
         return hash(self.name)
+
 
 Acrobatics = Skill("Acrobatics", 'dex')
 AnimalHandling = Skill("Animal Handling", 'wis')

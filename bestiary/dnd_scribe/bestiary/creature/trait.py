@@ -18,10 +18,15 @@ class Spellcasting:
                 case 1: return '1st'
                 case 2: return '2nd'
                 case 3: return '3rd'
-                case _: return  f'{level}th'
-        desc = f"{creature.name} is a {level_ordinal(self.level)}-level spellcaster who uses {self.ability.name} for spellcasting (spell save DC {8 + creature.prof + self.ability.mod(creature)}; {creature.prof + self.ability.mod(creature):+d} to hit with spell attacks). {creature.name} knows the following spells from the {self.spell_list}'s spell list:"
+                case _: return f'{level}th'
+        save_dc = 8 + creature.prof + self.ability.mod(creature)
+        spell_attack = creature.prof + self.ability.mod(creature)
+        desc = f"{creature.name} is a {level_ordinal(self.level)}-level spellcaster \
+            who uses {self.ability.name} for spellcasting \
+            (spell save DC {save_dc}; {spell_attack:+d} to hit with spell attacks). \
+            {creature.name} knows the following spells from the {self.spell_list}'s spell list:"
         if self.at_will:
             desc += f"\n\nAt will: {', '.join(self.at_will)}"
         for level, (slots, spells) in self.levelled.items():
-             desc += f"\n\n{level_ordinal(level)} level ({slots} slots): {', '.join(spells)}"
+            desc += f"\n\n{level_ordinal(level)} level ({slots} slots): {', '.join(spells)}"
         return ('Spellcasting', desc)

@@ -12,15 +12,16 @@ from dnd_scribe.npc.race import Race, Subrace
 
 T = TypeVar('T')
 
+
 class Feature(Generic[T]):
     def __init__(self, name: str,
                  generator: Callable[['EntityGenerator', 'FeatureMapping'], T],
-                 dependencies: 'list[Feature[Any] | str]'=[],
-                 display: str | None=None, to_str: 'Callable[[T], str]'=
-                    lambda value: str(value),
-                 from_str: 'Callable[[str, FeatureMapping], T]'=
+                 dependencies: 'list[Feature[Any] | str]' = [],
+                 display: str | None = None,
+                 to_str: 'Callable[[T], str]' = lambda value: str(value),
+                 from_str: 'Callable[[str, FeatureMapping], T]' =
                     lambda value, _: cast(T, value)
-                ) -> None:
+                 ) -> None:
         self.name = name
         self.generator = generator
         self.dependencies = dependencies
@@ -47,19 +48,20 @@ class Feature(Generic[T]):
         return destination
 
     @classmethod
-    def choice(cls, name: str, choices: list[T], *, weights: list[float]=[],
-           filter: Optional[Callable[['FeatureMapping', T], bool]]=None,
-           display: str | None=None) -> Self:
-        generator: Callable[['EntityGenerator', 'FeatureMapping'], T]
+    def choice(cls, name: str, choices: list[T], *, weights: list[float] = [],
+           filter: Optional[Callable[['FeatureMapping', T], bool]] = None,
+           display: str | None = None) -> Self:
         if weights:
-            generator=lambda helper, _: helper.choose(choices, weights=weights)
+            def generator(helper: EntityGenerator, _):
+                return helper.choose(choices, weights=weights)
         elif filter:
-            def filtered_generator(helper: 'EntityGenerator', dependencies: 'FeatureMapping'):
-                dependent_filter = lambda option: filter(dependencies, option)
+            def generator(helper: EntityGenerator, dependencies):  # type: ignore
+                def dependent_filter(option):
+                    return filter(dependencies, option)
                 return helper.choose(choices, filter=dependent_filter)
-            generator = filtered_generator
         else:
-            generator=lambda helper, _: helper.choose(choices)
+            def generator(helper: EntityGenerator, _):
+                return helper.choose(choices)
         return Feature(name, generator=generator, display=display)
 
     @staticmethod
@@ -71,13 +73,16 @@ class Feature(Generic[T]):
 
     __repr__ = __str__
 
+
 FeatureMapping = Mapping[Feature[Any], Any]
 FeatureMap = dict[Feature[Any], Any]
+
 
 def different(feature_name: str):
     def filter(npc: FeatureMapping, choice) -> bool:
         return choice != npc.get(Features[feature_name])
     return filter
+
 
 class __Features(type):
     def __init__(cls, *_):
@@ -151,7 +156,10 @@ class __Features(type):
     def __contains__(cls, key: str):
         return key in cls._BY_NAME
 
-class Features(metaclass=__Features): pass
+
+class Features(metaclass=__Features):
+    pass
+
 
 class Entity:
     def __init__(self, feature_values: FeatureMap):
@@ -172,11 +180,12 @@ class Entity:
 
     K = TypeVar('K')
     V = TypeVar('V')
-    def to_dict(self, order: list[Feature[Any]]=[],
-                exclude: list[Feature[Any]]=[],
-                key_mapper: Callable[[Feature[Any]], K]=lambda k: k,
-                value_mapper: Callable[[Feature[Any], Any], V]=lambda k, v: v
-               ) -> dict[K, V]:
+
+    def to_dict(self, order: list[Feature[Any]] = [],
+                exclude: list[Feature[Any]] = [],
+                key_mapper: Callable[[Feature[Any]], K] = lambda k: k,
+                value_mapper: Callable[[Feature[Any], Any], V] = lambda k, v: v
+                ) -> dict[K, V]:
         # Find features with no specified order and put them last
         last = list(self.feature_values.keys() - set(order))
         order = order + last
@@ -195,15 +204,16 @@ class Entity:
                 Features[feature[0]].read_into(features, feature[1]),
             state.items(), {})
 
-    def for_display(self, order: list[Feature[Any]]=[],
-                    exclude: list[Feature[Any]]=[]):
+    def for_display(self, order: list[Feature[Any]] = [],
+                    exclude: list[Feature[Any]] = []):
         return list(self.to_dict(order, exclude,
                                  key_mapper=lambda f: f.display,
                                  value_mapper=lambda f, v: f.to_str(v)
-                                ).items())
+                                 ).items())
 
     def __str__(self) -> str:
         return f'Entity{self.feature_values}'
+
 
 class EntityGenerator:
     def __init__(self, *, rng=default_random, config: dict[str, Any]) -> None:
@@ -214,24 +224,24 @@ class EntityGenerator:
 
     @overload
     def choose(self, options: list[C], *,
-               filter: Callable[[C], bool] | None=None) -> C: ...
+               filter: Callable[[C], bool] | None = None) -> C: ...
 
     @overload
     def choose(self, options: list[C], *,
-               weights: Sequence[float] | None=None) -> C: ...
+               weights: Sequence[float] | None = None) -> C: ...
 
     @overload
     def choose(self, options: list[C], *,
-               weights: Sequence[float] | None=None, k: int) -> list[C]: ...
+               weights: Sequence[float] | None = None, k: int) -> list[C]: ...
 
     @overload
     def choose(self, options: list[C], *,
-               filter: Callable[[C], bool] | None=None, k: int) -> list[C]: ...
+               filter: Callable[[C], bool] | None = None, k: int) -> list[C]: ...
 
-    def choose(self, options: list[C], *, weights: Sequence[float] | None=None,
-               filter: Callable[[C], bool] | None=None, k=1) -> list[C] | C:
+    def choose(self, options: list[C], *, weights: Sequence[float] | None = None,
+               filter: Callable[[C], bool] | None = None, k=1) -> list[C] | C:
         if filter:
-            weights=[int(filter(option)) for option in options]
+            weights = [int(filter(option)) for option in options]
         if k == 1:
             if weights is not None:
                 return self.rng.choices(options, weights)[0]

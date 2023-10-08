@@ -7,12 +7,14 @@ class Rollable:
     def roll(self) -> int:
         raise NotImplementedError()
 
+
 class DiceFormulaPart:
     def apply(self, total) -> int:
         raise NotImplementedError()
 
     def average(self) -> float:
         raise NotImplementedError()
+
 
 @dataclass
 class DiceFormula(Rollable):
@@ -36,12 +38,14 @@ class DiceFormula(Rollable):
     def __str__(self) -> str:
         return ' '.join(map(str, self.parts))
 
+
 class Symbol(str, DiceFormulaPart):
     def apply(self, total) -> int:
         return total
 
     def average(self) -> float:
         return 0
+
 
 @dataclass
 class Constant(DiceFormulaPart):
@@ -55,6 +59,7 @@ class Constant(DiceFormulaPart):
 
     def __str__(self) -> str:
         return str(abs(self.value))
+
 
 @dataclass
 class Dice(DiceFormulaPart, Rollable):
@@ -97,6 +102,7 @@ class Dice(DiceFormulaPart, Rollable):
         if malus == 0:
             return DiceFormula([self])
         return DiceFormula([self, Symbol('-'), Constant(-malus)])
+
 
 def d(size: int) -> Dice:
     return Dice(1, size)

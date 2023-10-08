@@ -39,19 +39,24 @@ class Movement:
 
     __repr__ = __str__
 
+
 def Walk(amount: int):
     return Movement('walk', amount, desc_format='{:d} ft.')
+
 
 def Climb(amount: int):
     return Movement('climb', amount)
 
+
 def Swim(amount: int):
     return Movement('swim', amount)
+
 
 def Burrow(amount: int):
     return Movement('burrow', amount)
 
+
 class Fly(Movement):
-    def __init__(self, amount: int, hover: bool=False) -> None:
+    def __init__(self, amount: int, hover: bool = False) -> None:
         super().__init__('fly', amount)
         self.desc_format = '{:d} ft. (hover)' if hover else '{:d} ft.'

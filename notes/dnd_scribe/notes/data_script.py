@@ -19,6 +19,7 @@ def _bind_data(name, script) -> dict[str, Any]:
         return cache.data
     return {}
 
+
 def bind(template: str) -> dict[str, Any]:
     [name, _] = template.split('.', maxsplit=1)
     script = paths.pages()/f'{name}.py'
