@@ -52,15 +52,15 @@ class Feature(Generic[T]):
            filter: Optional[Callable[['FeatureMapping', T], bool]] = None,
            display: str | None = None) -> Self:
         if weights:
-            def generator(helper: EntityGenerator, _):
+            def generator(helper: 'EntityGenerator', _):
                 return helper.choose(choices, weights=weights)
         elif filter:
-            def generator(helper: EntityGenerator, dependencies):  # type: ignore
+            def generator(helper: 'EntityGenerator', dependencies):  # type: ignore
                 def dependent_filter(option):
                     return filter(dependencies, option)
                 return helper.choose(choices, filter=dependent_filter)
         else:
-            def generator(helper: EntityGenerator, _):
+            def generator(helper: 'EntityGenerator', _):
                 return helper.choose(choices)
         return Feature(name, generator=generator, display=display)
 
