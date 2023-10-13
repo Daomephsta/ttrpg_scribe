@@ -82,6 +82,7 @@ onload = (_) =>  {
             const dialog = document.getElementById('health_dialog')
             dialog.returnValue = null
             const dialogValue = document.querySelector('#health_dialog .dialog_value')
+            dialogValue.value = 0
             dialog.showModal()
             dialog.addEventListener('close', (_) =>
             {
