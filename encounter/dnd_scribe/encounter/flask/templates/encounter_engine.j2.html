@@ -39,7 +39,7 @@
                     {% for npc in npcs %}
                     <tr>
                         <td class="name">{{ npc.name }}</td>
-                        <td>{{ npc.initiative }}</td>
+                        <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
                         <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
                         <td class="max_hp">{{ npc.initial_hp }}</td>
                     </tr>
