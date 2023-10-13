@@ -7,7 +7,7 @@
     margin-top: 1em;
     margin-right: 1em;
 }
-#tracker > table {
+#tracker table {
     border-collapse: collapse;
     text-align: center;
 }
@@ -35,6 +35,7 @@
 }
 #buttons {
     display: flex;
+    margin-top: 2px;
 }
 #sort_initiative, #next_turn, #add_reinforcements {
     flex-grow: 1;

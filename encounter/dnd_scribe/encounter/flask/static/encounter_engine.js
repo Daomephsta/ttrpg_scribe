@@ -14,9 +14,19 @@ function setCurrentTurn(turn)
     current = document.getElementById('current_turn')
     if (current)
         current.removeAttribute('id')
-    rows = document.querySelectorAll('#tracker tbody > tr')
     currentTurn = turn % rows.length
     rows[currentTurn].id = 'current_turn'
+}
+
+function getRound()
+{
+    return Number(sessionStorage.getItem('current_round') || 1)
+}
+
+function setRound(round) 
+{
+    sessionStorage.setItem('current_round', round)
+    document.getElementById('current_round').textContent = `Round ${round}`
 }
 
 function sortInitiative()
@@ -30,7 +40,10 @@ function sortInitiative()
 
 function nextTurn()
 {
+    rows = document.querySelectorAll('#tracker tbody > tr')
     setCurrentTurn(currentTurn + 1)
+    if (currentTurn == 0) 
+        setRound(getRound() + 1)
     // Skip dead creatures
     rows = document.querySelectorAll('#tracker tbody > tr')
     while(rows[currentTurn].classList.contains('dead'))
@@ -81,6 +94,7 @@ onload = (_) =>  {
         })
     }
     updateReinforcementControls()
+    setRound(getRound())
 };
 
 document.addEventListener('keyup', (event) =>

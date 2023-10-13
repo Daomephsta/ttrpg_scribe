@@ -11,7 +11,11 @@ for (let button of document.getElementsByClassName('launch_encounter'))
             }, 
             body: event.target.dataset['encounter']
         })
-        .then(r => window.open(r.url, 'initiative'));
+        .then(r => {
+            let initiative = window.open(r.url, 'initiative')
+            // Clear session storage for new encounter
+            initiative.sessionStorage.clear()
+        });
     });
 }
 

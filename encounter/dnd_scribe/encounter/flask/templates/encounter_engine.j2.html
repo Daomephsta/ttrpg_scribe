@@ -17,33 +17,36 @@
 </dialog>
 <div id="container">
     <div id="tracker">
-        <table>
-            <thead>
-                <th>Name</th>
-                <th>Initiative</th>
-                <th>Damage</th>
-                <th>Max HP</th>
-            </thead>
-            <tbody>
-                {% for name in pcs %}
-                <tr>
-                    <td class="name">{{ name }}</td>
-                    <td><input class="initiative" type="number"/></td>
-                    <!-- Empty cells so background shows -->
-                    <td></td>
-                    <td></td>
-                </tr>
-                {% endfor %}
-                {% for npc in npcs %}
-                <tr>
-                    <td class="name">{{ npc.name }}</td>
-                    <td>{{ npc.initiative }}</td>
-                    <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
-                    <td class="max_hp">{{ npc.initial_hp }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <fieldset>
+            <legend id="current_round">Round 1</legend>
+            <table>
+                <thead>
+                    <th>Name</th>
+                    <th>Initiative</th>
+                    <th>Damage</th>
+                    <th>Max HP</th>
+                </thead>
+                <tbody>
+                    {% for name in pcs %}
+                    <tr>
+                        <td class="name">{{ name }}</td>
+                        <td><input class="initiative" type="number"/></td>
+                        <!-- Empty cells so background shows -->
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                    {% for npc in npcs %}
+                    <tr>
+                        <td class="name">{{ npc.name }}</td>
+                        <td>{{ npc.initiative }}</td>
+                        <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
+                        <td class="max_hp">{{ npc.initial_hp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </fieldset>
         <div id="buttons">
             <button onclick="sortInitiative()" id="sort_initiative">Sort</button>
             <button onclick="nextTurn()" id="next_turn">Next Turn</button>
