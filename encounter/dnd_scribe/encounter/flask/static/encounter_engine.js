@@ -1,12 +1,3 @@
-function getInitiative(row)
-{
-    initiative_cell = row.querySelector('td:nth-child(2)')
-    input = initiative_cell.querySelector('input')
-    if (input)
-        return Number(input.value)
-    return Number(initiative_cell.textContent)
-}
-
 currentTurn = 0
 
 function setCurrentTurn(turn)
@@ -27,6 +18,11 @@ function setRound(round)
 {
     sessionStorage.setItem('current_round', round)
     document.getElementById('current_round').textContent = `Round ${round}`
+}
+
+function getInitiative(row)
+{
+    return row.querySelector('td:nth-child(2) > input').valueAsNumber
 }
 
 function sortInitiative()
