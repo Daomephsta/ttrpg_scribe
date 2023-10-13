@@ -77,8 +77,10 @@ onload = (_) =>  {
     for (const input of document.getElementsByClassName('damage'))
     {
         updateDeadStatus(input)
-        input.addEventListener('dblclick', (event) =>
+        input.addEventListener('click', (event) =>
         {
+            if (!event.shiftKey)
+                return;
             const dialog = document.getElementById('health_dialog')
             dialog.returnValue = null
             const dialogValue = document.querySelector('#health_dialog .dialog_value')
