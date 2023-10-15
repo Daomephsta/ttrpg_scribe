@@ -64,6 +64,7 @@ def start(args):
                         format='%(name)s @ %(levelname)s: %(message)s')
     host, port = '127.0.0.1', 48164
     if args.debug:
+        app.jinja_env.auto_reload = True
         app.run(host, port, debug=True)
     else:
         waitress.serve(app, listen=f'{host}:{port}')
