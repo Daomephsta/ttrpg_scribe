@@ -10,24 +10,34 @@
     .collapser::after {
         font: 16px 'Bookinsanity', sans-serif;
     }
+    .index {
+        list-style: none;
+        padding-inline-start: 2em;
+    }
+    #tools {
+        list-style: none;
+        padding-left: 0;
+        margin-left: 0;
+        line-height: 1.5em;
+    }
     </style>
 {% endblock head %}
 {% block main %}
     <h2>Pages</h2>
-    <ul>
+    <ul class="index" style="padding-left: 0;">
     {% for _, content in content_tree recursive %}
         {% if content.is_file() %}
         <li><a href="/notes/{{ content.relative_path }}">{{ content.title }}</a></li>
         {% elif content.children %}
         <li>
             <input type="checkbox" class="collapser name" data-name="{{content.title}}">
-            <ul class="collapsible">{{ loop(content) }}</ul>
+            <ul class="collapsible index">{{ loop(content) }}</ul>
         </li>
         {% endif  %}
     {% endfor %}
     </ul>
     <h2>Tools</h2>
-    <ul style="line-height: 1.5em;">
+    <ul id="tools">
         {% for path, title, form_attrs in config.TOOLS %}
         <li>
             <form action="{{ path }}"{{ form_attrs | xmlattr }}>
