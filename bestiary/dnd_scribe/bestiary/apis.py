@@ -114,17 +114,17 @@ class Dnd5eApi(HttpApi[T]):
             value = ac_data['value']
             match ac_data['type']:
                 case 'dex':
-                    desc = ac_data.get('desc', str(value))
+                    desc = ac_data.get('desc', '{ac:d}')
                 case 'natural':
-                    desc = ac_data.get('desc', f'{value} (Natural Armor)')
+                    desc = ac_data.get('desc', '{ac:d} (Natural Armor)')
                 case 'armor':
                     if 'desc' in ac_data:
                         desc = ac_data['desc']
                     armor = ', '.join(armor['name'] for armor in ac_data['armor'])
-                    desc = f'{value} ({armor})'
+                    desc = f'{{ac:d}} ({armor})'
                 case ('condition' | 'spell') as type:
                     condition = ac_data[type]['name']
-                    desc = ac_data.get('desc', f'{value} ({condition})')
+                    desc = ac_data.get('desc', f'{{ac:d}} ({condition})')
                 case type:
                     raise ValueError(f'Unknown AC type {type}')
             return ArmourClass(value, desc)

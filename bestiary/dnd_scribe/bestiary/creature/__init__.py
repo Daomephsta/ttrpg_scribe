@@ -45,7 +45,7 @@ class Creature:
         self.alignment = alignment
         match ac:
             case int() as ac:
-                self.ac = [ArmourClass(ac, str(ac))]
+                self.ac = [ArmourClass(ac, '{ac:d}')]
             case _ as ac:
                 self.ac = ac
         self.hp = hp

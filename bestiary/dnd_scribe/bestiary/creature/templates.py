@@ -50,9 +50,9 @@ def armour(base_ac: int, reason: str, dex_limit: int = 10):
             ac = base_ac + min(dex_limit, ability.mod(args['statistics'][1]))
             if shield:
                 ac += 2
-                args['ac'] = [ArmourClass(ac, f'{ac} ({reason}, shield)')]
+                args['ac'] = [ArmourClass(ac, f'{{ac:d}} ({reason}, shield)')]
             else:
-                args['ac'] = [ArmourClass(ac, f'{ac} ({reason})')]
+                args['ac'] = [ArmourClass(ac, f'{{ac:d}} ({reason})')]
         return template
     return template_factory
 
@@ -70,10 +70,10 @@ breastplate_armour = armour(14, 'breastplate', dex_limit=2)
 half_plate_armour = armour(15, 'half plate', dex_limit=2)
 
 # Heavy armour
-ring_mail_armour = armour(1, 'ring mail')
-chain_mail_armour = armour(1, 'chain mail')
-splint_armour = armour(1, 'splint')
-plate_armour = armour(1, 'plate')
+ring_mail_armour = armour(14, 'ring mail', dex_limit=0)
+chain_mail_armour = armour(16, 'chain mail', dex_limit=0)
+splint_armour = armour(17, 'splint', dex_limit=0)
+plate_armour = armour(18, 'plate', dex_limit=0)
 
 
 def rename(full: str, *other_names: tuple[str, str]):
