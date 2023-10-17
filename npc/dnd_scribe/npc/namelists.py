@@ -1,9 +1,9 @@
 from importlib import resources
-from typing import Any, Mapping, TypeAlias
+from typing import Any, Mapping
 
 import yaml
 
-Names: TypeAlias = Mapping[str, list[str]]
+type Names = Mapping[str, list[str]]
 
 with resources.open_text('dnd_scribe.npc', 'namelists.yaml') as file:
     __namelists: dict[str, Any] = yaml.safe_load(file)

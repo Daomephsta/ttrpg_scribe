@@ -1,8 +1,8 @@
 from functools import reduce
 from importlib import resources
 from random import _inst as default_random
-from typing import (Any, Callable, Generic, Mapping, Optional, Self, Sequence,
-                    TypeVar, cast, overload)
+from typing import (Any, Callable, Mapping, Optional, Self, Sequence, cast,
+                    overload)
 
 import yaml
 
@@ -10,10 +10,8 @@ import dnd_scribe.npc.race
 from dnd_scribe.npc.character import ABILITIES, SEXES, Ability, Sex
 from dnd_scribe.npc.race import Race, Subrace
 
-T = TypeVar('T')
 
-
-class Feature(Generic[T]):
+class Feature[T]:
     def __init__(self, name: str,
                  generator: Callable[['EntityGenerator', 'FeatureMapping'], T],
                  dependencies: 'list[Feature[Any] | str]' = [],
@@ -169,23 +167,21 @@ class Entity:
     def name(self):
         return self[Features.NAME]
 
-    def __setitem__(self, key: Feature[T], value: T):
+    def __setitem__[T](self, key: Feature[T], value: T):
         self.feature_values[key] = value
 
-    def __getitem__(self, key: Feature[T]) -> T:
+    def __getitem__[T](self, key: Feature[T]) -> T:
         return self.feature_values[key]
 
     def __iter__(self):
         return iter(self.feature_values.items())
 
-    K = TypeVar('K')
-    V = TypeVar('V')
-
-    def to_dict(self, order: list[Feature[Any]] = [],
-                exclude: list[Feature[Any]] = [],
-                key_mapper: Callable[[Feature[Any]], K] = lambda k: k,
-                value_mapper: Callable[[Feature[Any], Any], V] = lambda k, v: v
-                ) -> dict[K, V]:
+    def to_dict[K, V](
+            self, order: list[Feature[Any]] = [],
+            exclude: list[Feature[Any]] = [],
+            key_mapper: Callable[[Feature[Any]], K] = lambda k: k,
+            value_mapper: Callable[[Feature[Any], Any], V] = lambda k, v: v
+            ) -> dict[K, V]:
         # Find features with no specified order and put them last
         last = list(self.feature_values.keys() - set(order))
         order = order + last
@@ -220,25 +216,23 @@ class EntityGenerator:
         self.rng = rng
         self.config = config
 
-    C = TypeVar('C')
-
     @overload
-    def choose(self, options: list[C], *,
+    def choose[C](self, options: list[C], *,
                filter: Callable[[C], bool] | None = None) -> C: ...
 
     @overload
-    def choose(self, options: list[C], *,
+    def choose[C](self, options: list[C], *,
                weights: Sequence[float] | None = None) -> C: ...
 
     @overload
-    def choose(self, options: list[C], *,
+    def choose[C](self, options: list[C], *,
                weights: Sequence[float] | None = None, k: int) -> list[C]: ...
 
     @overload
-    def choose(self, options: list[C], *,
+    def choose[C](self, options: list[C], *,
                filter: Callable[[C], bool] | None = None, k: int) -> list[C]: ...
 
-    def choose(self, options: list[C], *, weights: Sequence[float] | None = None,
+    def choose[C](self, options: list[C], *, weights: Sequence[float] | None = None,
                filter: Callable[[C], bool] | None = None, k=1) -> list[C] | C:
         if filter:
             weights = [int(filter(option)) for option in options]

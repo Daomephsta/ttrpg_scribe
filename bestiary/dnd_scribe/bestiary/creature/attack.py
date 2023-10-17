@@ -1,9 +1,11 @@
-from typing import Literal, TypeAlias
+from typing import Literal
+
 from dnd_scribe.core.dice import Dice, d
+
 from . import Creature
 from .ability import DEX, STR, Ability
 
-DamageType: TypeAlias = Literal['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder']  # noqa: E501
+type DamageType = Literal['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder']  # noqa: E501
 
 
 class Attack:

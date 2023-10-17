@@ -1,8 +1,7 @@
 import json
 import math
 import re
-from typing import (Any, Callable, Iterable, TypedDict, TypeVar,
-                    Unpack, cast)
+from typing import Any, Callable, Iterable, TypedDict, Unpack, cast
 
 from pluralizer import Pluralizer
 
@@ -165,8 +164,6 @@ class Creature:
             'reactions': self.reactions,
             'lore': self.lore
         }
-
-    P = TypeVar('P')
 
     @staticmethod
     def from_json(json):

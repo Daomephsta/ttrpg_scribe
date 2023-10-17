@@ -1,7 +1,7 @@
-from typing import Literal, TypeAlias
+from typing import Literal
 
-Sex: TypeAlias = Literal['Male', 'Female']
+type Sex = Literal['Male', 'Female']
 SEXES: list[Sex] = ['Male', 'Female']
 
-Ability: TypeAlias = Literal['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
+type Ability = Literal['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']
 ABILITIES: list[Ability] = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']

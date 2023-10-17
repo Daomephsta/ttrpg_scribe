@@ -1,11 +1,11 @@
 import logging
 import operator
+import re
 from abc import ABCMeta, abstractmethod
 from functools import cache
 from http import HTTPStatus
 from pathlib import Path
-import re
-from typing import Any, Callable, Generic, Never, TypeAlias, TypeVar
+from typing import Any, Callable, Never
 
 import flask
 from requests import Session
@@ -18,9 +18,8 @@ from dnd_scribe.bestiary.creature.movement import Movement
 from dnd_scribe.bestiary.creature.sense import Sense
 from dnd_scribe.core import signals
 
-T = TypeVar('T')
-ErrorHandler: TypeAlias = Callable[[Exception], T]
-Template: TypeAlias = Callable[[Creature], None]
+type ErrorHandler[T] = Callable[[Exception], T]
+type Template = Callable[[Creature], None]
 
 
 @cache
@@ -31,7 +30,7 @@ def cache_dir():
         return Path.cwd()/'_build/cache'
 
 
-class Api(Generic[T], metaclass=ABCMeta):
+class Api[T](metaclass=ABCMeta):
     def __init__(self, error_handler: ErrorHandler[T]) -> None:
         self.error_handler = error_handler
 
@@ -40,7 +39,7 @@ class Api(Generic[T], metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class HttpApi(Api[T], metaclass=ABCMeta):
+class HttpApi[T](Api[T], metaclass=ABCMeta):
     base_url: str
     __session: Session | None = None
 
@@ -87,7 +86,7 @@ class HttpApi(Api[T], metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class Dnd5eApi(HttpApi[T]):
+class Dnd5eApi[T](HttpApi[T]):
     base_url = 'https://www.dnd5eapi.co/api/monsters/'
 
     def _parse_creature_data(self, data: dict[str, Any]) -> dict[str, Any]:
