@@ -1,23 +1,19 @@
-import importlib.resources
 import logging
-import shutil
-import zipfile
-from argparse import ArgumentParser
-from http import HTTPStatus
 from pathlib import Path
-
-import waitress
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
-
-import dnd_scribe.encounter.flask
-import dnd_scribe.encounter.flask.extension
-import dnd_scribe.notes
-import dnd_scribe.npc.flask_app
-import dnd_scribe.npc.flask_app.extension
-from dnd_scribe.core import signals
+# Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
 def make_app(project_dir: str | Path):
+    from http import HTTPStatus
+
+    from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
+    import dnd_scribe.encounter.flask
+    import dnd_scribe.encounter.flask.extension
+    import dnd_scribe.notes
+    import dnd_scribe.npc.flask_app
+    import dnd_scribe.npc.flask_app.extension
+
     project_dir = Path(project_dir)
     app = dnd_scribe.notes.create_app(project_dir)
     dnd_scribe.encounter.flask.extension.extend(app, '/encounter_extension')
@@ -57,6 +53,8 @@ def check_structure(project_dir: Path) -> bool:
 
 
 def start(args):
+    import waitress
+
     if not check_structure(args.project):
         return
     app = make_app(args.project)
@@ -71,6 +69,10 @@ def start(args):
 
 
 def clean(project_dir: Path):
+    import shutil
+
+    from dnd_scribe.core import signals
+
     if not check_structure(project_dir):
         return
     signals.send_clean()
@@ -79,6 +81,9 @@ def clean(project_dir: Path):
 
 
 def new(project_dir: Path):
+    import importlib.resources
+    import zipfile
+
     if not project_dir.exists():
         project_dir.mkdir()
     with importlib.resources.path('dnd_scribe.all_in_one',
@@ -88,6 +93,10 @@ def new(project_dir: Path):
 
 
 def main():
+    from argparse import ArgumentParser
+
+    import argcomplete
+
     parser = ArgumentParser('dnd_scribe.all_in_one')
     parser.add_argument('-p', '--project', type=Path, default=Path.cwd())
     parser.set_defaults(subcommand=lambda _: parser.print_help())
@@ -103,5 +112,6 @@ def main():
     new_parser = subcommands.add_parser('new')
     new_parser.set_defaults(subcommand=lambda args: new(args.project))
 
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     args.subcommand(args)
