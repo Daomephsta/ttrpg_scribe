@@ -245,6 +245,8 @@ class EntityGenerator:
     def generate(self, *features: tuple[Feature[Any], Any] | Feature[Any]) -> Entity:
         feature_values = {}
         for feature in features:
+            if feature in feature_values:
+                continue
             match feature:
                 case feature, value:
                     feature_values[feature] = value
