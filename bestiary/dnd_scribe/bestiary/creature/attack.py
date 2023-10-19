@@ -12,7 +12,7 @@ class Attack:
     default_ability = STR
 
     def __init__(self, name: str, dice: Dice, type: DamageType,
-                 ability: Ability | None, attack: int, damage_bonus: int,
+                 ability: Ability | None, attack: int | None, damage_bonus: int | None,
                  range: str, extra: str):
         self.name = name
         self.dice = dice
@@ -27,11 +27,11 @@ class Attack:
         raise NotImplementedError
 
     def __call__(self, creature: Creature) -> tuple[str, str]:
-        if self.damage_bonus:
+        if self.damage_bonus is not None:
             damage = self.dice + self.damage_bonus
         else:
             damage = self.dice + self.ability.mod(creature)
-        attack_mod = self.attack if self.attack\
+        attack_mod = self.attack if self.attack is not None\
             else self.ability.mod(creature) + creature.prof
         desc = self.describe(attack_mod, f'{damage.damage_notation()} {self.type}')
         if self.extra:
@@ -45,8 +45,8 @@ class Attack:
 
 class Melee(Attack):
     def __init__(self, name: str, dice: Dice, type: DamageType,
-                 ability: Ability | None = None, attack: int = 0,
-                 damage_bonus: int = 0, reach: int = 5, extra: str = ''):
+                 ability: Ability | None = None, attack: int | None = None,
+                 damage_bonus: int | None = None, reach: int = 5, extra: str = ''):
 
         super().__init__(name, dice, type, ability, attack, damage_bonus,
             f'{reach} ft.', extra)
@@ -61,7 +61,7 @@ class Ranged(Attack):
 
     def __init__(self, name: str, range: tuple[int, int], dice: Dice,
                  type: DamageType, ability: Ability | None = None,
-                 attack: int = 0, damage_bonus: int = 0, extra: str = ''):
+                 attack: int | None = None, damage_bonus: int | None = None, extra: str = ''):
 
         super().__init__(name, dice, type, ability,  attack, damage_bonus,
             f"{range[0]}/{range[1]} ft.", extra)
