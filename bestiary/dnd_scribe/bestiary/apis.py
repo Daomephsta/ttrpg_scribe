@@ -108,6 +108,8 @@ class Dnd5eApi[T](HttpApi[T]):
             for trait in data['special_abilities']]
         actions = [(action['name'], action['desc'])
             for action in data['actions']]
+        reactions = [(reaction['name'], reaction['desc'])
+            for reaction in data.get('reactions', [])]
 
         def parse_ac(ac_data: dict[str, Any]) -> ArmourClass:
             value = ac_data['value']
@@ -151,7 +153,8 @@ class Dnd5eApi[T](HttpApi[T]):
             'languages': data['languages'].split(', ')
                 if data['languages'] else [],
             'traits': traits,
-            'actions': actions
+            'actions': actions,
+            'reactions': reactions
         }
 
 
