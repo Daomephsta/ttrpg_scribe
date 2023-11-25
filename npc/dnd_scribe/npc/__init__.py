@@ -242,14 +242,12 @@ class EntityGenerator:
             return self.rng.choice(options)
         return self.rng.choices(options, weights, k=k)
 
-    def generate(self, *features: tuple[Feature[Any], Any] | Feature[Any]) -> Entity:
-        feature_values = {}
+    def generate(self, features: FeatureMap) -> Entity:
+        # Initialise feature values from overrides
+        feature_values = {f: v for f, v in features.items() if v is not None}
+        # Generate remaining features afterwards
         for feature in features:
             if feature in feature_values:
                 continue
-            match feature:
-                case feature, value:
-                    feature_values[feature] = value
-                case feature:
-                    feature.generate_into(self, feature_values)
+            feature.generate_into(self, feature_values)
         return Entity(feature_values)

@@ -37,15 +37,13 @@ def create_app(instance_path: str | Path):
 
     @app.post('/generate')
     def generate_npc():
-        features_by_id = dict()
+        features = dict()
         for feature_id, value in flask.request.form.items():
-            Features[feature_id].read_into(features_by_id, value)
-        template_features = ((feature, value) if value else feature
-            for feature, value in features_by_id.items())
-        entity = npc_generator.generate(*template_features)
+            Features[feature_id].read_into(features, value)
+        entity = npc_generator.generate(features)
         flask.session['current_npc'] = entity
         return entity.for_display(
-            order=list(features_by_id.keys()),
+            order=list(features.keys()),
             exclude=[Features.REGION])
 
     npcs = Path(app.instance_path)/'npcs'
