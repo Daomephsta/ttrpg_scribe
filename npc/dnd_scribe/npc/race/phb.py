@@ -1,21 +1,18 @@
-from dnd_scribe.npc import namelists
 from dnd_scribe.npc.race import Race
 
-DWARF = Race('Dwarf', ['Gender', 'Group'], namelists.Dwarf,
+DWARF = Race('Dwarf',
     subraces={'Hill': {}, 'Mountain': {}})
-ELF = Race('Elf', ['Gender', 'Child', 'Group'], namelists.Elf,
+ELF = Race('Elf',
     subraces={'High': {}, 'Wood': {}})
-HALFLING = Race('Halfling', ['Gender', 'Group'], namelists.Halfling,
+HALFLING = Race('Halfling',
     subraces={'Stout': {}, 'Lightfoot': {}})
-HUMAN = Race('Human', ['Gender', 'Group'], namelists.Human)
-GNOME = Race('Gnome', ['Gender', 'Nickname', 'Group'], namelists.Gnome,
+HUMAN = Race('Human')
+GNOME = Race('Gnome',
     subraces={'Deep': {}, 'Forest': {}, 'Rock': {}})
-HALF_ELF = Race('Half-Elf', ['Gender', 'Group'],
-    namelists.combine(namelists.Human, namelists.Elf))
-HALF_ORC = Race('Half-Orc', ['Gender', 'Group'],
-    namelists.combine(namelists.Human, namelists.Orc))
-DRAGONBORN = Race('Dragonborn', ['Gender', 'Child', 'Group'], namelists.Dragonborn,
-    subraces={'Black': {}, 'Blue': {}, 'Green': {}, 'Red': {}, 'White': {},
-              'Brass': {}, 'Bronze': {}, 'Copper': {}, 'Gold': {}, 'Silver': {}})
-TIEFLING = Race('Tiefling', [['Gender', 'Virtue'], 'Group'],
-    namelists.combine(namelists.Tiefling, namelists.Human))
+HALF_ELF = Race('Half-Elf')
+HALF_ORC = Race('Half-Orc')
+DRAGONBORN = Race('Dragonborn', subraces={
+    'Black': {}, 'Blue': {}, 'Green': {}, 'Red': {}, 'White': {},
+    'Brass': {}, 'Bronze': {}, 'Copper': {}, 'Gold': {}, 'Silver': {}
+})
+TIEFLING = Race('Tiefling')

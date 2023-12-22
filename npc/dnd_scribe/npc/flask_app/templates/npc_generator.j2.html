@@ -8,17 +8,84 @@
 <option value="cha">CHA</option>
 {% endmacro %}
 
+{% macro embed_json(id, data) %}
+<script type="application/json" id="{{ id }}">
+{{ data | tojson }}
+</script>
+{% endmacro %}
+
 <!DOCTYPE html>
 <html>
     <head>
         <title>NPC Generator</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='npc_generator.css')}}"/>
+        {{ embed_json('regions', regions) }}
+        {{ embed_json('all_races', all_races) }}
+        {{ embed_json('all_cultures', all_cultures) }}
         <script>
+        function readEmbeddedJson(id)
+        {
+            return JSON.parse(document.getElementById(id).innerText)
+        }
+
+        const REGIONS = readEmbeddedJson("regions")
+        const ALL_RACES = readEmbeddedJson("all_races")
+        const ALL_CULTURES = readEmbeddedJson("all_cultures")
+
+        function clearSelect(select) 
+        {
+            select.replaceChildren(new Option(""))
+        }
+
+        function regionChanged()
+        {
+            region_selector = document.getElementById("region")
+            culture_selector = document.getElementById("culture")
+            race_selector = document.getElementById("race")
+
+            culture_selector.replaceChildren(new Option(""))
+            race_selector.replaceChildren(new Option(""))
+
+            if (region_selector.value === "")
+            {
+                races = ALL_RACES
+                cultures = ALL_CULTURES
+            }
+            else
+            {
+                races = REGIONS[region_selector.value]['races']
+                cultures = REGIONS[region_selector.value]['cultures']
+            }
+
+            for (const culture of cultures)
+                culture_selector.add(new Option(culture))
+            for (const [race, subraces] of races)
+            {
+                if (subraces.length > 0)
+                {
+                    group = document.createElement('optgroup')
+                    group.label = race
+                    group.appendChild(new Option(race))
+                    for (const [name, subname] of subraces) 
+                    {
+                        option = new Option(name, race)
+                        option.setAttribute("subrace", subname)
+                        group.appendChild(option)
+                    }
+                    race_selector.add(group)
+                }
+                else race_selector.add(new Option(race))
+            }
+        }
+
         function updateSubrace()
         {
             race_selector = document.getElementById("race")
             subrace_selector = document.getElementById("subrace")
-            subrace_selector.value = race_selector.selectedOptions[0].getAttribute('subrace')
+            if (race_selector.value === '')
+                subrace_selector.value === ''
+            else
+                subrace_selector.value = race_selector.selectedOptions[0].getAttribute('subrace')
         }
 
         function setFeedback(text, duration) 
@@ -74,6 +141,8 @@
                 document.getElementById("save").disabled = true
             })
         }
+
+        window.addEventListener('load', event => regionChanged())
         </script>
     </head>
     <body>
@@ -83,9 +152,10 @@
                     <tr>
                         <td>Region</td>
                         <td>
-                            <select name="region" class="feature_value">
-                                {% for region_id, region_name in regions %}
-                                <option value="{{ region_id }}">{{ region_name }}</option>
+                            <select name="region" id="region" class="feature_value" onchange="regionChanged()">
+                                <option value=""></option>
+                                {% for region in config.REGIONS %}
+                                <option>{{ region }}</option>
                                 {% endfor %}
                             </select>
                         </td>
@@ -106,22 +176,18 @@
                         </td>
                     </tr>
                     <tr>
+                        <td>Culture</td>
+                        <td>
+                            <select name="culture" id="culture" class="feature_value">
+                                <option value=""></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <td>Race</td>
                         <td>
                             <select name="race" id="race" class="feature_value" onchange="updateSubrace()">
                                 <option value=""></option>
-                                {% for race, subraces in races %}
-                                    {% if subraces %}
-                                    <optgroup label="{{ race }}">
-                                        <option>{{ race }}</option>
-                                        {% for subrace in subraces %}
-                                        <option value="{{ race }}" subrace="{{ subrace.subname }}">{{ subrace.name }}</option>
-                                        {% endfor %}
-                                    </optgroup>
-                                    {% else %}
-                                    <option>{{ race }}</option>
-                                    {% endif %}
-                                {% endfor %}
                             </select>
                             <input name="subrace" id="subrace" type="hidden">
                         </td>

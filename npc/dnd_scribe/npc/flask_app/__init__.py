@@ -6,7 +6,6 @@ from werkzeug.exceptions import Forbidden, NotFound
 
 import dnd_scribe.core.flask
 from dnd_scribe.npc import Entity, EntityGenerator, Features
-from dnd_scribe.npc.race import Race
 
 
 def create_app(instance_path: str | Path):
@@ -18,22 +17,34 @@ def create_app(instance_path: str | Path):
     app.config.update(SESSION_TYPE='filesystem',
                       SESSION_PERMANENT=False,
                       SESSION_FILE_DIR=f'{instance_path}/_build/_session')
+
     Session().init_app(app)
     dnd_scribe.core.flask.extend(app)
     npc_generator = EntityGenerator(config=app.config)
 
     @app.get('/gui')
     def npc_generator_gui():
-        race_weights: dict[str, dict[Race, int]] = app.config['RACE_WEIGHTS']
-        races = [(race.name, list(race.subraces.values()))
-                for race in race_weights['']]
-        for _, subraces in races:
-            subraces.sort(key=lambda x: x.name)
-        races.sort()
+        def race_data(race):
+            return (
+                race.name,
+                [(subrace.name, subrace.subname) for subrace in race.subraces.values()]
+            )
+        regions = {
+            region_name: {
+                'races': [race_data(race) for race in data['races'].keys()],
+                'cultures': list(data['cultures'].keys())
+            } for region_name, data in app.config['REGIONS'].items()
+        }
+
+        all_races = set()
+        for _, data in app.config['REGIONS'].items():
+            all_races.update(data['races'])
+        all_races = [race_data(race) for race in all_races]
+
         return flask.render_template('npc_generator.j2.html',
-            regions=((r, r.title()) if r else ('', 'Default')
-                for r in race_weights.keys()),
-            races=races)
+            regions=regions,
+            all_races=all_races,
+            all_cultures=list(app.config['CULTURES'].keys()))
 
     @app.post('/generate')
     def generate_npc():

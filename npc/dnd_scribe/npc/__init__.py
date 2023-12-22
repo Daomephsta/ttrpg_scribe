@@ -1,7 +1,7 @@
 from functools import reduce
 from importlib import resources
 from random import _inst as default_random
-from typing import (Any, Callable, Mapping, Optional, Self, Sequence, cast,
+from typing import (Any, Callable, Mapping, Optional, Sequence, cast,
                     overload)
 
 import yaml
@@ -9,6 +9,7 @@ import yaml
 import dnd_scribe.npc.race
 from dnd_scribe.npc.character import ABILITIES, SEXES, Ability, Sex
 from dnd_scribe.npc.race import Race, Subrace
+from dnd_scribe.npc.culture import Culture
 
 
 class Feature[T]:
@@ -45,10 +46,10 @@ class Feature[T]:
             destination[self] = None
         return destination
 
-    @classmethod
-    def choice(cls, name: str, choices: list[T], *, weights: list[float] = [],
+    @staticmethod
+    def choice(name: str, choices: list[T], *, weights: list[float] = [],
            filter: Optional[Callable[['FeatureMapping', T], bool]] = None,
-           display: str | None = None) -> Self:
+           display: str | None = None) -> 'Feature[T]':
         if weights:
             def generator(helper: 'EntityGenerator', _):
                 return helper.choose(choices, weights=weights)
@@ -86,12 +87,14 @@ class __Features(type):
     def __init__(cls, *_):
         with resources.open_text('dnd_scribe.npc', 'features.yaml') as file:
             features_yaml = yaml.safe_load(file)
-        cls.REGION: Feature[str] = Feature('region', lambda *_: '')
+        cls.REGION: Feature[str] = Feature('region',
+            lambda generator, _: generator.choose(list(generator.config['REGIONS'].keys())))
 
         def race(generator: 'EntityGenerator',
                           features: FeatureMapping) -> Race:
-            region_race_weights: dict[Race, int] =\
-                generator.config['RACE_WEIGHTS'][features[Features.REGION]]
+            region: str = features[Features.REGION]
+            region_race_weights: dict[Race, dict[str, int] | int] =\
+                generator.config['REGIONS'][region]['races']
             races = list(region_race_weights.keys())
             race_weights = [sum(weights.values()) if isinstance(weights, dict) else weights
                 for weights in region_race_weights.values()]
@@ -102,8 +105,9 @@ class __Features(type):
 
         def subrace(generator: 'EntityGenerator',
                     features: FeatureMapping) -> Subrace | None:
+            region: str = features[Features.REGION]
             region_race_weights: dict[Race, dict[str, int] | int] =\
-                generator.config['RACE_WEIGHTS'][features[Features.REGION]]
+                generator.config['REGIONS'][region]['races']
             race: Race = features[Features.RACE]
             if race.subraces:
                 match region_race_weights[race]:
@@ -119,10 +123,21 @@ class __Features(type):
                 features[cls.RACE].subraces[s] if s != 'None' else None,
             dependencies=[cls.REGION, cls.RACE])
 
+        def culture(generator: 'EntityGenerator', features: FeatureMapping) -> Culture:
+            region: str = features[Features.REGION]
+            region_cultures: dict[str, int] = generator.config['REGIONS'][region]['cultures']
+            culture_name = generator.choose(
+                list(region_cultures.keys()),
+                weights=list(region_cultures.values()))
+            return Culture.from_config(generator.config, culture_name)
+        cls.CULTURE: Feature[Culture] = Feature('culture', culture,
+            dependencies=[cls.REGION])
+
         cls.SEX: Feature[Sex] = Feature.choice('sex', SEXES)
         cls.NAME: Feature[str] = Feature('name',
-            lambda helper, features: features[cls.RACE].gen_name(features[cls.SEX], helper.rng),
-            dependencies=[cls.RACE, cls.SEX])
+            lambda helper, features: features[cls.CULTURE].namer
+                .name(features[cls.SEX], helper.rng),
+            dependencies=[cls.CULTURE, cls.SEX])
         cls.HEIGHT: Feature[str] = Feature.choice('height',
             # 68% of values in a normal distribution are within 1 standard deviation of the mean
             ['Short', 'Average', 'Tall'], weights=[0.16, 0.68, 0.16])
