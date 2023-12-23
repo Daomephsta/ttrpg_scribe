@@ -5,7 +5,7 @@ from flask_session import Session
 from werkzeug.exceptions import Forbidden, NotFound
 
 import dnd_scribe.core.flask
-from dnd_scribe.npc import Entity, EntityGenerator, Features
+from dnd_scribe.npc.entity import Entity, EntityGenerator, Features
 
 
 def create_app(instance_path: str | Path):

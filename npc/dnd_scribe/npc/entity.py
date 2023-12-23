@@ -1,15 +1,15 @@
 from functools import reduce
 from importlib import resources
+from random import Random
 from random import _inst as default_random
-from typing import (Any, Callable, Mapping, Optional, Sequence, cast,
-                    overload)
+from typing import Any, Callable, Mapping, Optional, Sequence, cast, overload
 
+import flask
 import yaml
 
 import dnd_scribe.npc.race
 from dnd_scribe.npc.character import ABILITIES, SEXES, Ability, Sex
 from dnd_scribe.npc.race import Race, Subrace
-from dnd_scribe.npc.culture import Culture
 
 
 class Feature[T]:
@@ -123,7 +123,7 @@ class __Features(type):
                 features[cls.RACE].subraces[s] if s != 'None' else None,
             dependencies=[cls.REGION, cls.RACE])
 
-        def culture(generator: 'EntityGenerator', features: FeatureMapping) -> Culture:
+        def culture(generator: 'EntityGenerator', features: FeatureMapping) -> 'Culture':
             region: str = features[Features.REGION]
             region_cultures: dict[str, int] = generator.config['REGIONS'][region]['cultures']
             culture_name = generator.choose(
@@ -131,13 +131,16 @@ class __Features(type):
                 weights=list(region_cultures.values()))
             return Culture.from_config(generator.config, culture_name)
         cls.CULTURE: Feature[Culture] = Feature('culture', culture,
+            from_str=lambda s, _: Culture.from_config(flask.current_app.config, s),
             dependencies=[cls.REGION])
 
         cls.SEX: Feature[Sex] = Feature.choice('sex', SEXES)
+        cls.AGE: Feature[str] = Feature.choice('age',
+            # Age distribution is more or less uniform, only decreasing for old ages
+            ['Young Adult', 'Middle Aged', 'Old'], weights=[3, 3, 1])
         cls.NAME: Feature[str] = Feature('name',
-            lambda helper, features: features[cls.CULTURE].namer
-                .name(features[cls.SEX], helper.rng),
-            dependencies=[cls.CULTURE, cls.SEX])
+            lambda helper, features: features[cls.CULTURE].namer.name(features, helper.rng),
+            dependencies=[cls.CULTURE, cls.SEX, cls.AGE, cls.RACE])
         cls.HEIGHT: Feature[str] = Feature.choice('height',
             # 68% of values in a normal distribution are within 1 standard deviation of the mean
             ['Short', 'Average', 'Tall'], weights=[0.16, 0.68, 0.16])
@@ -154,9 +157,6 @@ class __Features(type):
         cls.NEGATIVE_PERSONALITY: Feature[str] = Feature.from_yaml(features_yaml,
             'negative_personality', display='Negative Personality')
         cls.MANNERISM: Feature[str] = Feature.from_yaml(features_yaml, 'mannerism')
-        cls.AGE: Feature[str] = Feature.choice('age',
-            # Age distribution is more or less uniform, only decreasing for old ages
-            ['Young Adult', 'Middle Aged', 'Old'], weights=[3, 3, 1])
         cls._BY_NAME = {value.name: value for value in vars(cls).values()
             if isinstance(value, Feature)}
 
@@ -266,3 +266,47 @@ class EntityGenerator:
                 continue
             feature.generate_into(self, feature_values)
         return Entity(feature_values)
+
+
+class Namer:
+    def name(self, features: FeatureMapping, rng: Random) -> str:
+        raise NotImplementedError()
+
+
+class FormattedNamer(Namer):
+    Format = list[str | list[str]]
+
+    def __init__(self, format: Format, names: Mapping[str, list[str]]):
+        self.format = format
+        self.names = names
+
+    def name(self, features: FeatureMapping, rng: Random) -> str:
+        def part_type(part: str | list[str]) -> str:
+            match part:
+                case 'Gender':
+                    return features[Features.SEX]
+                case str():
+                    return part
+                case list():
+                    return part_type(rng.choice(part))
+        return ' '.join(rng.choice(self.names[part_type(part)])
+            for part in self.format)
+
+
+class Culture:
+    BY_NAME: dict[str, 'Culture'] = {}
+
+    def __init__(self, name: str, namer: Namer) -> None:
+        self.name = name
+        self.namer = namer
+        Culture.BY_NAME[name] = self
+
+    @staticmethod
+    def from_config(config: dict[str, Any], culture_name: str):
+        if culture_name in Culture.BY_NAME:
+            return Culture.BY_NAME[culture_name]
+        culture_args = config['CULTURES'][culture_name]
+        return Culture(culture_name, culture_args)
+
+    def __str__(self) -> str:
+        return self.name
