@@ -23,15 +23,21 @@ class Race:
     subraces: dict[str, Subrace]
 
     def __init__(self, name: str,
-                 subraces: dict[str, dict[str, Any] | Subrace] = {}):
+                 subraces: list[str | Subrace] = []):
         self.name = name
-        self.subraces = {subname:
-            args if isinstance(args, Subrace) else Subrace(self, subname)
-            for subname, args in subraces.items()}
+        self.subraces = {}
+        for subrace in subraces:
+            match subrace:
+                case Subrace():
+                    self.subraces[subrace.subname] = subrace
+                case str():
+                    self.subraces[subrace] = Subrace(self, subrace)
         BY_NAME[name] = self
 
     def derive(self, **overrides) -> 'Race':
-        return Race(name=self.name, subraces={**self.subraces})
+        args: dict[str, Any] = dict(name=self.name, subraces=list(self.subraces.values()))
+        args.update(overrides)
+        return Race(**args)
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Race) and self.name == other.name
