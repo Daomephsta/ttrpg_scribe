@@ -19,6 +19,22 @@
             ],
             "jinja": true,
             "justMyCode": false
+        },
+        {
+            "name": "Debug PF2e Bestiary",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "dnd_scribe.pf2e_bestiary.flask",
+                "FLASK_DEBUG": "True"
+            },
+            "args": [
+                "run",
+                "--debug"
+            ],
+            "jinja": true,
+            "justMyCode": false
         }
     ]
 }

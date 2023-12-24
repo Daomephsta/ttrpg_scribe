@@ -381,6 +381,24 @@ type = "directory"
 url = "../npc"
 
 [[package]]
+name = "dnd-scribe-pf2e-bestiary"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+dnd_scribe_core = {path = "../core", develop = true}
+flask = "^2.3.2"
+pluralizer = "^1.2.0"
+
+[package.source]
+type = "directory"
+url = "../pf2e_bestiary"
+
+[[package]]
 name = "flask"
 version = "2.3.3"
 description = "A simple framework for building complex web applications."
@@ -1253,4 +1271,4 @@ runtime = ["matplotlib", "pandas", "tabulate"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "dd5f9ef6f2c91d5717279bd8c5fd5e58b320dd3b943d840bf3117632cf18a7ba"
+content-hash = "33dff0ad036f58e54a417f36c59ada11d552b76463199d67ac18e9d504c29f5d"

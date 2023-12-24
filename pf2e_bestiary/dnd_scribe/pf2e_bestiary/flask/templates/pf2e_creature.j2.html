@@ -1,0 +1,183 @@
+{%-macro simple_action(action) %}
+<b>{{ action.name }}</b>
+{{ '\u25C6' * action.cost }}
+{% if action.traits -%}
+    ({{ action.traits | join(', ') }})
+{% endif %}
+{{ action.desc | safe }}
+{% endmacro %}
+
+{%- macro melee_action(action) -%}
+<b>Melee</b>
+{{ action.name }} 
+{{ '\u25C6' * action.cost }}
+{%- set malus_sep = joiner('/') -%}
+{% for malus in action.attack_maluses() %}
+    {{ malus_sep() }} {{ '%+d' | format(action.bonus - malus) }}
+{% endfor %}
+{% if action.traits %}
+    ({{ action.traits | join(', ') }})
+{% endif %}
+{% if action.damage %}
+    <b>Damage</b>
+    {%- set damage_sep = joiner('plus') -%}
+    {% for amount, kind in action.damage %}
+        {{ damage_sep() }} {{ amount }} {{ kind }}
+    {% endfor %}
+{% endif %}
+{% if action.effects %}
+    <b>Effect</b>
+    {% for effect in action.effects %}
+        {{ effect.replace('-', ' ') }}
+    {% endfor %}
+{% endif %}
+{% endmacro %}
+
+{% macro stat_block(creature, collapsible=False) %}
+{% if creature is exception %}
+{# Output the exception into the log and HTML #}
+<div class="error">{{ creature | handle_exception }}</div>
+{% else %}
+{# Output a stat block otherwise #}
+<style>
+.pf2e_creature {
+    font-family: Arial;
+    background-color: #f8f3e8;
+    margin: 10px 0;
+    padding: 10px;
+}
+.pf2e_creature .name {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.pf2e_creature .trait {
+    text-transform: uppercase;
+    font-weight: bold;
+    background-color: lightcoral;
+    padding: 5px;
+}
+.pf2e_creature .alignment {
+    background-color: lightblue;
+}
+.pf2e_creature .size {
+    background-color: lightgreen;
+}
+.pf2e_creature div p{
+    display: inline;
+}
+.pf2e_creature li p{
+    display: inline;
+}
+.pf2e_creature .action_list {
+    list-style: none;
+    padding-left: 0px;
+}
+.pf2e_creature hr.intrasection {
+    color: red;
+}
+</style>
+<div class="pf2e_creature">
+    {% if collapsible %}
+    <input type="checkbox" class="stat_block_collapser name" data-name="{{ creature.name }}">
+    <div class="stat_block_content">
+    {% else %}
+    <p class="name">{{ creature.name }}</p>
+    {% endif %}
+    <!-- Traits -->
+    <p> 
+    {%- for trait in creature.alignments %}
+        <span class="trait alignment">{{ trait }}</span>
+    {%- endfor %}
+        <span class="trait size">{{ creature.size }}</span>
+    {%- for trait in creature.traits %}
+        <span class="trait">{{ trait }}</span>
+    {%- endfor %}
+    </p>
+    <p><b>Perception</b> {{ '{:+d}'.format(creature.perception) }}; {{ creature.senses | join(', ') }}</p>
+    <!-- Skills -->
+    <p>
+        <b>Skills</b>
+        {%- for name, mod in creature.skills %}
+            {{ '{} {:+d}'.format(name, mod) }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+    </p>
+    <!-- Abilities -->
+    <p>
+    {%- for key in ['str', 'dex', 'con', 'int', 'wis', 'cha']%}
+        <b>{{ key.title() }}</b> {{ '{:+d}'.format(creature.abilities[key]) }}{% if not loop.last %}, {% endif %}
+    {%- endfor %}
+    </p>
+    <!-- Interactions -->
+    <ul class="action_list"> 
+    {%- for name, desc in creature.interactions %}
+        <li><b>{{ name }}</b> {{ desc | safe }}</li>
+    {%- endfor %}
+    </ul>
+    <hr>
+    <p>
+        <b>AC</b> {{ creature.ac }};
+        <!-- Saves -->
+    {%- for key, value in creature.saves.items() %}
+        <b>{{ key.title() }}</b> {{ '{:+d}'.format(value) }}{% if not loop.last %}, {% endif %}
+    {%- endfor %}
+    </p>
+    <p>
+        {%- set semicolon = joiner(';') %}
+        <b>HP</b> {{ creature.max_hp }}
+        {%- if creature.immunities -%}
+        ; <b>Immunities</b> {{ creature.immunities | join(', ')}}
+        {%- endif %}
+        {%- if creature.weaknesses -%}
+        ; <b>Weaknesses</b>
+        {%- for key, value in creature.weaknesses %}
+            {{ key }} {{ '{:+d}'.format(value) }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+        {%- endif %}
+    </p>
+    <!-- Defenses -->
+    <div>
+    {%- for name, desc in creature.defenses %}
+        <b>{{ name }}</b> {{ desc | safe }}
+    {%- endfor %}
+    </div>
+    <hr>
+    <!-- Speeds -->
+    <p>
+        <b>Speed</b> 
+        {%- for kind, value in creature.speeds.items() %}
+            {%- if kind != 'walk' %}
+            {{ kind }} {{ value }} ft
+            {%- else %}
+            {{ value }} ft
+            {%- endif %}
+            {%- if not loop.last %}, {% endif %}
+        {%- endfor %}
+    </p>
+    <!-- Actions -->
+    <ul class="action_list">
+        {%- for action in creature.actions %}
+        <li>
+        {%- if action.kind() == 'SimpleAction' %}
+        {{ simple_action(action) }}
+        {%- elif action.kind() == 'Melee' %}
+        {{ melee_action(action) }}
+        {%- endif %}
+        </li>
+        {%- endfor %}
+    </ul>
+    <hr>
+    {% if collapsible %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% if render | default(False) %}
+<!DOCTYPE html>
+<head>
+    <title>{{ creature.name | title }}</title>
+</head>
+<body>{{stat_block(creature, collapsible=True)}}</body>
+{% endif %}
