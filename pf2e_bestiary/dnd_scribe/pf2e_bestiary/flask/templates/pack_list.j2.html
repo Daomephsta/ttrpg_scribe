@@ -1,0 +1,9 @@
+<html>
+    <head><title>Creature Packs</title></head>
+    <h1>Creature Packs</h1>
+    <ul>
+    {% for pack in packs %}
+        <li><a href="/creatures/pack/{{ pack }}">{{ pack }}</a></li>
+    {% endfor %}
+    </ul>
+</html>
