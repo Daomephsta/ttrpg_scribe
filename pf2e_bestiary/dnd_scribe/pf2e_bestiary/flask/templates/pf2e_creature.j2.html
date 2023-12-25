@@ -9,7 +9,7 @@
 
 {%- macro melee_action(action) -%}
 <b>Melee</b>
-{{ action.name }} 
+{{ action.name }}
 {{ '\u25C6' * action.cost }}
 {%- set malus_sep = joiner('/') -%}
 {% for malus in action.attack_maluses() %}
@@ -85,7 +85,7 @@
     <p class="name">{{ creature.name }}</p>
     {% endif %}
     <!-- Traits -->
-    <p> 
+    <p>
     {%- for trait in creature.alignments %}
         <span class="trait alignment">{{ trait }}</span>
     {%- endfor %}
@@ -109,7 +109,7 @@
     {%- endfor %}
     </p>
     <!-- Interactions -->
-    <ul class="action_list"> 
+    <ul class="action_list">
     {%- for name, desc in creature.interactions %}
         <li><b>{{ name }}</b> {{ desc | safe }}</li>
     {%- endfor %}
@@ -144,7 +144,7 @@
     <hr>
     <!-- Speeds -->
     <p>
-        <b>Speed</b> 
+        <b>Speed</b>
         {%- for kind, value in creature.speeds.items() %}
             {%- if kind != 'walk' %}
             {{ kind }} {{ value }} ft
@@ -179,5 +179,5 @@
 <head>
     <title>{{ creature.name | title }}</title>
 </head>
-<body>{{stat_block(creature, collapsible=True)}}</body>
+<body>{{stat_block(creature, collapsible=False)}}</body>
 {% endif %}

@@ -17,23 +17,11 @@ def list_creatures():
     packs_dir = foundry.pf2e_pack_dir()/'packs'
     packs = foundry.pf2e_pack_dir().glob('packs/*-bestiary')
     creatures = (
-        (pack.name, (entry.relative_to(packs_dir) 
+        (pack.name, (entry.relative_to(packs_dir)
                      for entry in pack.glob('*.json')))
         for pack in packs
     )
-    html = [
-        '<html>',
-        '<head><title>Creatures</title></head>',
-        '<h1>Creatures</h1>',
-    ]
-    for pack, creatures in creatures:
-        html.append(f'<h2>{pack}</h2>')
-        html.append('<ul>')
-        for creature in creatures:
-            html.append(f'<li><a href="/creatures/view/{creature.with_suffix('').as_posix()}">{creature.stem.replace('-', ' ').title()}</a></li>')
-        html.append('</ul>')
-    html.append('</html>',)
-    return '\n'.join(html)
+    return render_template('creature_list.j2.html', creatures=creatures)
 
 
 @blueprint.get('/view/<path:id>')

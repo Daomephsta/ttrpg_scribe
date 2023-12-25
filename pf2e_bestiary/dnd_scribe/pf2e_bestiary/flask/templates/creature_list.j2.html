@@ -1,0 +1,14 @@
+<html>
+    <head><title>Creatures</title></head>
+    <h1>Creatures</h1>
+    {% for pack, creatures in creatures %}
+        <h2>{{ pack }}</h2>
+        <ul>
+        {% for creature in creatures %}
+        <li><a href="/creatures/view/{{ creature.with_suffix('').as_posix() }}">
+        {{ creature.stem.replace('-', ' ').title() }}
+        </a></li>
+        {% endfor %}
+        </ul>
+    {% endfor %}
+</html>
