@@ -55,6 +55,23 @@ type = "directory"
 url = "../core"
 
 [[package]]
+name = "dnd-scribe-encounter"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+dnd_scribe_core = {path = "../core", develop = true}
+flask = "^2.3.2"
+
+[package.source]
+type = "directory"
+url = "../encounter"
+
+[[package]]
 name = "flask"
 version = "2.3.3"
 description = "A simple framework for building complex web applications."
@@ -189,6 +206,17 @@ files = [
 ]
 
 [[package]]
+name = "pluralizer"
+version = "1.2.0"
+description = "Singularize or pluralize a given word useing a pre-defined list of rules"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pluralizer-1.2.0-py3-none-any.whl", hash = "sha256:d8f92ffa787661d9e704d1e0d8abc6c6c4bbaae9e790d7c709707eafbe17ed12"},
+    {file = "pluralizer-1.2.0.tar.gz", hash = "sha256:fe3fb8e1e53fabf372e77d8cbebe04b0f8fc7db853aeff50095dbd5628ac39c5"},
+]
+
+[[package]]
 name = "python-frontmatter"
 version = "1.0.1"
 description = "Parse and manage posts with YAML (or other) frontmatter"
@@ -285,4 +313,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5ccc5ba13b24ef4749f8d06a11d6b8b759fa4d56ebca00518cd088c00f5b93f6"
+content-hash = "2a27a59f6df06aeee9f20e36ee5cb0c3920ce871e0e273aa9b46914bec81c844"

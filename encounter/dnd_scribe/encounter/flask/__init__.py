@@ -1,23 +1,40 @@
+from abc import ABC, abstractmethod
 import itertools
 from http import HTTPStatus
 from pathlib import Path
 
 import flask
 
-import dnd_scribe.bestiary.flask
 import dnd_scribe.core.flask
-from dnd_scribe.bestiary.creature import Creature
-from dnd_scribe.bestiary.creature.ability import DEX
-from dnd_scribe.core import dice
+
+import random
 
 
-def create_app(instance_path: str | Path):
+class Creature(ABC):
+    @abstractmethod
+    def name(self) -> str: ...
+
+    @abstractmethod
+    def initiative_mod(self) -> int: ...
+
+    @abstractmethod
+    def default_hp(self) -> int: ...
+
+
+class System:
+    bestiary_blueprint: flask.Blueprint
+
+    def read_creature(self, json) -> Creature:
+        raise NotImplementedError()
+
+
+def create_app(instance_path: str | Path, system: System):
     app = flask.Flask('dnd_scribe.encounter.flask',
         instance_path=Path(instance_path).absolute().as_posix(),
         instance_relative_config=True)
     app.config.from_pyfile('config.py')
     dnd_scribe.core.flask.extend(app)
-    app.register_blueprint(dnd_scribe.bestiary.flask.blueprint, url_prefix='/creatures')
+    app.register_blueprint(system.bestiary_blueprint, url_prefix='/creatures')
 
     @app.post('/')
     def create_encounter():
@@ -85,7 +102,7 @@ def create_app(instance_path: str | Path):
     class Encounter(metaclass=__Encounter):
         def __init__(self, npc_specs: list[tuple[int, Creature]], pcs: list[str]):
             self.npcs = []
-            self.creatures = {creature.name: creature for _, creature in npc_specs}
+            self.creatures = {creature.name(): creature for _, creature in npc_specs}
             self.pcs = pcs
             self.npc_ids = itertools.count(start=1)
             for count, creature in npc_specs:
@@ -94,19 +111,19 @@ def create_app(instance_path: str | Path):
 
         @staticmethod
         def from_json(json):
-            return Encounter([(count, Creature.from_json(creature_json))
+            return Encounter([(count, system.read_creature(creature_json))
                 for [count, creature_json] in json['npcs']], json['pcs'])
 
         def add_simple_npc(self, name: str, initiative_mod: int, initial_hp):
             return self.npcs.append(dict(
                 name=f'{name} {next(self.npc_ids)}',
-                initiative=dice.d(20).roll() + initiative_mod,
+                initiative=random.randint(1, 20) + initiative_mod,
                 initial_hp=initial_hp))
 
         def add_npc(self, creature: Creature):
             self.add_simple_npc(
-                name=creature.name,
-                initiative_mod=DEX.mod(creature),
-                initial_hp=creature.default_hp(creature))
+                name=creature.name(),
+                initiative_mod=creature.initiative_mod(),
+                initial_hp=creature.default_hp())
 
     return app

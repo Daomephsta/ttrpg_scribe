@@ -50,11 +50,11 @@ class Creature:
         self.hp = hp
         match args.get('default_hp'):
             case float() | int() as ac_num:
-                self.default_hp = Constant(ac_num)
+                self._default_hp = Constant(ac_num)
             case None:
-                self.default_hp = Creature.mean_hp
+                self._default_hp = Creature.mean_hp
             case _ as func:
-                self.default_hp = func
+                self._default_hp = func
         match speeds:
             case dict() as speeds:
                 self.speeds = speeds
@@ -99,7 +99,7 @@ class Creature:
             'alignment': self.alignment,
             'ac': self.ac,
             'hp': self.hp,
-            'default_hp': self.default_hp,
+            'default_hp': self._default_hp,
             'speeds': self.speeds.values(),
             'statistics': self.statistics,
             'cr': self.cr,
@@ -128,6 +128,9 @@ class Creature:
     def plural(self, count) -> str:
         return Creature.PLURALIZER.pluralize(self.name, count)
 
+    def default_hp(self):
+        return self._default_hp(self)
+
     def mean_hp(self):
         count, size = self.hp
         con_bonus = count * mod(self.con)
@@ -146,8 +149,8 @@ class Creature:
             'alignment': self.alignment,
             'ac': [ac.to_json() for ac in self.ac],
             'hp': self.hp,
-            'default_hp': self.default_hp if isinstance(self.default_hp, Constant)
-                else self.default_hp.__name__,
+            'default_hp': self._default_hp if isinstance(self._default_hp, Constant)
+                else self._default_hp.__name__,
             'speeds': [speed.to_json() for speed in self.speeds.values()],
             'statistics': self.statistics,
             'cr': self.cr,
@@ -209,7 +212,7 @@ class Creature:
     def str_hp(self):
         count, size = self.hp
         con_bonus = count * mod(self.con)
-        s = f'{self.default_hp(self):.0f}'
+        s = f'{self._default_hp(self):.0f}'
         if con_bonus != 0:
             s += f' ({count}d{size}{con_bonus:+d})'
         else:

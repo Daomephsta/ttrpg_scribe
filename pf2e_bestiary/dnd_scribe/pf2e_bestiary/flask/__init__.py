@@ -3,6 +3,7 @@ import json
 from flask import Blueprint, Flask, render_template
 
 import dnd_scribe.core.flask
+import dnd_scribe.encounter.flask
 from dnd_scribe.pf2e_bestiary import foundry
 from dnd_scribe.pf2e_bestiary.creature import PF2Creature
 
@@ -37,7 +38,7 @@ def list_creatures(pack: str):
 def creature(id: str):
     with foundry.pf2e_pack_open(f'packs/{id}.json') as data:
         return render_template(
-            'pf2e_creature.j2.html',
+            'creature.j2.html',
             creature=PF2Creature.from_json(json.load(data)),
             render=True)
 
@@ -47,3 +48,7 @@ def create_app():
     app.register_blueprint(blueprint)
     dnd_scribe.core.flask.extend(app)
     return app
+
+
+class Pf2eSystem(dnd_scribe.encounter.flask.System):
+    bestiary_blueprint = blueprint

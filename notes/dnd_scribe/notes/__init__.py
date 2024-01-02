@@ -37,7 +37,6 @@ class Notes(flask.Flask):
 def create_app(project_dir: str | Path | None = None):
     app = Notes(Path(project_dir) if project_dir else Path.cwd())
     dnd_scribe.core.flask.extend(app)
-    app.register_blueprint(dnd_scribe.bestiary.flask.blueprint)
 
     @app.get('/')
     @app.get('/index.html')
