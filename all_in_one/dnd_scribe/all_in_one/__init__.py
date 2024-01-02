@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
@@ -23,8 +24,18 @@ def make_app(project_dir: str | Path):
         ('/npc/gui', 'NPC Generator', {}),
         ('/clean', 'Clean _build', {'method': 'post'}),
     ]
+    match app.config.get('SYSTEM'):
+        case 'dnd_5e':
+            from dnd_scribe.bestiary.flask import Dnd5eSystem
+            system = Dnd5eSystem()
+        case 'pf2e':
+            from dnd_scribe.pf2e_bestiary.flask import Pf2eSystem
+            system = Pf2eSystem()
+        case _ as system:
+            raise ValueError(f'Unknown game system {system}')
+    app.register_blueprint(system.bestiary_blueprint)
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-        '/encounter': dnd_scribe.encounter.flask.create_app(project_dir),
+        '/encounter': dnd_scribe.encounter.flask.create_app(project_dir, system),
         '/npc': dnd_scribe.npc.flask_app.create_app(project_dir)
     })
 
@@ -80,14 +91,16 @@ def clean(project_dir: Path):
         shutil.rmtree(project_dir/'_build')
 
 
-def new(project_dir: Path):
+def new(project_dir: Path, system: str):
     import importlib.resources
     import zipfile
 
     if not project_dir.exists():
         project_dir.mkdir()
-    with importlib.resources.path('dnd_scribe.all_in_one',
-                                  'project_template.zip') as template:
+    with importlib.resources.path('dnd_scribe.all_in_one.project_templates',
+                                  f'{system}.zip') as template:
+        if not template.exists():
+            raise ValueError(f'No project template for {system} game system')
         with zipfile.ZipFile(template) as template:
             template.extractall(project_dir)
 
@@ -97,7 +110,7 @@ def main():
 
     import argcomplete
 
-    parser = ArgumentParser('dnd_scribe.all_in_one')
+    parser = ArgumentParser('dnd_scribe')
     parser.add_argument('-p', '--project', type=Path, default=Path.cwd())
     parser.set_defaults(subcommand=lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
@@ -110,7 +123,8 @@ def main():
     clean_parser.set_defaults(subcommand=lambda args: clean(args.project))
 
     new_parser = subcommands.add_parser('new')
-    new_parser.set_defaults(subcommand=lambda args: new(args.project))
+    new_parser.add_argument('--system')
+    new_parser.set_defaults(subcommand=lambda args: new(args.project, args.system))
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
