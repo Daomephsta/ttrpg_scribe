@@ -11,6 +11,7 @@ python = "^3.11"
 flask = "^2.3.2"
 markdown = "^3.4.3"
 python-frontmatter = "^1.0.0"
+pluralizer = "^1.2.0"
 
 
 [build-system]

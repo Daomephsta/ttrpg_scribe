@@ -4,7 +4,7 @@
     <ul>
         {% set xp = namespace(total=0) %}
         {% for count, creature in npcs %}
-            <li>{{ count }} {{ creature.plural(count) }}</li>
+            <li>{{ count }} {{ creature.name | plural(count) }}</li>
             {% set xp.total = xp.total + count * creature.xp %}
         {% endfor %}
         {% if show_xp %}

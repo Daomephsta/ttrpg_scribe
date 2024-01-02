@@ -5,6 +5,7 @@ import flask
 from markupsafe import Markup
 
 import dnd_scribe.core.markdown
+from pluralizer import Pluralizer
 
 _blueprint = flask.Blueprint('core', __name__, static_folder='static',
                       template_folder='templates', url_prefix='/core')
@@ -49,3 +50,11 @@ def inline_markdown(s: str):
     md = dnd_scribe.core.markdown.renderer.convert(s)
     return Markup('\n'.join(line.removeprefix('<p>').removesuffix('</p>')
         for line in md.splitlines()))
+
+
+__PLURALIZER = Pluralizer()
+
+
+@_blueprint.app_template_filter()
+def plural(s: str, count: int):
+    return __PLURALIZER.pluralize(s, count)

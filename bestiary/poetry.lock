@@ -200,6 +200,7 @@ develop = true
 [package.dependencies]
 flask = "^2.3.2"
 markdown = "^3.4.3"
+pluralizer = "^1.2.0"
 python-frontmatter = "^1.0.0"
 
 [package.source]
@@ -583,4 +584,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "d10bf81f7c033cfc5b962fc35034a75b40bd2329d7b31ba0b3a27e5a7850a178"
+content-hash = "f5a2bd57039c82b35e8f26076f4187271d9365867491f252b1caf7a9956b99de"
