@@ -11,8 +11,7 @@ import random
 
 
 class Creature(ABC):
-    @abstractmethod
-    def name(self) -> str: ...
+    name: str
 
     @abstractmethod
     def initiative_mod(self) -> int: ...
@@ -32,6 +31,7 @@ def create_app(instance_path: str | Path, system: System):
     app = flask.Flask('dnd_scribe.encounter.flask',
         instance_path=Path(instance_path).absolute().as_posix(),
         instance_relative_config=True)
+    app.jinja_env.globals['bestiary_blueprint'] = system.bestiary_blueprint.name
     app.config.from_pyfile('config.py')
     dnd_scribe.core.flask.extend(app)
     app.register_blueprint(system.bestiary_blueprint, url_prefix='/creatures')
@@ -102,7 +102,7 @@ def create_app(instance_path: str | Path, system: System):
     class Encounter(metaclass=__Encounter):
         def __init__(self, npc_specs: list[tuple[int, Creature]], pcs: list[str]):
             self.npcs = []
-            self.creatures = {creature.name(): creature for _, creature in npc_specs}
+            self.creatures = {creature.name: creature for _, creature in npc_specs}
             self.pcs = pcs
             self.npc_ids = itertools.count(start=1)
             for count, creature in npc_specs:
@@ -122,7 +122,7 @@ def create_app(instance_path: str | Path, system: System):
 
         def add_npc(self, creature: Creature):
             self.add_simple_npc(
-                name=creature.name(),
+                name=creature.name,
                 initiative_mod=creature.initiative_mod(),
                 initial_hp=creature.default_hp())
 

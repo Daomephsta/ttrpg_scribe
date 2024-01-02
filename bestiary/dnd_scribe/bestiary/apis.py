@@ -11,7 +11,7 @@ import flask
 from requests import Session
 from requests_cache import CachedSession
 
-from dnd_scribe.bestiary.creature import Creature
+from dnd_scribe.bestiary.creature import DndCreature
 from dnd_scribe.bestiary.creature.ability import Ability, Skill
 from dnd_scribe.bestiary.creature.armour import ArmourClass
 from dnd_scribe.bestiary.creature.movement import Movement
@@ -19,7 +19,7 @@ from dnd_scribe.bestiary.creature.sense import Sense
 from dnd_scribe.core import signals
 
 type ErrorHandler[T] = Callable[[Exception], T]
-type Template = Callable[[Creature], None]
+type Template = Callable[[DndCreature], None]
 
 
 @cache
@@ -35,7 +35,7 @@ class Api[T](metaclass=ABCMeta):
         self.error_handler = error_handler
 
     @abstractmethod
-    def creature(self, index: str) -> Creature | T:
+    def creature(self, index: str) -> DndCreature | T:
         raise NotImplementedError
 
 
@@ -62,7 +62,7 @@ class HttpApi[T](Api[T], metaclass=ABCMeta):
             self.__session = CachedSession((cache_dir()/cache_name).as_posix())
         return self.__session
 
-    def creature(self, index: str) -> Creature | T:
+    def creature(self, index: str) -> DndCreature | T:
         url = self.base_url + index
         logging.debug('GET %s', url)
         try:
@@ -76,7 +76,7 @@ class HttpApi[T](Api[T], metaclass=ABCMeta):
         data = response.json()
 
         try:
-            return Creature(**self._parse_creature_data(data))
+            return DndCreature(**self._parse_creature_data(data))
         except Exception as ex:
             ex.add_note(str(data))
             return self.error_handler(ex)
@@ -137,7 +137,7 @@ class Dnd5eApi[T](HttpApi[T]):
             'alignment': data['alignment'],
             'ac': [parse_ac(ac_data) for ac_data in data['armor_class']],
             'hp': tuple(map(int, data['hit_dice'].split('d'))),
-            'default_hp': Creature.mean_hp,
+            'default_hp': DndCreature.mean_hp,
             'speeds': Movement.from_dict(data['speed'],
                 lambda v: int(v.removesuffix(' ft.'))),
             'statistics': operator.itemgetter('strength', 'dexterity',

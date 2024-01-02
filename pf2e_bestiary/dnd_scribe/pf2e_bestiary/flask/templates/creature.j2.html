@@ -39,44 +39,6 @@
 <div class="error">{{ creature | handle_exception }}</div>
 {% else %}
 {# Output a stat block otherwise #}
-<style>
-.pf2e_creature {
-    font-family: Arial;
-    background-color: #f8f3e8;
-    margin: 10px 0;
-    padding: 10px;
-}
-.pf2e_creature .name {
-    font-size: 1.5em;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-.pf2e_creature .trait {
-    text-transform: uppercase;
-    font-weight: bold;
-    background-color: lightcoral;
-    padding: 5px;
-}
-.pf2e_creature .alignment {
-    background-color: lightblue;
-}
-.pf2e_creature .size {
-    background-color: lightgreen;
-}
-.pf2e_creature div p{
-    display: inline;
-}
-.pf2e_creature li p{
-    display: inline;
-}
-.pf2e_creature .action_list {
-    list-style: none;
-    padding-left: 0px;
-}
-.pf2e_creature hr.intrasection {
-    color: red;
-}
-</style>
 <div class="pf2e_creature">
     {% if collapsible %}
     <input type="checkbox" class="stat_block_collapser name" data-name="{{ creature.name }}">

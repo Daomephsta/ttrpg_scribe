@@ -1,0 +1,55 @@
+.pf2e_creature {
+    font-family: Arial;
+    background-color: #f8f3e8;
+    margin: 10px 0;
+    padding: 10px;
+}
+.pf2e_creature .name {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.pf2e_creature .trait {
+    text-transform: uppercase;
+    font-weight: bold;
+    background-color: lightcoral;
+    padding: 5px;
+}
+.pf2e_creature .alignment {
+    background-color: lightblue;
+}
+.pf2e_creature .size {
+    background-color: lightgreen;
+}
+.pf2e_creature .action_list {
+    list-style: none;
+    padding-left: 0px;
+}
+.pf2e_creature .action_list li p {
+    display: inline;
+}
+.pf2e_creature p {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+.pf2e_creature hr.intrasection {
+    color: red;
+}
+.stat_block_content {
+    transition: height 0.2s;
+    max-height: 0px;
+    overflow-y: clip;
+}
+.stat_block_collapser {
+    appearance: none;
+}
+.stat_block_collapser::after {
+    content: '\02c3  ' attr(data-name);
+}
+.stat_block_collapser:checked:after {
+    content: '\02c5  ' attr(data-name);
+}
+.stat_block_collapser:checked ~ .stat_block_content {
+    max-height: initial;
+    overflow-y: initial;
+}

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from . import Creature
+from . import DndCreature
 from .ability import Ability
 
 
@@ -12,7 +12,7 @@ class Spellcasting:
     at_will: list[str]
     levelled: dict[int, tuple[int, list[str]]]
 
-    def __call__(self, creature: Creature) -> tuple[str, str]:
+    def __call__(self, creature: DndCreature) -> tuple[str, str]:
         def level_ordinal(level: int) -> str:
             match level:
                 case 1: return '1st'

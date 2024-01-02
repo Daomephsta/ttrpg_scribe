@@ -1,7 +1,8 @@
 from flask import Blueprint, Flask, render_template
 
-import dnd_scribe.encounter.flask
 from dnd_scribe.bestiary import apis
+from dnd_scribe.bestiary.creature import DndCreature as DndCreature
+from dnd_scribe.encounter.flask import Creature, System
 
 blueprint = Blueprint('bestiary', __name__,
     static_folder='static',
@@ -22,5 +23,8 @@ def create_app():
     return app
 
 
-class Dnd5eSystem(dnd_scribe.encounter.flask.System):
+class Dnd5eSystem(System):
     bestiary_blueprint = blueprint
+
+    def read_creature(self, json) -> Creature:
+        return DndCreature.from_json(json)

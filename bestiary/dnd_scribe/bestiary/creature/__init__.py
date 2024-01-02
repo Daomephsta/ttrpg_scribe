@@ -3,9 +3,9 @@ import math
 import re
 from typing import Any, Callable, Iterable, TypedDict, Unpack, cast
 
-from pluralizer import Pluralizer
+from dnd_scribe.encounter.flask import Creature
 
-from .ability import Ability, Perception, Skill, mod
+from .ability import DEX, Ability, Perception, Skill, mod
 from .armour import ArmourClass
 from .movement import Movement
 from .sense import Sense
@@ -18,12 +18,11 @@ class Constant(int):
         return self
 
 
-class Creature:
+class DndCreature(Creature):
     ITALICISE_PATTERN = re.compile(r'(Melee Weapon Attack|Ranged Weapon Attack|Hit)')
-    PLURALIZER = Pluralizer()
-    DefaultHp = Callable[['Creature'], int]
+    DefaultHp = Callable[['DndCreature'], int]
     Statistics = tuple[int, int, int, int, int, int]
-    Feature = tuple[str, str] | Callable[['Creature'], tuple[str, str]]
+    Feature = tuple[str, str] | Callable[['DndCreature'], tuple[str, str]]
     Trait = Feature
     Action = Feature
     TemplateArgs = TypedDict('TemplateArgs', {'name': str, 'size': str, 'type': str, 'alignment': str, 'ac': int | list[ArmourClass], 'hp': tuple[int, int], 'speeds': Iterable[Movement], 'statistics': Statistics, 'cr': float, 'saves': list[Ability], 'skill_profs': list[Skill | tuple[Skill, int]], 'vulnerabilities': list[str], 'resistances': list[str], 'immunities': list[str], 'senses': list[Sense], 'languages': list[str], 'traits': list[Trait], 'actions': list[Action], 'bonus_actions': list[Action], 'reactions': list[Action], 'default_hp': DefaultHp | int, 'lore': str},  # noqa: E501
@@ -52,7 +51,7 @@ class Creature:
             case float() | int() as ac_num:
                 self._default_hp = Constant(ac_num)
             case None:
-                self._default_hp = Creature.mean_hp
+                self._default_hp = DndCreature.mean_hp
             case _ as func:
                 self._default_hp = func
         match speeds:
@@ -92,7 +91,7 @@ class Creature:
 
     def derive(self, *templates: Template, merge: dict[str, Any] = {},
                **overrides: Unpack[DeriveArgs]):
-        args: Creature.TemplateArgs = {
+        args: DndCreature.TemplateArgs = {
             'name': self.name,
             'size': self.size,
             'type': self.type,
@@ -123,10 +122,10 @@ class Creature:
         args.update(overrides)
         for template in templates:
             template(args)
-        return Creature(**args)
+        return DndCreature(**args)
 
-    def plural(self, count) -> str:
-        return Creature.PLURALIZER.pluralize(self.name, count)
+    def initiative_mod(self) -> int:
+        return DEX.mod(self)
 
     def default_hp(self):
         return self._default_hp(self)
@@ -170,7 +169,7 @@ class Creature:
 
     @staticmethod
     def from_json(json):
-        return Creature(
+        return DndCreature(
             name=json['name'],
             size=json['size'],
             type=json['type'],
@@ -178,9 +177,9 @@ class Creature:
             ac=[ArmourClass.from_json(ac_data) for ac_data in json['ac']],
             hp=cast(tuple[int, int], tuple(json['hp'])),
             default_hp=Constant(json['default_hp']) if isinstance(json['default_hp'], int)
-                else getattr(Creature, json['default_hp']),
+                else getattr(DndCreature, json['default_hp']),
             speeds=[Movement.from_json(speed) for speed in json['speeds']],
-            statistics=cast(Creature.Statistics, tuple(json['statistics'])),
+            statistics=cast(DndCreature.Statistics, tuple(json['statistics'])),
             cr=json['cr'],
             saves=[Ability.from_json(save) for save in json['saves']],
             skill_profs=[(Skill.from_json(skill), mod)
@@ -190,13 +189,13 @@ class Creature:
             immunities=json['immunities'],
             senses=[Sense.from_json(sense) for sense in json['senses']],
             languages=json['languages'],
-            traits=[cast(Creature.Trait, tuple(trait))
+            traits=[cast(DndCreature.Trait, tuple(trait))
                 for trait in json['traits']],
-            actions=[cast(Creature.Action, tuple(action))
+            actions=[cast(DndCreature.Action, tuple(action))
                 for action in json['actions']],
-            bonus_actions=[cast(Creature.Action, tuple(action))
+            bonus_actions=[cast(DndCreature.Action, tuple(action))
                 for action in json['bonus_actions']],
-            reactions=[cast(Creature.Action, tuple(action))
+            reactions=[cast(DndCreature.Action, tuple(action))
                 for action in json['reactions']],
             lore=json['lore']
         )

@@ -1,11 +1,11 @@
 from typing import Callable, TypedDict, Unpack
 
-from dnd_scribe.bestiary.creature import Creature, ability
+from dnd_scribe.bestiary.creature import DndCreature, ability
 from dnd_scribe.bestiary.creature.armour import ArmourClass
 
 
-def compose(*templates: Creature.Template) -> Creature.Template:
-    def composed(creature: Creature.TemplateArgs):
+def compose(*templates: DndCreature.Template) -> DndCreature.Template:
+    def composed(creature: DndCreature.TemplateArgs):
         for template in templates:
             template(creature)
     return composed
@@ -17,7 +17,7 @@ Scores = TypedDict('Scores', {'str': Score, 'dex': Score, 'con': Score,
 
 
 def scores(**values: Unpack[Scores]):
-    def template(creature: Creature.TemplateArgs):
+    def template(creature: DndCreature.TemplateArgs):
         def adjust_score(ability: str, current: int) -> int:
             if ability not in values:
                 return current
@@ -46,7 +46,7 @@ def malus(modifier: int, fallback: int = 0) -> Callable[[int], int]:
 
 def armour(base_ac: int, reason: str, dex_limit: int = 10):
     def template_factory(shield: bool = False):
-        def template(args: Creature.TemplateArgs):
+        def template(args: DndCreature.TemplateArgs):
             ac = base_ac + min(dex_limit, ability.mod(args['statistics'][1]))
             if shield:
                 ac += 2
@@ -84,14 +84,14 @@ def rename(full: str, *other_names: tuple[str, str]):
             target = target.replace(*replacement)
         return target
 
-    def process_feature(x: Creature.Feature):
+    def process_feature(x: DndCreature.Feature):
         match x:
             case (n, d):
                 return process(n), process(d)
             case _ as template:
                 return lambda creature: process_feature(template(creature))
 
-    def template(creature: Creature.TemplateArgs):
+    def template(creature: DndCreature.TemplateArgs):
         for case in [str.lower, str.title]:
             replacements.append((case(creature['name']), case(full)))
         creature['name'] = full

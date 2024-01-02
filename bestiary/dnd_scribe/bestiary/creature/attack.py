@@ -2,7 +2,7 @@ from typing import Literal
 
 from dnd_scribe.core.dice import Dice, d
 
-from . import Creature
+from . import DndCreature
 from .ability import DEX, STR, Ability
 
 type DamageType = Literal['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder']  # noqa: E501
@@ -26,7 +26,7 @@ class Attack:
     def describe(self, attack_mod: int, damage: str) -> str:
         raise NotImplementedError
 
-    def __call__(self, creature: Creature) -> tuple[str, str]:
+    def __call__(self, creature: DndCreature) -> tuple[str, str]:
         if self.damage_bonus is not None:
             damage = self.dice + self.damage_bonus
         else:
