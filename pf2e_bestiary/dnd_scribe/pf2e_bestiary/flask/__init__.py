@@ -72,24 +72,15 @@ class Pf2eSystem(System):
         total = sum(count * xp(creature) for count, creature in npcs)
 
         extra_players = len(party) - 4
-
-        if total <= 40 + extra_players * 10:
-            threat = 'Trivial'
-            reward = 0
-        elif total <= 60 + extra_players * 15:
-            threat = 'Low'
-            reward = 60
-        elif total <= 80 + extra_players * 20:
-            threat = 'Moderate'
-            reward = 80
-        elif total <= 120 + extra_players * 30:
-            threat = 'Severe'
-            reward = 120
-        elif total <= 160 + extra_players * 40:
-            threat = 'Extreme'
-            reward = 160
-        else:
-            threat = 'Are you sure?'
-            reward = 160
-
-        return f'{reward} ({threat})'
+        threat_levels = [
+            (40 + extra_players * 10, 'Trivial', 0),
+            (60 + extra_players * 15, 'Low', 60),
+            (80 + extra_players * 20, 'Moderate', 80),
+            (120 + extra_players * 30, 'Severe', 120),
+            (160 + extra_players * 40, 'Extreme', 160),
+        ]
+        for threshold, threat, reward in threat_levels:
+            if total <= threshold:
+                return f'{reward} ({total / threshold:.0%} {threat})'
+        [*_, (extreme_threshold, _, _)] = threat_levels
+        return f'160 (Are you sure? {total / extreme_threshold:.0%} Extreme)'
