@@ -19,6 +19,7 @@ HALF_ELF = Race('Half-Elf')
 # Advanced Player's Guide
 KOBOLD = Race('Kobold', ['Caveclimber', 'Cavern', 'Dragonscaled', 'Spellscale',
                          'Strongjaw', 'Tunnelflood', 'Venomtail'])
+ORC = Race('Orc', ['Badlands', 'Battle-Ready', 'Deep', 'Hold-Scarred', 'Rainfall', 'Winter'])
 TENGU = Race('Tengu', ['Dogtooth', 'Jinxed', 'Mountainkeeper', 'Skyborn',
                        'Stormtossed', 'Taloned', 'Wavediver'])
 
