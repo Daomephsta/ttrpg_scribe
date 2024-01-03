@@ -2,7 +2,7 @@
     <head><title>Creature Packs</title></head>
     <h1>Creature Packs</h1>
     <ul>
-    {% for pack in packs %}
+    {% for pack in packs | sort %}
         <li><a href="/creatures/pack/{{ pack }}">{{ pack }}</a></li>
     {% endfor %}
     </ul>
