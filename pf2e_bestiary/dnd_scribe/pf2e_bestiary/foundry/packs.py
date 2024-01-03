@@ -111,6 +111,7 @@ def creature(id: str) -> PF2Creature:
 
         return PF2Creature(
             name=data['name'],
+            level=system['details']['level']['value'],
             alignments=alignments if alignments else ['neutral'],
             size=SIZES[traits['size']['value']],
             traits=simple_traits,
@@ -129,5 +130,5 @@ def creature(id: str) -> PF2Creature:
             speeds=dict(speeds),
             actions=actions
         )
-    with open_pf2e_file(f'packs/{id}.json') as data:
-        return PF2Creature.from_json(json.load(data))
+    with open_pf2e_file(f'packs/{id}.json') as file:
+        return from_json(json.load(file))

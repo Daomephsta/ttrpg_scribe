@@ -41,13 +41,14 @@
     overflow-y: clip;
 }
 .stat_block_collapser {
+    font-family: inherit;
     appearance: none;
 }
 .stat_block_collapser::after {
-    content: '\02c3  ' attr(data-name);
+    content: '\02c3';
 }
 .stat_block_collapser:checked:after {
-    content: '\02c5  ' attr(data-name);
+    content: '\02c5';
 }
 .stat_block_collapser:checked ~ .stat_block_content {
     max-height: initial;

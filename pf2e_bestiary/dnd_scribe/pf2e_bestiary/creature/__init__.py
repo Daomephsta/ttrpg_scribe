@@ -66,6 +66,7 @@ class Melee(Action):
 @dataclass
 class PF2Creature(Creature):
     name: str
+    level: int
     alignments: list[str]
     size: str
     traits: list[str]
@@ -92,6 +93,7 @@ class PF2Creature(Creature):
     def to_json(self) -> dict[str, Any]:
         return dict(
             name=self.name,
+            level=self.level,
             alignments=self.alignments,
             size=self.size,
             traits=self.traits,
@@ -114,6 +116,7 @@ class PF2Creature(Creature):
     def from_json(cls, data):
         return PF2Creature(
             name=data['name'],
+            level=data['level'],
             alignments=data['alignments'],
             size=data['size'],
             traits=data['traits'],
