@@ -1,8 +1,12 @@
+from typing import Any
+
+import flask
 from flask import Blueprint, Flask, render_template
 
 import dnd_scribe.core.flask
 import dnd_scribe.encounter.flask
 from dnd_scribe.encounter.flask import Creature, System
+from dnd_scribe.pf2e_bestiary.creature import PF2Creature
 from dnd_scribe.pf2e_bestiary.foundry import packs as foundry_packs
 
 blueprint = Blueprint('pf2e_bestiary', __name__,
@@ -49,7 +53,34 @@ def create_app():
 
 class Pf2eSystem(System):
     bestiary_blueprint = blueprint
+    _CREATURE_XP_BY_DELTA = {-4: 10, -3: 15, -2: 20, -1: 30, 0: 40, 1: 60, 2: 80, 3: 120}
 
     def read_creature(self, json) -> Creature:
-        from dnd_scribe.pf2e_bestiary.creature import PF2Creature
         return PF2Creature.from_json(json)
+
+    def encounter_xp(self, npcs: list[tuple[int, PF2Creature]],
+                     party: dict[str, dict[str, Any]]) -> str:
+        party_level: int = flask.current_app.config['PARTY_LEVEL']
+
+        def xp(creature: PF2Creature):
+            delta = creature.level - party_level
+            if delta < -4:
+                return 0
+            elif delta >= 4:
+                return 160
+            return Pf2eSystem._CREATURE_XP_BY_DELTA[delta]
+        total = sum(count * xp(creature) for count, creature in npcs)
+
+        budget = total
+        if budget <= 40:
+            threat = 'Trivial'
+        elif budget <= 60:
+            threat = 'Low'
+        elif budget <= 80:
+            threat = 'Moderate'
+        elif budget <= 120:
+            threat = 'Severe'
+        else:
+            threat = 'Extreme'
+
+        return f'{total} ({threat})'

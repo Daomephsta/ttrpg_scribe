@@ -2,18 +2,15 @@
 <section class="encounter">
     <link rel="stylesheet" href="{{ url_for('encounter_extension.static', filename='encounter.css') }}">
     <ul>
-        {% set xp = namespace(total=0) %}
         {% for count, creature in npcs %}
             <li>{{ count }} {{ creature.name | plural(count) }}</li>
-            {% set xp.total = xp.total + count * creature.xp %}
         {% endfor %}
         {% if show_xp %}
-        <li><hr/></li>
-            {% if config.PARTY %}
-            <li><strong>Total XP</strong> {{ xp.total }} ({{ xp.total // config.PARTY | length }} per player)</li>
-            {% else %}
-            <li><strong>Total XP</strong> {{ xp.total }}</li>
-            {% endif %}
+            <li><hr/></li>
+            <li>
+            <strong>Total XP</strong>
+            {{ system.encounter_xp(npcs, config.PARTY) }}
+            </li>
         {% endif %}
     </ul>
     <!--

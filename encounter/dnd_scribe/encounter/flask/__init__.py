@@ -1,13 +1,12 @@
-from abc import ABC, abstractmethod
 import itertools
+import random
+from abc import ABC, abstractmethod
 from http import HTTPStatus
 from pathlib import Path
 
 import flask
 
 import dnd_scribe.core.flask
-
-import random
 
 
 class Creature(ABC):
@@ -26,12 +25,14 @@ class System:
     def read_creature(self, json) -> Creature:
         raise NotImplementedError()
 
+    def encounter_xp(self, npcs, party) -> str:
+        raise NotImplementedError()
+
 
 def create_app(instance_path: str | Path, system: System):
     app = flask.Flask('dnd_scribe.encounter.flask',
         instance_path=Path(instance_path).absolute().as_posix(),
         instance_relative_config=True)
-    app.jinja_env.globals['bestiary_blueprint'] = system.bestiary_blueprint.name
     app.config.from_pyfile('config.py')
     dnd_scribe.core.flask.extend(app)
     app.register_blueprint(system.bestiary_blueprint, url_prefix='/creatures')

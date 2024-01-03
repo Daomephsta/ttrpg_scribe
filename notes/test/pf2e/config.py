@@ -38,3 +38,4 @@ CULTURES = {
 }
 
 PARTY = ['Alice', 'Bob', 'Charlie', 'Danielle']
+PARTY_LEVEL = 1

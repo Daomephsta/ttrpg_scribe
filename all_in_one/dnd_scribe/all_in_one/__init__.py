@@ -33,6 +33,7 @@ def make_app(project_dir: str | Path):
             system = Pf2eSystem()
         case _ as system:
             raise ValueError(f'Unknown game system {system}')
+    app.jinja_env.globals['system'] = system
     app.register_blueprint(system.bestiary_blueprint)
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
         '/encounter': dnd_scribe.encounter.flask.create_app(project_dir, system),

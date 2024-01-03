@@ -1,3 +1,5 @@
+from typing import Any
+
 from flask import Blueprint, Flask, render_template
 
 from dnd_scribe.bestiary import apis
@@ -28,3 +30,8 @@ class Dnd5eSystem(System):
 
     def read_creature(self, json) -> Creature:
         return DndCreature.from_json(json)
+
+    def encounter_xp(self, npcs: list[tuple[int, DndCreature]],
+                     party: dict[str, dict[str, Any]]) -> str:
+        total = sum(count * creature.xp for count, creature in npcs)
+        return f'{total} ({total // len(party)} per player)'
