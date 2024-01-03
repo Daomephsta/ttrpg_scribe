@@ -7,5 +7,5 @@ extra_stylesheets: ['/encounter/creatures/static/stat_block.css']
 {% from 'npc_link.j2.html' import npc_link %}
 # Foo
 {{ npc_link('Silifrey Buckman') }}
-{{ encounter([(1, script.CHICKEN)]) }}
+{{ encounter([(10, script.CHICKEN)]) }}
 {{ stat_block(script.CHICKEN, collapsible=True) }}

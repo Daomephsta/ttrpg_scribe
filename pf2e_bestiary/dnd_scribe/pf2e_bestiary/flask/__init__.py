@@ -71,16 +71,25 @@ class Pf2eSystem(System):
             return Pf2eSystem._CREATURE_XP_BY_DELTA[delta]
         total = sum(count * xp(creature) for count, creature in npcs)
 
-        budget = total
-        if budget <= 40:
-            threat = 'Trivial'
-        elif budget <= 60:
-            threat = 'Low'
-        elif budget <= 80:
-            threat = 'Moderate'
-        elif budget <= 120:
-            threat = 'Severe'
-        else:
-            threat = 'Extreme'
+        extra_players = len(party) - 4
 
-        return f'{total} ({threat})'
+        if total <= 40 + extra_players * 10:
+            threat = 'Trivial'
+            reward = 0
+        elif total <= 60 + extra_players * 15:
+            threat = 'Low'
+            reward = 60
+        elif total <= 80 + extra_players * 20:
+            threat = 'Moderate'
+            reward = 80
+        elif total <= 120 + extra_players * 30:
+            threat = 'Severe'
+            reward = 120
+        elif total <= 160 + extra_players * 40:
+            threat = 'Extreme'
+            reward = 160
+        else:
+            threat = 'Are you sure?'
+            reward = 160
+
+        return f'{reward} ({threat})'
