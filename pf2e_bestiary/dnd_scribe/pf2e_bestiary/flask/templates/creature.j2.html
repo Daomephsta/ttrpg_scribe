@@ -147,6 +147,7 @@
 <!DOCTYPE html>
 <head>
     <title>{{ creature.name | title }}</title>
+    <link rel="stylesheet" href="{{ url_for('pf2e_bestiary.static', filename='stat_block.css') }}">
 </head>
 <body>{{stat_block(creature, collapsible=False)}}</body>
 {% endif %}
