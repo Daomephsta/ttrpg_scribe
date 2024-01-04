@@ -73,14 +73,16 @@ class Pf2eSystem(System):
 
         extra_players = len(party) - 4
         threat_levels = [
-            (40 + extra_players * 10, 'Trivial', 0),
-            (60 + extra_players * 15, 'Low', 60),
-            (80 + extra_players * 20, 'Moderate', 80),
-            (120 + extra_players * 30, 'Severe', 120),
             (160 + extra_players * 40, 'Extreme', 160),
+            (120 + extra_players * 30, 'Severe', 120),
+            (80 + extra_players * 20, 'Moderate', 80),
+            (60 + extra_players * 15, 'Low', 60),
+            (40 + extra_players * 10, 'Trivial', 0),
         ]
+
+        def describe_threat(threshold: int, threat: str, reward: int):
+            return f'{reward} ({total / threshold:.0%} {threat})'
         for threshold, threat, reward in threat_levels:
-            if total <= threshold:
-                return f'{reward} ({total / threshold:.0%} {threat})'
-        [*_, (extreme_threshold, _, _)] = threat_levels
-        return f'160 (Are you sure? {total / extreme_threshold:.0%} Extreme)'
+            if total >= threshold:
+                return describe_threat(threshold, threat, reward)
+        return describe_threat(*threat_levels[0])
