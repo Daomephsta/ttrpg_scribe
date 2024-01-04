@@ -1,3 +1,4 @@
+import math
 from typing import Any
 
 import flask
@@ -71,12 +72,13 @@ class Pf2eSystem(System):
             return Pf2eSystem._CREATURE_XP_BY_DELTA[delta]
         total = sum(count * xp(creature) for count, creature in npcs)
 
+        reward = math.ceil(total * 4 // len(party) / 10) * 10  # round up to nearest 10
         extra_players = len(party) - 4
         threat_levels = [
-            (160 + extra_players * 40, 'Extreme', total * 4 // len(party)),
-            (120 + extra_players * 30, 'Severe', total * 4 // len(party)),
-            (80 + extra_players * 20, 'Moderate', total * 4 // len(party)),
-            (60 + extra_players * 15, 'Low', total * 4 // len(party)),
+            (160 + extra_players * 40, 'Extreme', reward),
+            (120 + extra_players * 30, 'Severe', reward),
+            (80 + extra_players * 20, 'Moderate', reward),
+            (60 + extra_players * 15, 'Low', reward),
             (40 + extra_players * 10, 'Trivial', 0),
         ]
 
