@@ -45,6 +45,17 @@ def creature(id: str):
         render=True)
 
 
+@blueprint.app_template_filter()
+def action(kind: int | str):
+    match kind:
+        case int(i):
+            return '\u25C6' * i
+        case 're' | 'reaction':
+            return '\u2B8C'
+        case 'free':
+            return '\u25C7'
+
+
 def create_app():
     app = Flask('dnd_scribe.pf2e_bestiary.flask')
     app.register_blueprint(blueprint)
