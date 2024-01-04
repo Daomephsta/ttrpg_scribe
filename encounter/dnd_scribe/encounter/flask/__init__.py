@@ -35,6 +35,7 @@ def create_app(instance_path: str | Path, system: System):
         instance_relative_config=True)
     app.config.from_pyfile('config.py')
     dnd_scribe.core.flask.extend(app)
+    app.jinja_env.globals['system'] = system
     app.register_blueprint(system.bestiary_blueprint, url_prefix='/creatures')
 
     @app.post('/')
