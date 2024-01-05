@@ -7,8 +7,8 @@
 {{ action.desc | safe }}
 {% endmacro %}
 
-{%- macro melee_action(action) -%}
-<b>Melee</b>
+{%- macro strike_action(action) -%}
+<b>{{ action.weapon_type | title }}</b>
 {{ action.name }}
 {{ action.cost | action }}
 {%- set malus_sep = joiner('/') -%}
@@ -129,8 +129,8 @@
         <li>
         {%- if action.kind() == 'SimpleAction' %}
         {{ simple_action(action) }}
-        {%- elif action.kind() == 'Melee' %}
-        {{ melee_action(action) }}
+        {%- elif action.kind() == 'Strike' %}
+        {{ strike_action(action) }}
         {%- endif %}
         </li>
         {%- endfor %}

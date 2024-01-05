@@ -26,8 +26,8 @@ class Action:
         match data.pop('kind'):
             case 'SimpleAction':
                 return SimpleAction(**data)
-            case 'Melee':
-                return Melee(**data)
+            case 'Strike':
+                return Strike(**data)
             case _ as kind:
                 raise ValueError(f'Unknown kind {kind} for action {data}')
 
@@ -43,7 +43,8 @@ class SimpleAction(Action):
 
 
 @dataclass
-class Melee(Action):
+class Strike(Action):
+    weapon_type: str
     bonus: int
     damage: list[tuple[str, str]]
     effects: list[str]
@@ -56,6 +57,7 @@ class Melee(Action):
     def to_json(self):
         data = super().to_json()
         data.update(
+            weapon_type=self.weapon_type,
             bonus=self.bonus,
             damage=self.damage,
             effects=self.effects
