@@ -85,17 +85,25 @@ class Pf2eSystem(System):
 
         reward = math.ceil(total * 4 // len(party) / 10) * 10  # round up to nearest 10
         extra_players = len(party) - 4
-        threat_levels = [
-            (160 + extra_players * 40, 'Extreme', reward),
-            (120 + extra_players * 30, 'Severe', reward),
-            (80 + extra_players * 20, 'Moderate', reward),
+        threat_levels: list[tuple[int, str, int]] = [
+            (40 + extra_players * 10, 'Trivial', reward),
             (60 + extra_players * 15, 'Low', reward),
-            (40 + extra_players * 10, 'Trivial', 0),
+            (80 + extra_players * 20, 'Moderate', reward),
+            (120 + extra_players * 30, 'Severe', reward),
+            (160 + extra_players * 40, 'Extreme', reward),
         ]
 
-        def describe_threat(threshold: int, threat: str, reward: int):
-            return f'{reward} ({total / threshold:.0%} {threat})'
-        for threshold, threat, reward in threat_levels:
+        def describe_threat(threshold: int, threat: str, reward: int, threat_idx: int):
+            delta = total - threshold
+            if delta > 0:
+                upper_threshold, _, _ = threat_levels[threat_idx + 1]
+                return f'{reward} ({threat} + {delta}/{upper_threshold - threshold})'
+            elif delta < 0:
+                lower_threshold = threat_levels[threat_idx][0] if threat_idx > 0 else 0
+                return f'{reward} ({threat} - {abs(delta)}/{threshold - lower_threshold})'
+            else:
+                return f'{reward} ({threat})'
+        for i, (threshold, threat, reward) in enumerate(reversed(threat_levels)):
             if total >= threshold:
-                return describe_threat(threshold, threat, reward)
-        return describe_threat(*threat_levels[0])
+                return describe_threat(threshold, threat, reward, len(threat_levels) - i - 1)
+        return describe_threat(*threat_levels[0], 0)
