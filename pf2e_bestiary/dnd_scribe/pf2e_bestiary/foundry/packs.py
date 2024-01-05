@@ -6,7 +6,7 @@ from typing import Any
 
 import flask
 
-from dnd_scribe.pf2e_bestiary.creature import Melee, PF2Creature, SimpleAction
+from dnd_scribe.pf2e_bestiary.creature import Strike, PF2Creature, SimpleAction
 from dnd_scribe.pf2e_bestiary.foundry.enrich import enrich
 
 type Json = dict[str, Any]
@@ -81,7 +81,7 @@ def creature(id: str) -> PF2Creature:
                         item['name'],
                         item['system']['mod']['value']))
                 case 'melee':
-                    actions.append(Melee(
+                    actions.append(Strike(
                         item['name'],
                         1,
                         item['system']['traits']['value'],
