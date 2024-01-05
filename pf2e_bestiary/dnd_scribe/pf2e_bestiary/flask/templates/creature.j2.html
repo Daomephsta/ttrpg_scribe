@@ -10,7 +10,7 @@
 {%- macro melee_action(action) -%}
 <b>Melee</b>
 {{ action.name }}
-{{ '\u25C6' * action.cost }}
+{{ action.cost | action }}
 {%- set malus_sep = joiner('/') -%}
 {% for malus in action.attack_maluses() %}
     {{ malus_sep() }} {{ '%+d' | format(action.bonus - malus) }}
@@ -39,7 +39,7 @@
 <div class="error">{{ creature | handle_exception }}</div>
 {% else %}
 {# Output a stat block otherwise #}
-<div class="pf2e_creature">
+<div class="stat_block pf2e_creature">
     {% if collapsible %}
     <input type="checkbox" class="stat_block_collapser name" data-name="{{ creature.name }}">
     <span class="name">
@@ -78,7 +78,7 @@
     {%- endfor %}
     </p>
     <!-- Interactions -->
-    <ul class="action_list">
+    <ul class="field_list">
     {%- for name, desc in creature.interactions %}
         <li><b>{{ name }}</b> {{ desc | safe }}</li>
     {%- endfor %}
@@ -124,7 +124,7 @@
         {%- endfor %}
     </p>
     <!-- Actions -->
-    <ul class="action_list">
+    <ul class="field_list">
         {%- for action in creature.actions %}
         <li>
         {%- if action.kind() == 'SimpleAction' %}
