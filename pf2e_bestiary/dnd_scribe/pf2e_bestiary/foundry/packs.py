@@ -85,6 +85,7 @@ def creature(id: str) -> PF2Creature:
                         item['name'],
                         1,
                         item['system']['traits']['value'],
+                        item['system']['weaponType']['value'],
                         item['system']['bonus']['value'],
                         [(v['damage'], v['damageType'])
                          for v in item['system']['damageRolls'].values()],
