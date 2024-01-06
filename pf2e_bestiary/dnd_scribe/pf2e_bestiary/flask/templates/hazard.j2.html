@@ -1,0 +1,26 @@
+{% from 'actions.j2.html' import action %}
+
+{% macro trap(hazard) %}
+<div class="stat_block">
+    <span class="name">{{ hazard.name }}<span style="float: right">Hazard {{ hazard.level }}</span></span>
+    <hr>
+    <ul class="field_list">
+        <li><b>Notice</b> DC {{ 10 + hazard.notice }} Perception Check </li>
+        <li><b>Disable</b> {{ hazard.disable | safe }}</li>
+        {%- for data in hazard.actions %}
+        <li>{{ action(data) }}</li>
+        {%- endfor %}
+        <li><hr></li>
+        {% if hazard.reset %}<li><b>Reset</b> {{ hazard.reset | safe }}</li>{% endif %}
+    </ul>
+</div>
+{% endmacro %}
+
+{% if render | default(False) %}
+<!DOCTYPE html>
+<head>
+    <title>{{ hazard.name | title }}</title>
+    <link rel="stylesheet" href="{{ url_for('pf2e_bestiary.static', filename='stat_block.css') }}">
+</head>
+<body>{{ trap(hazard) }}</body>
+{% endif %}

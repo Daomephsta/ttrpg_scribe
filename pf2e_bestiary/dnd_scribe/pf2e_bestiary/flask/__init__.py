@@ -31,18 +31,22 @@ def list_packs():
 
 
 @blueprint.get('/pack/<string:pack>')
-def list_creatures(pack: str):
+def list_content(pack: str):
     path = foundry_packs.pf2e_dir()/'packs'/pack
-    return render_template('creature_list.j2.html', pack=pack,
-        creatures=[creature.stem for creature in path.glob('*.json')])
+    return render_template('content_list.j2.html', pack=pack,
+        content=[path.stem for path in path.glob('*.json')])
 
 
 @blueprint.get('/view/<path:id>')
-def creature(id: str):
-    return render_template(
-        'creature.j2.html',
-        creature=foundry_packs.creature(id),
-        render=True)
+def content(id: str):
+    type, content = foundry_packs.content(id)
+    if isinstance(content, dict):
+        return content
+    print(f'{type}.j2.html')
+    return render_template(f'{type}.j2.html', **{
+        type: content,
+        'render': True
+    })
 
 
 @blueprint.app_template_filter()

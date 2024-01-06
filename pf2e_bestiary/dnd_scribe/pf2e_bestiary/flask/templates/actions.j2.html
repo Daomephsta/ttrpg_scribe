@@ -1,0 +1,42 @@
+{%-macro simple_action(action) %}
+<b>{{ action.name }}</b>
+{{ action.cost | action }}
+{% if action.traits -%}
+    ({{ action.traits | join(', ') }})
+{% endif %}
+{{ action.desc | safe }}
+{% endmacro %}
+
+{%- macro strike_action(action) -%}
+<b>{{ action.weapon_type | title }}</b>
+{{ action.name }}
+{{ action.cost | action }}
+{%- set malus_sep = joiner('/') -%}
+{% for malus in action.attack_maluses() %}
+    {{ malus_sep() }} {{ '%+d' | format(action.bonus - malus) }}
+{% endfor %}
+{% if action.traits %}
+    ({{ action.traits | join(', ') }})
+{% endif %}
+{% if action.damage %}
+    <b>Damage</b>
+    {%- set damage_sep = joiner('plus') -%}
+    {% for amount, kind in action.damage %}
+        {{ damage_sep() }} {{ amount }} {{ kind }}
+    {% endfor %}
+{% endif %}
+{% if action.effects %}
+    <b>Effect</b>
+    {% for effect in action.effects %}
+        {{ effect.replace('-', ' ') }}
+    {% endfor %}
+{% endif %}
+{% endmacro %}
+
+{% macro action(data) %}
+    {%- if data.kind() == 'SimpleAction' %}
+    {{ simple_action(data) }}
+    {%- elif data.kind() == 'Strike' %}
+    {{ strike_action(data) }}
+    {%- endif %}
+{% endmacro %}
