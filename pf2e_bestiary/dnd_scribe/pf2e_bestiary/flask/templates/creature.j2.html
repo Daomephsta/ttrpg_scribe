@@ -59,15 +59,20 @@
     {%- endfor %}
     </p>
     <p>
-        {%- set semicolon = joiner(';') %}
         <b>HP</b> {{ creature.max_hp }}
         {%- if creature.immunities -%}
         ; <b>Immunities</b> {{ creature.immunities | join(', ')}}
         {%- endif %}
+        {%- if creature.resistances -%}
+        ; <b>Resistances</b>
+        {%- for key, value in creature.resistances %}
+            {{ key }} {{ value }}{% if not loop.last %}, {% endif %}
+        {%- endfor %}
+        {%- endif %}
         {%- if creature.weaknesses -%}
         ; <b>Weaknesses</b>
         {%- for key, value in creature.weaknesses %}
-            {{ key }} {{ '{:+d}'.format(value) }}{% if not loop.last %}, {% endif %}
+            {{ key }} {{ value }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
         {%- endif %}
     </p>

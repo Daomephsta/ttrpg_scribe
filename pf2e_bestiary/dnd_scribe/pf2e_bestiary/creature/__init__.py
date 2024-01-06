@@ -21,6 +21,7 @@ class PF2Creature(Creature):
     saves: dict[str, int]
     max_hp: int
     immunities: list[str]
+    resistances: list[tuple[str, int]]
     weaknesses: list[tuple[str, int]]
     defenses: list[tuple[str, str]]
     speeds: dict[str, int]
@@ -48,6 +49,7 @@ class PF2Creature(Creature):
             saves=self.saves,
             max_hp=self.max_hp,
             immunities=self.immunities,
+            resistances=self.resistances,
             weaknesses=self.weaknesses,
             defenses=self.defenses,
             speeds=self.speeds,
@@ -71,6 +73,7 @@ class PF2Creature(Creature):
             saves=data['saves'],
             max_hp=data['max_hp'],
             immunities=data['immunities'],
+            resistances=data['resistances'],
             weaknesses=data['weaknesses'],
             defenses=data['defenses'],
             speeds=data['speeds'],

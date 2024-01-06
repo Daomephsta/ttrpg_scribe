@@ -119,8 +119,8 @@ def read_creature(data: Json) -> PF2Creature:
         saves={k: v['value'] for k, v in system['saves'].items()},
         max_hp=attributes['hp']['max'],
         immunities=[x['type'] for x in attributes.get('immunities', [])],
-        weaknesses=[(x['type'], x['value'])
-                    for x in attributes.get('weaknesses', [])],
+        resistances=[(x['type'], x['value']) for x in attributes.get('resistances', [])],
+        weaknesses=[(x['type'], x['value']) for x in attributes.get('weaknesses', [])],
         defenses=defenses,
         speeds={'walk': attributes['speed']['value'],
               **{speed['type']: speed['value']
