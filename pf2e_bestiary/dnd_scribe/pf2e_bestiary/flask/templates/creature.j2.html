@@ -43,7 +43,7 @@
     <p>
         <b>Items</b>
         {% set comma = joiner(',') %}
-        {% for quantity, name in creature.inventory -%}
+        {% for name, quantity in creature.inventory.items() -%}
         {{ comma() }} {{ name | plural(quantity, inclusive=quantity > 1) -}}
         {% endfor %}
     </p>

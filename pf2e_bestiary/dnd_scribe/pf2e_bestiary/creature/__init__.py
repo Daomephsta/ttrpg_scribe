@@ -15,7 +15,7 @@ class PF2Creature(Creature):
     perception: int
     senses: list[str]
     skills: list[tuple[str, int]]
-    inventory: list[tuple[int, str]]
+    inventory: dict[str, int]
     abilities: dict[str, int]
     interactions: list[tuple[str, str]]
     ac: int

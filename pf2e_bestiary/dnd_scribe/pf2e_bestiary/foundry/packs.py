@@ -67,7 +67,7 @@ def read_creature(data: Json) -> PF2Creature:
     interactions: list[tuple[str, str]] = []
     defenses: list[tuple[str, str]] = []
     actions: list[Action] = []
-    inventory: list[tuple[int, str]] = []
+    inventory: dict[str, int] = {}
     for item in data['items']:
         match item['type']:
             case 'action':
@@ -87,7 +87,7 @@ def read_creature(data: Json) -> PF2Creature:
             case 'melee':
                 actions.append(_read_strike(item))
             case 'weapon' | 'armor' | 'consumable':
-                inventory.append((item['system']['quantity'], item['name']))
+                inventory[item['name']] = item['system']['quantity']
             case _ as unknown:
                 print(f"Ignored item {item['name']} of {data['name']} with type {unknown}",
                       file=sys.stderr)
