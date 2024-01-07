@@ -87,11 +87,11 @@
         {%- endif %}
     </p>
     <!-- Defenses -->
-    <div>
+    <ul class="field_list">
     {%- for name, desc in creature.defenses %}
-        <b>{{ name }}</b> {{ desc | safe }}
+        <li><b>{{ name }}</b> {{ desc | safe }}</li>
     {%- endfor %}
-    </div>
+    </ul>
     <hr>
     <!-- Speeds -->
     <p>
