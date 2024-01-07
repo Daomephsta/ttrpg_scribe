@@ -3,9 +3,9 @@ from typing import Any
 
 import flask
 from markupsafe import Markup
+from pluralizer import Pluralizer
 
 import dnd_scribe.core.markdown
-from pluralizer import Pluralizer
 
 _blueprint = flask.Blueprint('core', __name__, static_folder='static',
                       template_folder='templates', url_prefix='/core')
@@ -56,5 +56,5 @@ __PLURALIZER = Pluralizer()
 
 
 @_blueprint.app_template_filter()
-def plural(s: str, count: int):
-    return __PLURALIZER.pluralize(s, count)
+def plural(s: str, count: int, inclusive: bool = False):
+    return __PLURALIZER.pluralize(s, count, inclusive=inclusive)

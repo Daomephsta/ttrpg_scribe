@@ -38,6 +38,16 @@
             {{ '{} {:+d}'.format(name, mod) }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
     </p>
+    <!-- Inventory -->
+    {% if creature.inventory %}
+    <p>
+        <b>Items</b>
+        {% set comma = joiner(',') %}
+        {% for quantity, name in creature.inventory -%}
+        {{ comma() }} {{ name | plural(quantity, inclusive=quantity > 1) -}}
+        {% endfor %}
+    </p>
+    {% endif %}
     <!-- Abilities -->
     <p>
     {%- for key in ['str', 'dex', 'con', 'int', 'wis', 'cha']%}

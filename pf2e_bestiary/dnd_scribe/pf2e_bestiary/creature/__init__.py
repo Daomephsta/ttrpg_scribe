@@ -15,6 +15,7 @@ class PF2Creature(Creature):
     perception: int
     senses: list[str]
     skills: list[tuple[str, int]]
+    inventory: list[tuple[int, str]]
     abilities: dict[str, int]
     interactions: list[tuple[str, str]]
     ac: int
@@ -55,6 +56,7 @@ class PF2Creature(Creature):
             perception=self.perception,
             senses=self.senses,
             skills=self.skills,
+            inventory=self.inventory,
             abilities=self.abilities,
             interactions=self.interactions,
             ac=self.ac,
@@ -79,6 +81,7 @@ class PF2Creature(Creature):
             perception=data['perception'],
             senses=data['senses'],
             skills=data['skills'],
+            inventory=data['inventory'],
             abilities=data['abilities'],
             interactions=data['interactions'],
             ac=data['ac'],
