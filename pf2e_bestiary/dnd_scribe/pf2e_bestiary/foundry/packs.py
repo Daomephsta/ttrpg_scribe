@@ -159,12 +159,17 @@ def _read_simple_action(item):
 
 
 def _read_strike(item):
+    def damage(data):
+        damage_type = data['damageType']
+        damage_category = data.get('category')
+        if damage_category:
+            damage_type = f'{damage_category} {damage_type}'
+        return data['damage'], damage_type
     return Strike(
         item['name'],
         item['system']['weaponType']['value'],
         item['system']['bonus']['value'],
-        [(v['damage'], v['damageType'])
-         for v in item['system']['damageRolls'].values()],
+        [damage(data) for data in item['system']['damageRolls'].values()],
         traits=item['system']['traits']['value'],
         effects=item['system']['attackEffects']['value']
             if 'attackEffects' in item['system'] else []
