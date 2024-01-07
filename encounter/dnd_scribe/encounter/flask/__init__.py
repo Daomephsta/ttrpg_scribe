@@ -41,7 +41,7 @@ def create_app(instance_path: str | Path, system: System):
     @app.post('/')
     def create_encounter():
         encounter = Encounter.from_json(flask.request.json) if flask.request.is_json\
-            else Encounter([], flask.current_app.config['PARTY'])
+            else Encounter([], flask.current_app.config['PARTY'], '')
         return flask.redirect(flask.url_for('view_encounter',
             id=Encounter.add(encounter),
             code=HTTPStatus.SEE_OTHER))
@@ -50,9 +50,9 @@ def create_app(instance_path: str | Path, system: System):
     def view_encounter(id: int):
         if Encounter.exists(id):
             encounter = Encounter.get(id)
-            return flask.render_template('encounter_engine.j2.html',
-                npcs=encounter.npcs, pcs=encounter.pcs,
-                creatures=encounter.creatures.values(), encounter_id=id)
+            return flask.render_template('encounter_engine.j2.html', npcs=encounter.npcs,
+                                         pcs=encounter.pcs, creatures=encounter.creatures.values(),
+                                         description=encounter.description, encounter_id=id)
         return (f'Encounter {id} not found', HTTPStatus.NOT_FOUND)
 
     @app.post('/<int:id>')
@@ -102,10 +102,12 @@ def create_app(instance_path: str | Path, system: System):
             return self._encounters[index]
 
     class Encounter(metaclass=__Encounter):
-        def __init__(self, npc_specs: list[tuple[int, Creature]], pcs: list[str]):
+        def __init__(self, npc_specs: list[tuple[int, Creature]],
+                     pcs: list[str], description: str):
             self.npcs = []
             self.creatures = {creature.name: creature for _, creature in npc_specs}
             self.pcs = pcs
+            self.description = description
             self.npc_ids = itertools.count(start=1)
             for count, creature in npc_specs:
                 for _ in range(count):
@@ -114,7 +116,7 @@ def create_app(instance_path: str | Path, system: System):
         @staticmethod
         def from_json(json):
             return Encounter([(count, system.read_creature(creature_json))
-                for [count, creature_json] in json['npcs']], json['pcs'])
+                for [count, creature_json] in json['npcs']], json['pcs'], json['description'])
 
         def add_simple_npc(self, name: str, initiative_mod: int, initial_hp):
             return self.npcs.append(dict(

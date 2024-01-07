@@ -82,6 +82,7 @@
                 </select>
             </form>
         </fieldset>
+        {{ description | block_markdown }}
     </div>
     <div id="stat_blocks_pane">
     {% for creature in creatures %}
