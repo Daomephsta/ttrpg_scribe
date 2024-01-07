@@ -78,29 +78,13 @@ def read_creature(data: Json) -> PF2Creature:
                     case 'defensive':
                         defenses.append((name, desc))
                     case 'offensive':
-                        cost = item['system']['actions']['value']
-                        if cost is None:
-                            cost = 0
-                        actions.append(SimpleAction(
-                            name, cost,
-                            item['system']['traits']['value'],
-                            desc))
+                        actions.append(_read_simple_action(item))
             case 'lore':
                 skills.append((
                     item['name'],
                     item['system']['mod']['value']))
             case 'melee':
-                actions.append(Strike(
-                    item['name'],
-                    1,
-                    item['system']['traits']['value'],
-                    item['system']['weaponType']['value'],
-                    item['system']['bonus']['value'],
-                    [(v['damage'], v['damageType'])
-                     for v in item['system']['damageRolls'].values()],
-                    item['system']['attackEffects']['value']
-                        if 'attackEffects' in item['system'] else []
-                ))
+                actions.append(_read_strike(item))
             case _ as unknown:
                 print(f"Ignored item {item['name']} with type {unknown}",
                       file=sys.stderr)
@@ -140,29 +124,9 @@ def read_hazard(data: Json) -> PF2Hazard:
     for item in data['items']:
         match item['type']:
             case 'action':
-                name = item['name']
-                desc = enrich(item['system']['description']['value'])
-                cost = item['system']['actionType']['value']
-                if cost == 'action':
-                    cost = item['system']['actions']['value']
-                elif cost is None:
-                    cost = 0
-                actions.append(SimpleAction(
-                    name, cost,
-                    item['system']['traits']['value'],
-                    desc))
+                actions.append(_read_simple_action(item))
             case 'melee':
-                actions.append(Strike(
-                    item['name'],
-                    1,
-                    item['system']['traits']['value'],
-                    item['system']['weaponType']['value'],
-                    item['system']['bonus']['value'],
-                    [(v['damage'], v['damageType'])
-                     for v in item['system']['damageRolls'].values()],
-                    item['system']['attackEffects']['value']
-                        if 'attackEffects' in item['system'] else []
-                ))
+                actions.append(_read_strike(item))
             case _ as unknown:
                 print(f"Ignored item {item['name']} with type {unknown}",
                       file=sys.stderr)
@@ -173,6 +137,29 @@ def read_hazard(data: Json) -> PF2Hazard:
         disable=enrich(details['disable']),
         actions=actions,
         reset=enrich(details['reset']),
+    )
+
+
+def _read_simple_action(item):
+    cost = item['system']['actionType']['value']
+    if cost == 'action':
+        cost = item['system']['actions']['value']
+    elif cost is None:
+        cost = 0
+    return SimpleAction(item['name'], enrich(item['system']['description']['value']), cost,
+                        item['system']['traits']['value'])
+
+
+def _read_strike(item):
+    return Strike(
+        item['name'],
+        item['system']['weaponType']['value'],
+        item['system']['bonus']['value'],
+        [(v['damage'], v['damageType'])
+         for v in item['system']['damageRolls'].values()],
+        traits=item['system']['traits']['value'],
+        effects=item['system']['attackEffects']['value']
+            if 'attackEffects' in item['system'] else []
     )
 
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 from dnd_scribe.encounter.flask import Creature
 from dnd_scribe.pf2e_bestiary.actions import Action
@@ -32,6 +32,18 @@ class PF2Creature(Creature):
 
     def default_hp(self) -> int:
         return self.max_hp
+
+    def override(self, **overrides):
+        for name, value in overrides.items():
+            if callable(value):
+                value = value(getattr(self, name))
+            setattr(self, name, value)
+        return self
+
+    def apply(self, *templates: Callable[['PF2Creature'], None]):
+        for template in templates:
+            template(self)
+        return self
 
     def to_json(self) -> dict[str, Any]:
         return dict(

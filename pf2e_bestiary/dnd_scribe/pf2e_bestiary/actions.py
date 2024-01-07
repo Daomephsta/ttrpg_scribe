@@ -1,12 +1,11 @@
-from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass
 class Action:
-    name: str
-    cost: int
-    traits: list[str]
+    def __init__(self, name: str, cost: int = 1, traits: list[str] = []):
+        self.name = name
+        self.cost = cost
+        self.traits = list(traits)  # Copy to avoid sharing with other actions
 
     def kind(self):
         return self.__class__.__name__
@@ -30,9 +29,10 @@ class Action:
                 raise ValueError(f'Unknown kind {kind} for action {data}')
 
 
-@dataclass
 class SimpleAction(Action):
-    desc: str
+    def __init__(self, name: str, desc: str = '', cost: int = 1, traits: list[str] = []):
+        super().__init__(name, cost, traits)
+        self.desc = desc
 
     def to_json(self):
         data = super().to_json()
@@ -40,12 +40,14 @@ class SimpleAction(Action):
         return data
 
 
-@dataclass
 class Strike(Action):
-    weapon_type: str
-    bonus: int
-    damage: list[tuple[str, str]]
-    effects: list[str]
+    def __init__(self, name: str, weapon_type: str, bonus: int, damage: list[tuple[str, str]],
+                 cost: int = 1, traits: list[str] = [], effects: list[str] = []):
+        super().__init__(name, cost, traits)
+        self.weapon_type = weapon_type
+        self.bonus = bonus
+        self.damage = list(damage)
+        self.effects = list(effects)
 
     def attack_maluses(self):
         if 'agile' in self.traits:
