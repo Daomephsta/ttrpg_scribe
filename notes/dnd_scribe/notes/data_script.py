@@ -1,4 +1,9 @@
-from typing import Any
+import sys
+from importlib.abc import MetaPathFinder
+from importlib.machinery import ModuleSpec
+from importlib.util import spec_from_file_location
+from types import ModuleType
+from typing import Any, Sequence
 
 from dnd_scribe.core import script_loader
 from dnd_scribe.notes import data_cache, paths
@@ -26,3 +31,15 @@ def bind(template: str) -> dict[str, Any]:
     if script.exists():
         return _bind_data(name, script)
     return {}
+
+
+class DataScriptFinder(MetaPathFinder):
+    def find_spec(self, fullname: str, path: Sequence[str] | None,
+                  target: ModuleType | None = None) -> ModuleSpec | None:
+        if fullname == 'pages':
+            spec = spec_from_file_location(fullname, paths.pages()/'__init__.py')
+            return spec
+        return None
+
+
+sys.meta_path.append(DataScriptFinder())
