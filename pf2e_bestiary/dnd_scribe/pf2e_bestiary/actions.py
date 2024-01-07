@@ -2,7 +2,7 @@ from typing import Any
 
 
 class Action:
-    def __init__(self, name: str, cost: int = 1, traits: list[str] = []):
+    def __init__(self, name: str, cost: str | int = 1, traits: list[str] = []):
         self.name = name
         self.cost = cost
         self.traits = list(traits)  # Copy to avoid sharing with other actions
@@ -30,7 +30,7 @@ class Action:
 
 
 class SimpleAction(Action):
-    def __init__(self, name: str, desc: str = '', cost: int = 1, traits: list[str] = []):
+    def __init__(self, name: str, desc: str = '', cost: str | int = 1, traits: list[str] = []):
         super().__init__(name, cost, traits)
         self.desc = desc
 

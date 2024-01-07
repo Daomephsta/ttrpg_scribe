@@ -141,11 +141,15 @@ def read_hazard(data: Json) -> PF2Hazard:
 
 
 def _read_simple_action(item):
-    cost = item['system']['actionType']['value']
-    if cost == 'action':
-        cost = item['system']['actions']['value']
-    elif cost is None:
-        cost = 0
+    match item['system']['actionType']['value']:
+        case 'action':
+            cost = item['system']['actions']['value']
+        case 'reaction':
+            cost = 'reaction'
+        case str():
+            cost = 0
+        case unknown:
+            raise ValueError(f'Unknown action type {unknown}')
     return SimpleAction(item['name'], enrich(item['system']['description']['value']), cost,
                         item['system']['traits']['value'])
 
