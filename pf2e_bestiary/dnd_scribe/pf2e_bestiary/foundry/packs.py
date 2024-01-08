@@ -134,11 +134,18 @@ def read_hazard(data: Json) -> PF2Hazard:
             case _ as unknown:
                 print(f"Ignored item {item['name']} with type {unknown}",
                       file=sys.stderr)
+    attributes = data['system']['attributes']
     return PF2Hazard(
         name=data['name'],
         level=details['level']['value'],
-        notice=data['system']['attributes']['stealth']['value'],
+        complex=details['isComplex'],
+        stealth=data['system']['attributes']['stealth']['value'],
         disable=enrich(details['disable']),
+        ac=attributes['ac']['value'],
+        saves={k: v['value'] for k, v in data['system']['saves'].items()},
+        hp=attributes['hp']['value'],
+        hardness=attributes['hardness'],
+        routine=enrich(details['routine']),
         actions=actions,
         reset=enrich(details['reset']),
     )

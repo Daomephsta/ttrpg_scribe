@@ -8,8 +8,14 @@ from dnd_scribe.pf2e_bestiary.actions import Action
 class PF2Hazard:
     name: str
     level: int
-    notice: int
+    complex: bool
+    stealth: int
     disable: str
+    ac: int
+    saves: dict[str, int]
+    hardness: int
+    hp: int
+    routine: str
     actions: list[Action]
     reset: str
 
@@ -17,8 +23,14 @@ class PF2Hazard:
         return dict(
             name=self.name,
             level=self.level,
-            notice=self.notice,
+            complex=self.complex,
+            stealth=self.stealth,
             disable=self.disable,
+            ac=self.ac,
+            saves=self.saves,
+            hardness=self.hardness,
+            hp=self.hp,
+            routine=self.routine,
             actions=self.actions,
             reset=self.reset,
         )
@@ -28,8 +40,14 @@ class PF2Hazard:
         return PF2Hazard(
             name=data['name'],
             level=data['level'],
-            notice=data['notice'],
+            complex=data['complex'],
+            stealth=data['stealth'],
             disable=data['disable'],
+            ac=data['ac'],
+            saves=data['saves'],
+            hardness=data['hardness'],
+            hp=data['hp'],
+            routine=data['routine'],
             actions=[Action.from_json(action) for action in data['actions']],
             reset=data['reset'],
         )
