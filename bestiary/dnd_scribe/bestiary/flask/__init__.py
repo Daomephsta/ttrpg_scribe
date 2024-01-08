@@ -4,7 +4,7 @@ from flask import Blueprint, Flask, render_template
 
 from dnd_scribe.bestiary import apis
 from dnd_scribe.bestiary.creature import DndCreature as DndCreature
-from dnd_scribe.encounter.flask import Creature, System
+from dnd_scribe.encounter.flask import InitiativeParticipant, System
 
 blueprint = Blueprint('bestiary', __name__,
     static_folder='static',
@@ -28,10 +28,11 @@ def create_app():
 class Dnd5eSystem(System):
     bestiary_blueprint = blueprint
 
-    def read_creature(self, json) -> Creature:
+    def read_participant(self, json) -> InitiativeParticipant:
         return DndCreature.from_json(json)
 
-    def encounter_xp(self, npcs: list[tuple[int, DndCreature]],
+    def encounter_xp(self, enemies: list[tuple[int, DndCreature]],
+                     allies: list[tuple[int, DndCreature]],
                      party: dict[str, dict[str, Any]]) -> str:
-        total = sum(count * creature.xp for count, creature in npcs)
+        total = sum(count * creature.xp for count, creature in enemies)
         return f'{total} ({total // len(party)} per player)'

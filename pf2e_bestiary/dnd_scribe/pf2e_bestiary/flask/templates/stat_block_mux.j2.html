@@ -1,0 +1,10 @@
+{% import 'creature.j2.html' as creature %}
+{% import 'hazard.j2.html' as hazard %}
+
+{% macro stat_block(stats, collapsible=False) %}
+{%- if stats.kind() == 'PF2Creature' %}
+{{ creature.stat_block(stats, collapsible) }}
+{%- elif stats.kind() == 'PF2Hazard' %}
+{{ hazard.trap(stats) }}
+{%- endif %}
+{% endmacro %}

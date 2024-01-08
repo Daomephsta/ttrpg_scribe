@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from dnd_scribe.encounter.flask import Creature
+from dnd_scribe.encounter.flask import InitiativeParticipant
 from dnd_scribe.pf2e_bestiary.actions import Action
 
 
 @dataclass
-class PF2Creature(Creature):
+class PF2Creature(InitiativeParticipant):
     name: str
     level: int
     alignments: list[str]
@@ -46,8 +46,9 @@ class PF2Creature(Creature):
             template(self)
         return self
 
-    def to_json(self) -> dict[str, Any]:
-        return dict(
+    def write_json(self, data: dict[str, Any]):
+        data.update(
+            type='creature',
             name=self.name,
             level=self.level,
             alignments=self.alignments,

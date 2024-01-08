@@ -1,5 +1,5 @@
 {% extends "layout/base.j2.html" %}
-{% from 'creature.j2.html' import stat_block %}
+{% from 'stat_block_mux.j2.html' import stat_block %}
 {% block head %}
     <title>Initiative Tracker</title>
     <link rel="stylesheet" href="{{ url_for('core.static', filename='base.css') }}"/>
@@ -36,8 +36,16 @@
                         <td></td>
                     </tr>
                     {% endfor %}
-                    {% for npc in npcs %}
-                    <tr>
+                    {% for npc in enemies %}
+                    <tr class="enemy">
+                        <td class="name">{{ npc.name }}</td>
+                        <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
+                        <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
+                        <td class="max_hp">{{ npc.initial_hp }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for npc in allies %}
+                    <tr class="ally">
                         <td class="name">{{ npc.name }}</td>
                         <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
                         <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
@@ -69,24 +77,32 @@
                 <input type="text" name="name" placeholder="Name" required="true">
                 <input type="number" name="initiative_mod" placeholder="DEX" min="-10" max="10" required="true">
                 <input type="number" name="max_hp" placeholder="&#x2764;" min="0" required="true">
+                <select name="side" class="feature_value" required="true">
+                    <option value="enemy">Enemy</option>
+                    <option value="ally">Ally</option>
+                </select>
             </form>
             <form method="post" id="reinforce_with_existing_controls">
                 <input type="hidden" name="reinforcement_type" value="with_existing">
                 <input type="submit" value="Add" class="add_reinforcements">
                 <input type="number" name="quantity" value="1" min="1">
                 &#x00D7;
-                <select name="creature" class="feature_value" required="true">
-                    {% for creature in creatures %}
-                    <option value="{{ creature.name }}">{{ creature.name | capitalize }}</option>
+                <select name="stats" class="feature_value" required="true" style="text-transform: capitalize;">
+                    {% for stats in stat_block_data %}
+                    <option value="{{ stats.name }}">{{ stats.name }}</option>
                     {% endfor %}
+                </select>
+                <select name="side" class="feature_value" required="true">
+                    <option value="enemy">Enemy</option>
+                    <option value="ally">Ally</option>
                 </select>
             </form>
         </fieldset>
         {{ description | block_markdown }}
     </div>
     <div id="stat_blocks_pane">
-    {% for creature in creatures %}
-        {{ stat_block(creature, collapsible=True) }}
+    {% for stats in stat_block_data %}
+        {{ stat_block(stats, collapsible=True) }}
     {% endfor %}
     </div>
 </div>

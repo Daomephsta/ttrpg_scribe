@@ -3,7 +3,7 @@ import math
 import re
 from typing import Any, Callable, Iterable, TypedDict, Unpack, cast
 
-from dnd_scribe.encounter.flask import Creature
+from dnd_scribe.encounter.flask import InitiativeParticipant
 
 from .ability import DEX, Ability, Perception, Skill, mod
 from .armour import ArmourClass
@@ -18,7 +18,7 @@ class Constant(int):
         return self
 
 
-class DndCreature(Creature):
+class DndCreature(InitiativeParticipant):
     ITALICISE_PATTERN = re.compile(r'(Melee Weapon Attack|Ranged Weapon Attack|Hit)')
     DefaultHp = Callable[['DndCreature'], int]
     Statistics = tuple[int, int, int, int, int, int]
@@ -140,32 +140,32 @@ class DndCreature(Creature):
         con_bonus = count * mod(self.con)
         return count * size + con_bonus
 
-    def to_json(self):
-        return {
-            'name': self.name,
-            'size': self.size,
-            'type': self.type,
-            'alignment': self.alignment,
-            'ac': [ac.to_json() for ac in self.ac],
-            'hp': self.hp,
-            'default_hp': self._default_hp if isinstance(self._default_hp, Constant)
+    def write_json(self, data: dict[str, Any]):
+        data.update(
+            name=self.name,
+            size=self.size,
+            type=self.type,
+            alignment=self.alignment,
+            ac=[ac.to_json() for ac in self.ac],
+            hp=self.hp,
+            default_hp=self._default_hp if isinstance(self._default_hp, Constant)
                 else self._default_hp.__name__,
-            'speeds': [speed.to_json() for speed in self.speeds.values()],
-            'statistics': self.statistics,
-            'cr': self.cr,
-            'saves': self.saves,
-            'skill_profs': [(skill.to_json(), mod) for skill, mod in self.skill_profs.items()],
-            'vulnerabilities': self.vulnerabilities,
-            'resistances': self.resistances,
-            'immunities': self.immunities,
-            'senses': self.senses,
-            'languages': self.languages,
-            'traits': self.traits,
-            'actions': self.actions,
-            'bonus_actions': self.bonus_actions,
-            'reactions': self.reactions,
-            'lore': self.lore
-        }
+            speeds=[speed.to_json() for speed in self.speeds.values()],
+            statistics=self.statistics,
+            cr=self.cr,
+            saves=self.saves,
+            skill_profs=[(skill.to_json(), mod) for skill, mod in self.skill_profs.items()],
+            vulnerabilities=self.vulnerabilities,
+            resistances=self.resistances,
+            immunities=self.immunities,
+            senses=self.senses,
+            languages=self.languages,
+            traits=self.traits,
+            actions=self.actions,
+            bonus_actions=self.bonus_actions,
+            reactions=self.reactions,
+            lore=self.lore
+        )
 
     @staticmethod
     def from_json(json):

@@ -6,9 +6,10 @@ from flask import Blueprint, Flask, render_template
 
 import dnd_scribe.core.flask
 import dnd_scribe.encounter.flask
-from dnd_scribe.encounter.flask import Creature, System
+from dnd_scribe.encounter.flask import InitiativeParticipant, System
 from dnd_scribe.pf2e_bestiary.creature import PF2Creature
 from dnd_scribe.pf2e_bestiary.foundry import packs as foundry_packs
+from dnd_scribe.pf2e_bestiary.hazard import PF2Hazard
 
 blueprint = Blueprint('pf2e_bestiary', __name__,
     static_folder='static',
@@ -71,10 +72,17 @@ class Pf2eSystem(System):
     bestiary_blueprint = blueprint
     _CREATURE_XP_BY_DELTA = {-4: 10, -3: 15, -2: 20, -1: 30, 0: 40, 1: 60, 2: 80, 3: 120}
 
-    def read_creature(self, json) -> Creature:
-        return PF2Creature.from_json(json)
+    def read_participant(self, json) -> InitiativeParticipant:
+        match json['kind']:
+            case 'PF2Creature':
+                return PF2Creature.from_json(json)
+            case 'PF2Hazard':
+                return PF2Hazard.from_json(json)
+            case unknown:
+                raise ValueError(f'Unknown participant kind {unknown}')
 
-    def encounter_xp(self, npcs: list[tuple[int, PF2Creature]],
+    def encounter_xp(self, enemies: list[tuple[int, PF2Creature]],
+                     allies: list[tuple[int, PF2Creature]],
                      party: dict[str, dict[str, Any]]) -> str:
         party_level: int = flask.current_app.config['PARTY_LEVEL']
 
@@ -85,7 +93,7 @@ class Pf2eSystem(System):
             elif delta >= 4:
                 return 160
             return Pf2eSystem._CREATURE_XP_BY_DELTA[delta]
-        total = sum(count * xp(creature) for count, creature in npcs)
+        total = sum(count * xp(creature) for count, creature in enemies)
 
         reward = math.ceil(total * 4 // len(party) / 10) * 10  # round up to nearest 10
         extra_players = len(party) - 4

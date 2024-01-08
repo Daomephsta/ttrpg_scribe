@@ -1,15 +1,18 @@
-{% macro encounter(npcs, show_xp=True) %}
+{% macro encounter(enemies, allies=[], show_xp=True) %}
 <section class="encounter">
     <link rel="stylesheet" href="{{ url_for('encounter_extension.static', filename='encounter.css') }}">
     <ul>
-        {% for count, creature in npcs %}
-            <li>{{ count }} {{ creature.name | plural(count) }}</li>
+        {% for count, participant in enemies %}
+            <li>{{ count }} {{ participant.name | plural(count) }}</li>
+        {% endfor %}
+        {% for count, participant in allies %}
+            <li>{{ count }} {{ participant.name | plural(count) }}</li>
         {% endfor %}
         {% if show_xp %}
             <li><hr/></li>
             <li>
             <strong>XP Reward</strong>
-            {{ system.encounter_xp(npcs, config.PARTY) }}
+            {{ system.encounter_xp(enemies, allies, config.PARTY) }}
             </li>
         {% endif %}
     </ul>
@@ -17,7 +20,7 @@
     launch_encounter.js adds a click listener to this,
     it sends data-encounter as the body of a POST request to /encounter
     -->
-    <button data-encounter="{{ dict(pcs=config.PARTY, npcs=npcs, description=caller() if caller else '') | tojson | forceescape }}"
+    <button data-encounter="{{ dict(pcs=config.PARTY, enemies=enemies, allies=allies, description=caller() if caller else '') | tojson | forceescape }}"
         class="launch_encounter">Launch</button>
 </section>
 {% endmacro %}

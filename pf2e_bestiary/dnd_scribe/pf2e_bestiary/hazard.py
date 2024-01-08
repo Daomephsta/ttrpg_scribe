@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import Any
 
+from dnd_scribe.encounter.flask import InitiativeParticipant
 from dnd_scribe.pf2e_bestiary.actions import Action
 
 
 @dataclass
-class PF2Hazard:
+class PF2Hazard(InitiativeParticipant):
     name: str
     level: int
     complex: bool
@@ -19,8 +20,14 @@ class PF2Hazard:
     actions: list[Action]
     reset: str
 
-    def to_json(self) -> dict[str, Any]:
-        return dict(
+    def initiative_mod(self) -> int:
+        return self.stealth
+
+    def default_hp(self) -> int:
+        return self.hp
+
+    def write_json(self, data: dict[str, Any]):
+        data.update(
             name=self.name,
             level=self.level,
             complex=self.complex,
