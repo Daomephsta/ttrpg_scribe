@@ -1,8 +1,6 @@
-import re
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import Self
 
 from dnd_scribe.core import markdown
 from dnd_scribe.notes import paths
@@ -17,7 +15,7 @@ class Content:
         Directory = auto()
         File = auto()
     type: Type
-    children: dict[str, Self]
+    children: dict[str, 'Content']
 
     def __init__(self, absolute_path: Path, title: str) -> None:
         relative_path = absolute_path.relative_to(paths.pages())
@@ -31,20 +29,15 @@ class Content:
             else Content.Type.Directory
         self.children = {}
 
-    HTML_TITLE = re.compile(r'<title>(.+)<\/title>')
-
     def __find_title(self, path: Path) -> str:
-        match path.suffixes:
-            case ['.j2', '.md']:
-                with open(path, encoding='utf-8') as file:
-                    title = markdown.find_title(file.read())
-                    if title:
-                        return title
-            case ['.j2', '.html']:
-                return path.name.removesuffix('.html.j2')
-        return path.name
+        if path.suffixes == ['.j2', '.md']:
+            with open(path, encoding='utf-8') as file:
+                title = markdown.find_title(file.read())
+                if title:
+                    return title
+        return path.name.removesuffix(f'.{'.'.join(path.suffixes)}')
 
-    def add_child(self, path: Path) -> Self:
+    def add_child(self, path: Path) -> 'Content':
         child = Content(path, self.__find_title(path))
         self.children[path.name] = child
         return child

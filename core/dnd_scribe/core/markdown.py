@@ -15,6 +15,9 @@ __renderer = Markdown(extensions=['attr_list', 'md_in_html', 'tables',
 
 
 def find_title(markdown: str):
+    metadata, markdown = frontmatter.parse(markdown)
+    if 'title' in metadata:
+        return metadata['title']
     match = MD_HEADER.search(markdown)
     return match.group(1) if match else None
 
