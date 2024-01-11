@@ -41,15 +41,15 @@ def handle_exception(ex: Exception):
 
 @_blueprint.app_template_filter()
 def block_markdown(s: str):
-    md = dnd_scribe.core.markdown.renderer.convert(s)
-    return Markup('\n'.join(md.splitlines()))
+    html, _ = dnd_scribe.core.markdown.convert(s)
+    return Markup('\n'.join(html.splitlines()))
 
 
 @_blueprint.app_template_filter()
 def inline_markdown(s: str):
-    md = dnd_scribe.core.markdown.renderer.convert(s)
+    html, _ = dnd_scribe.core.markdown.convert(s)
     return Markup('\n'.join(line.removeprefix('<p>').removesuffix('</p>')
-        for line in md.splitlines()))
+        for line in html.splitlines()))
 
 
 __PLURALIZER = Pluralizer()

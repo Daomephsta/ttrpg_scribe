@@ -1,5 +1,5 @@
 import re
-from typing import Any, TypedDict, cast
+from typing import Any, NamedTuple, TypedDict, cast
 
 import frontmatter
 from flask import render_template
@@ -8,7 +8,7 @@ from markdown.extensions.toc import TocExtension
 from markupsafe import Markup
 
 MD_HEADER = re.compile('^# (.+)$', flags=re.MULTILINE)
-renderer = Markdown(extensions=['attr_list', 'md_in_html', 'tables',
+__renderer = Markdown(extensions=['attr_list', 'md_in_html', 'tables',
     # Empty string marker disables the search to speed up processing
     TocExtension(marker='')],
     output_format='html')
@@ -50,12 +50,25 @@ def parse_metadata(metadata: dict[str, Any]) -> Metadata:
     }
 
 
+class RenderResult(NamedTuple):
+    html: str
+    toc: list[dict[str, Any]]
+
+
+def convert(markdown: str):
+    html = __renderer.convert(markdown)
+    toc = getattr(__renderer, 'toc_tokens')
+    __renderer.reset()
+    return RenderResult(html, toc)
+
+
 def render(markdown: str):
     metadata, markdown = frontmatter.parse(markdown)
-    html_fragment = renderer.convert(markdown)
     metadata = parse_metadata(metadata)
+    html_fragment, toc = convert(markdown)
+
     return render_template(f"layout/{metadata['layout']}.j2.html",
         content=Markup(html_fragment),
-        toc=renderer.toc_tokens,  # type: ignore
+        toc=toc,
         extra_stylesheets=metadata['extra_stylesheets'],
         extra_scripts=metadata['extra_scripts'])
