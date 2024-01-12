@@ -7,7 +7,7 @@ from typing import Any
 import flask
 
 from dnd_scribe.pf2e_bestiary.actions import Action, SimpleAction, Strike
-from dnd_scribe.pf2e_bestiary.creature import PF2Creature
+from dnd_scribe.pf2e_bestiary.creature import PF2Creature, Spellcasting
 from dnd_scribe.pf2e_bestiary.foundry.enrich import enrich
 from dnd_scribe.pf2e_bestiary.hazard import PF2Hazard
 
@@ -68,6 +68,8 @@ def read_creature(data: Json) -> PF2Creature:
     defenses: list[tuple[str, str]] = []
     actions: list[Action] = []
     inventory: dict[str, int] = {}
+    spellcasting: Spellcasting | None = None
+
     for item in data['items']:
         match item['type']:
             case 'action':
@@ -88,9 +90,24 @@ def read_creature(data: Json) -> PF2Creature:
                 actions.append(_read_strike(item))
             case 'weapon' | 'armor' | 'consumable' | 'equipment':
                 inventory[item['name']] = item['system']['quantity']
+            case 'spellcastingEntry':
+                spellcasting = Spellcasting(
+                    item['name'], item['system']['tradition']['value'],
+                    item['system']['spelldc']['dc'], item['system']['spelldc']['value'],
+                    slots={}
+                )
+                for level, slot_data in item['system']['slots'].items():
+                    level = int(level.removeprefix('slot'))
+                    if slot_data['prepared']:
+                        spellcasting.slots[level] = [spell['id']
+                            for spell in slot_data['prepared'].values()]
+            case 'spell':
+                assert spellcasting is not None
+                spellcasting.spells[item['_id']] = item['name']
             case _ as unknown:
                 print(f"Ignored item {item['name']} of {data['name']} with type {unknown}",
                       file=sys.stderr)
+
     return PF2Creature(
         name=data['name'],
         level=system['details']['level']['value'],
@@ -113,7 +130,8 @@ def read_creature(data: Json) -> PF2Creature:
         speeds={'walk': attributes['speed']['value'],
               **{speed['type']: speed['value']
                 for speed in attributes['speed']['otherSpeeds']}},
-        actions=actions
+        actions=actions,
+        spellcasting=spellcasting
     )
 
 

@@ -1,8 +1,48 @@
-from dataclasses import dataclass
+import collections
+from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from dnd_scribe.encounter.flask import InitiativeParticipant
 from dnd_scribe.pf2e_bestiary.actions import Action
+
+
+@dataclass
+class Spellcasting:
+    name: str
+    tradition: str
+    dc: int
+    attack: int
+    slots: dict[int, list[str]]
+    spells: dict[str, str] = field(default_factory=dict)
+
+    def prepared(self):
+        for level, spell_ids in self.slots.items():
+            def inner():
+                spell_counts = collections.Counter(spell_ids)
+                for id in spell_counts:
+                    yield (self.spells[id], spell_counts[id])
+            yield (level, inner())
+
+    def to_json(self) -> dict[str, Any]:
+        return dict(
+            name=self.name,
+            tradition=self.tradition,
+            dc=self.dc,
+            attack=self.attack,
+            slots=self.slots,
+            spells=self.spells,
+        )
+
+    @staticmethod
+    def from_json(data: dict):
+        return Spellcasting(
+            name=data['name'],
+            tradition=data['tradition'],
+            dc=data['dc'],
+            attack=data['attack'],
+            slots={int(level): spells for level, spells in data['slots'].items()},
+            spells=data['spells'],
+        )
 
 
 @dataclass
@@ -27,6 +67,7 @@ class PF2Creature(InitiativeParticipant):
     defenses: list[tuple[str, str]]
     speeds: dict[str, int]
     actions: list[Action]
+    spellcasting: Spellcasting | None
 
     def initiative_mod(self) -> int:
         return self.abilities['dex']
@@ -69,6 +110,7 @@ class PF2Creature(InitiativeParticipant):
             defenses=self.defenses,
             speeds=self.speeds,
             actions=self.actions,
+            spellcasting=self.spellcasting
         )
 
     @classmethod
@@ -93,5 +135,7 @@ class PF2Creature(InitiativeParticipant):
             weaknesses=data['weaknesses'],
             defenses=data['defenses'],
             speeds=data['speeds'],
-            actions=[Action.from_json(action) for action in data['actions']]
+            actions=[Action.from_json(action) for action in data['actions']],
+            spellcasting=Spellcasting.from_json(data['spellcasting'])
+                         if data['spellcasting'] else None,
         )

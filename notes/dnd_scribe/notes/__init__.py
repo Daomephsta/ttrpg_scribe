@@ -36,6 +36,10 @@ class Notes(flask.Flask):
 
 def create_app(project_dir: str | Path | None = None):
     app = Notes(Path(project_dir) if project_dir else Path.cwd())
+    app.jinja_options.update(
+        trim_blocks=True,
+        lstrip_blocks=True
+    )
     dnd_scribe.core.flask.extend(app)
 
     @app.get('/')

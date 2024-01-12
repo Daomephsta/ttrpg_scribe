@@ -71,7 +71,7 @@
     <p>
         <b>HP</b> {{ creature.max_hp }}
         {%- if creature.immunities -%}
-        ; <b>Immunities</b> {{ creature.immunities | join(', ')}}
+            ; <b>Immunities</b> {{ creature.immunities | join(', ')}}
         {%- endif %}
         {%- if creature.resistances -%}
         ; <b>Resistances</b>
@@ -111,6 +111,32 @@
         <li>{{ action(data) }}</li>
         {%- endfor %}
     </ul>
+    {% if creature.spellcasting %}
+    <p>
+    <b>{{ creature.spellcasting.name }}</b> {{ creature.name }} can cast these spells
+    (spell DC {{ creature.spellcasting.dc }}, spell attack {{ '%+d' % creature.spellcasting.attack }}).
+    {% set semicolon = joiner('; ') %}
+    {%- for level, spells in creature.spellcasting.prepared() -%}
+        {{ semicolon() }}
+        <b>
+        {% if level > 0 %}
+        Level {{ level if level != 0 else ''}}
+        {% else %}
+        Cantrips
+        {% endif %}
+        </b>
+        {% set comma = joiner(', ') %}
+        {%- for name, quantity in spells -%}
+            {{ comma() }}
+            {%- if quantity > 1 -%}
+            <i>{{ name }}</i> (x{{ quantity }})
+            {%- else -%}
+            <i>{{ name }}</i>
+            {%- endif -%}
+        {%- endfor -%}
+    {%- endfor -%}
+    </p>
+    {% endif %}
     <hr>
     {% if collapsible %}
     </div>
