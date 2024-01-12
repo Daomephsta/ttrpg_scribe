@@ -86,7 +86,7 @@ def read_creature(data: Json) -> PF2Creature:
                     item['system']['mod']['value']))
             case 'melee':
                 actions.append(_read_strike(item))
-            case 'weapon' | 'armor' | 'consumable':
+            case 'weapon' | 'armor' | 'consumable' | 'equipment':
                 inventory[item['name']] = item['system']['quantity']
             case _ as unknown:
                 print(f"Ignored item {item['name']} of {data['name']} with type {unknown}",
