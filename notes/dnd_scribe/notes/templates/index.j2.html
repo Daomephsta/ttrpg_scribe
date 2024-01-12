@@ -2,7 +2,7 @@
 {% block head %}
     {{ super() }}
     {% if subtree %}
-    <title>index/{{ subtree.as_posix() }}</title>
+    <title>index{{ '/' + subtree.as_posix() if subtree.name }}</title>
     {% else %}
     <title>Index</title>
     {% endif %}
