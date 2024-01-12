@@ -49,7 +49,7 @@ class Content:
         return iter(self.children.items())
 
 
-def walk() -> Content:
+def walk(path: Path) -> Content:
     def walk_subtree(dir: Path, subtree: Content):
         for path in dir.iterdir():
             if path.name in ['assets', '__pycache__'] or path.suffix == '.py':
@@ -58,4 +58,4 @@ def walk() -> Content:
             if path.is_dir():
                 walk_subtree(path, child)
         return subtree
-    return walk_subtree(paths.pages(), Content(paths.pages(), ''))
+    return walk_subtree(path, Content(path, ''))

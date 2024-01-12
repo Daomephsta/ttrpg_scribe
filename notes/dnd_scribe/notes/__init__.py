@@ -39,10 +39,11 @@ def create_app(project_dir: str | Path | None = None):
     dnd_scribe.core.flask.extend(app)
 
     @app.get('/')
-    @app.get('/index.html')
-    def index():
+    @app.get('/index/')
+    @app.get('/index/<path:subtree>')
+    def index(subtree: str = ''):
         return flask.render_template('index.j2.html',
-    content_tree=content_tree.walk())
+            content_tree=content_tree.walk(paths.pages()/subtree), subtree=Path(subtree))
 
     @app.get('/notes/<path:page>.html')
     def serve_html(page: str):
