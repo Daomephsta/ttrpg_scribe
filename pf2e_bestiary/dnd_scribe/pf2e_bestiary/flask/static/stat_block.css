@@ -16,21 +16,21 @@
 .stat_block .field_list li p {
     display: inline;
 }
-.pf2e_creature p {
-    margin-top: 8px;
-    margin-bottom: 8px;
-}
-.pf2e_creature .trait {
+.stat_block .trait {
     text-transform: uppercase;
     font-weight: bold;
     background-color: lightcoral;
     padding: 5px;
 }
-.pf2e_creature .alignment {
+.stat_block .alignment {
     background-color: lightblue;
 }
-.pf2e_creature .size {
+.stat_block .size {
     background-color: lightgreen;
+}
+.stat_block p {
+    margin-top: 8px;
+    margin-bottom: 8px;
 }
 .pf2e_creature hr.intrasection {
     color: red;
