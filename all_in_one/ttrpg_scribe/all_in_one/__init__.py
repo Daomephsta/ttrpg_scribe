@@ -94,16 +94,14 @@ def clean(project_dir: Path):
 
 def new(project_dir: Path, system: str):
     import importlib.resources
-    import zipfile
+    import shutil
 
-    if not project_dir.exists():
-        project_dir.mkdir()
-    with importlib.resources.path('ttrpg_scribe.all_in_one.project_templates',
-                                  f'{system}.zip') as template:
-        if not template.exists():
-            raise ValueError(f'No project template for {system} game system')
-        with zipfile.ZipFile(template) as template:
-            template.extractall(project_dir)
+    try:
+        with importlib.resources.as_file(importlib.resources.files(
+                f'ttrpg_scribe.all_in_one.project_templates.{system}')) as template:
+            shutil.copytree(template, project_dir, dirs_exist_ok=project_dir == Path.cwd())
+    except ModuleNotFoundError:
+        raise ValueError(f'No project template for {system} game system') from None
 
 
 def main():
