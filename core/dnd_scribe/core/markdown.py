@@ -28,6 +28,10 @@ class Metadata(TypedDict):
     extra_stylesheets: list[str]
 
 
+_ALLOWED_SCRIPT_ATTRS = {'async', 'crossorigin', 'blocking', 'defer', 'fetchpriority',
+                         'integrity', 'nomodule', 'nonce', 'referrerpolicy', 'src', 'type'}
+
+
 def parse_metadata(metadata: dict[str, Any]) -> Metadata:
     def as_list[E](name: str, element_type: type[E], default: list[E]) -> list[E]:
         candidate = cast(list[E], metadata.get(name, default))
@@ -45,9 +49,12 @@ def parse_metadata(metadata: dict[str, Any]) -> Metadata:
                 return candidate
             case _:
                 raise TypeError(f'Value {candidate} of {name} must be a list')
+
+    def sanitise(attrs: dict[str, str]):
+        return {k: attrs[k] for k in (attrs.keys() & _ALLOWED_SCRIPT_ATTRS)}
     return {
         'layout': metadata.get('layout', 'base'),
-        'extra_scripts': [s if isinstance(s, dict) else dict(src=s)
+        'extra_scripts': [sanitise(s) if isinstance(s, dict) else dict(src=s)
             for s in as_list('extra_scripts', str | dict, [])],
         'extra_stylesheets': as_list('extra_stylesheets', str, []),
     }
