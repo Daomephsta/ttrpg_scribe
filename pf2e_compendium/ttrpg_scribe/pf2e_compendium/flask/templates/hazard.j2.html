@@ -1,0 +1,55 @@
+{% from 'actions.j2.html' import action %}
+
+{% macro trap(hazard) %}
+<div class="stat_block">
+    <span class="name">{{ hazard.name }}<span style="float: right">Hazard {{ hazard.level }}</span></span>
+    <hr>
+    <ul class="field_list">
+        <li><b>Notice</b> DC {{ 10 + hazard.stealth }} Perception Check </li>
+        {% if hazard.complex %}
+        <li><b>Initiative</b> Stealth {{ '%+d' | format(hazard.stealth) }}</li>
+        {% endif %}
+        <li><b>Disable</b> {{ hazard.disable | safe }}</li>
+        {%- for data in hazard.actions %}
+        <li>{{ action(data) }}</li>
+        {%- endfor %}
+        <li><hr></li>
+        {% if hazard.reset %}
+        <li><b>Reset</b> {{ hazard.reset | safe }}</li>
+        {% endif %}
+        <!-- Hazards with a physical component always have all of ac, saves, and HP -->
+        {% if hazard.ac %} 
+            <li>
+            <!-- AC -->
+            <b>AC</b> {{ hazard.ac }};
+            <!-- Saves -->
+            {% set comma = joiner(',') %}
+            {%- for key, value in hazard.saves.items() if value -%}
+                {{ comma() }} <b>{{ key.title() }}</b> {{ '{:+d}'.format(value) }}
+            {%- endfor -%}
+            </li>
+            <li>
+            <!-- Hardness -->
+            {% set comma = joiner(',') %}
+            {%- if hazard.hardness -%}
+            {{ comma() }}<b>Hardness</b> {{ hazard.hardness }}
+            {%- endif -%}
+            {{ comma() }} <b>HP</b> {{ hazard.hp }}
+            <!-- HP -->
+            </li>
+        {% endif %}
+        {% if hazard.complex %}
+        <li><b>Routine</b> {{ hazard.routine | safe }}</li>
+        {% endif %}
+    </ul>
+</div>
+{% endmacro %}
+
+{% if render | default(False) %}
+<!DOCTYPE html>
+<head>
+    <title>{{ hazard.name | title }}</title>
+    <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
+</head>
+<body>{{ trap(hazard) }}</body>
+{% endif %}

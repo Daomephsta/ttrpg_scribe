@@ -1,6 +1,6 @@
-from dnd_scribe.npc import namelists
-from dnd_scribe.npc.entity import FormattedNamer
-from dnd_scribe.npc.race import phb
+from ttrpg_scribe.npc import namelists
+from ttrpg_scribe.npc.entity import FormattedNamer
+from ttrpg_scribe.npc.race import phb
 
 SYSTEM = 'dnd_5e'
 

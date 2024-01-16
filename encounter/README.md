@@ -1,2 +1,2 @@
-# D&DScribe Encounter
+# TTRPG Scribe Encounter
 Encounter tracker

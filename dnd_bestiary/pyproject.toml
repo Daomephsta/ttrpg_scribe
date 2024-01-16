@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ttrpg_scribe_dnd_bestiary"
+version = "0.1.0"
+description = ""
+authors = ["Daomephsta <dtnilfisk@gmail.com>"]
+readme = "README.md"
+packages = [{include = "ttrpg_scribe/dnd_bestiary"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+flask = "^2.3.2"
+ttrpg_scribe_core = { path = "../core", develop = true }
+ttrpg_scribe_encounter = { path = "../encounter", develop = true }
+requests-cache = "^1.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

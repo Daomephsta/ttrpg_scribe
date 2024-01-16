@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "dnd_scribe_core"
+name = "ttrpg_scribe_core"
 version = "0.1.0"
 description = ""
 authors = ["Daomephsta <dtnilfisk@gmail.com>"]
 readme = "README.md"
-packages = [{include = "dnd_scribe/core"}]
+packages = [{include = "ttrpg_scribe/core"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"

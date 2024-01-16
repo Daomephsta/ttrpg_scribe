@@ -165,5 +165,5 @@ cython_debug/
 # Built Visual Studio Code Extensions
 *.vsix
 
-# dnd_scribe
+# ttrpg_scribe
 _build

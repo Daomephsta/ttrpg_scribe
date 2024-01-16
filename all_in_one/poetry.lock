@@ -292,115 +292,6 @@ docs = ["ipython", "matplotlib", "numpydoc", "sphinx"]
 tests = ["pytest", "pytest-cov", "pytest-xdist"]
 
 [[package]]
-name = "dnd-scribe-bestiary"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-dnd_scribe_core = {path = "../core", develop = true}
-dnd_scribe_encounter = {path = "../encounter", develop = true}
-flask = "^2.3.2"
-requests = "^2.31.0"
-requests-cache = "^1.1.0"
-
-[package.source]
-type = "directory"
-url = "../bestiary"
-
-[[package]]
-name = "dnd-scribe-core"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-flask = "^2.3.2"
-markdown = "^3.4.3"
-pluralizer = "^1.2.0"
-python-frontmatter = "^1.0.0"
-
-[package.source]
-type = "directory"
-url = "../core"
-
-[[package]]
-name = "dnd-scribe-encounter"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-dnd_scribe_core = {path = "../core", develop = true}
-flask = "^2.3.2"
-
-[package.source]
-type = "directory"
-url = "../encounter"
-
-[[package]]
-name = "dnd-scribe-notes"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-dnd_scribe_bestiary = {path = "../bestiary", develop = true}
-flask = "^2.3.2"
-
-[package.source]
-type = "directory"
-url = "../notes"
-
-[[package]]
-name = "dnd-scribe-npc"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-dnd_scribe_core = {path = "../core", develop = true}
-flask = "^2.3.2"
-flask-session = "^0.5.0"
-
-[package.source]
-type = "directory"
-url = "../npc"
-
-[[package]]
-name = "dnd-scribe-pf2e-bestiary"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-dnd_scribe_core = {path = "../core", develop = true}
-dnd_scribe_encounter = {path = "../encounter", develop = true}
-flask = "^2.3.2"
-
-[package.source]
-type = "directory"
-url = "../pf2e_bestiary"
-
-[[package]]
 name = "flask"
 version = "2.3.3"
 description = "A simple framework for building complex web applications."
@@ -1213,6 +1104,115 @@ files = [
 widechars = ["wcwidth"]
 
 [[package]]
+name = "ttrpg-scribe-core"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+flask = "^2.3.2"
+markdown = "^3.4.3"
+pluralizer = "^1.2.0"
+python-frontmatter = "^1.0.0"
+
+[package.source]
+type = "directory"
+url = "../core"
+
+[[package]]
+name = "ttrpg-scribe-dnd-bestiary"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+flask = "^2.3.2"
+requests = "^2.31.0"
+requests-cache = "^1.1.0"
+ttrpg_scribe_core = {path = "../core", develop = true}
+ttrpg_scribe_encounter = {path = "../encounter", develop = true}
+
+[package.source]
+type = "directory"
+url = "../dnd_bestiary"
+
+[[package]]
+name = "ttrpg-scribe-encounter"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+flask = "^2.3.2"
+ttrpg_scribe_core = {path = "../core", develop = true}
+
+[package.source]
+type = "directory"
+url = "../encounter"
+
+[[package]]
+name = "ttrpg-scribe-notes"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+flask = "^2.3.2"
+ttrpg_scribe_dnd_bestiary = {path = "../dnd_bestiary", develop = true}
+
+[package.source]
+type = "directory"
+url = "../notes"
+
+[[package]]
+name = "ttrpg-scribe-npc"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+flask = "^2.3.2"
+flask-session = "^0.5.0"
+ttrpg_scribe_core = {path = "../core", develop = true}
+
+[package.source]
+type = "directory"
+url = "../npc"
+
+[[package]]
+name = "ttrpg-scribe-pf2e-compendium"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+flask = "^2.3.2"
+ttrpg_scribe_core = {path = "../core", develop = true}
+ttrpg_scribe_encounter = {path = "../encounter", develop = true}
+
+[package.source]
+type = "directory"
+url = "../pf2e_compendium"
+
+[[package]]
 name = "tzdata"
 version = "2023.4"
 description = "Provider of IANA time zone data"
@@ -1291,4 +1291,4 @@ runtime = ["matplotlib", "pandas", "tabulate"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "33dff0ad036f58e54a417f36c59ada11d552b76463199d67ac18e9d504c29f5d"
+content-hash = "b72098bcfc780c11dec23beffec5befaff12404bdee227553603e024619b44a3"

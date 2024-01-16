@@ -1,15 +1,15 @@
 [tool.poetry]
-name = "dnd_scribe_notes"
+name = "ttrpg_scribe_notes"
 version = "0.1.0"
 description = ""
 authors = ["Daomephsta <dtnilfisk@gmail.com>"]
 readme = "README.md"
-packages = [{include = "dnd_scribe/notes"}]
+packages = [{include = "ttrpg_scribe/notes"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 flask = "^2.3.2"
-dnd_scribe_bestiary = { path = "../bestiary", develop = true }
+ttrpg_scribe_dnd_bestiary = { path = "../dnd_bestiary", develop = true }
 
 
 [build-system]

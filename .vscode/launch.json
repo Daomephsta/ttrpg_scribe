@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "dnd_scribe.all_in_one:make_app('./notes/test/dnd_5e')",
+                "FLASK_APP": "ttrpg_scribe.all_in_one:make_app('./notes/test/dnd_5e')",
                 "FLASK_DEBUG": "True"
             },
             "args": [
@@ -26,7 +26,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "dnd_scribe.all_in_one:make_app('./notes/test/pf2e')",
+                "FLASK_APP": "ttrpg_scribe.all_in_one:make_app('./notes/test/pf2e')",
                 "FLASK_DEBUG": "True"
             },
             "args": [

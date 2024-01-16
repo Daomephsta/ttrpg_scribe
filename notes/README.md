@@ -1,2 +1,2 @@
-# D&DScribe Notes
-Subproject containing a Flask app for DM notes
+# TTRPG Scribe Notes
+Subproject containing a Flask app for GM notes
