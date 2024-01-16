@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import flask
+import platformdirs
 
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature, Spellcasting
@@ -19,9 +19,8 @@ def pf2e_dir() -> Path:
     global _pf2e_pack
     if _pf2e_pack is not None:
         return _pf2e_pack
-    root = Path(flask.current_app.instance_path)\
-        if flask.current_app else Path.cwd()
-    _pf2e_pack = (root/'_build/pf2e_foundry').absolute()
+    _pf2e_pack = (platformdirs.user_data_path('ttrpg_scribe') /
+                  'pf2e_compendium/data/foundryvtt/pf2e').absolute()
     if not _pf2e_pack.exists():
         subprocess.run([
             'git', 'clone', '--depth', '1',
