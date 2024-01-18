@@ -7,9 +7,9 @@ import flask
 from jinja2 import ChoiceLoader, FileSystemLoader, TemplateNotFound
 from werkzeug.exceptions import NotFound
 
+import ttrpg_scribe.core.flask
 import ttrpg_scribe.dnd_bestiary.apis
 import ttrpg_scribe.dnd_bestiary.flask
-import ttrpg_scribe.core.flask
 from ttrpg_scribe.core import markdown
 from ttrpg_scribe.notes import content_tree, data_script, paths
 
@@ -22,6 +22,7 @@ class Notes(flask.Flask):
         self.jinja_options.update(
             trim_blocks=True,
             lstrip_blocks=True)
+        paths.init(Path(self.instance_path))
         self.config.from_pyfile('config.py')
 
     @cached_property
@@ -36,10 +37,6 @@ class Notes(flask.Flask):
 
 def create_app(project_dir: str | Path | None = None):
     app = Notes(Path(project_dir) if project_dir else Path.cwd())
-    app.jinja_options.update(
-        trim_blocks=True,
-        lstrip_blocks=True
-    )
     ttrpg_scribe.core.flask.extend(app)
 
     @app.get('/')
