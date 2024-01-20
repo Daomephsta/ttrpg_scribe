@@ -1,10 +1,11 @@
 import logging
+import sys
 from pathlib import Path
 
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
-def make_app(project_dir: str | Path):
+def make_app(project_dir: str | Path, config: Path):
     from http import HTTPStatus
 
     from werkzeug.middleware.dispatcher import DispatcherMiddleware
@@ -16,7 +17,7 @@ def make_app(project_dir: str | Path):
     import ttrpg_scribe.npc.flask_app.extension
 
     project_dir = Path(project_dir)
-    app = ttrpg_scribe.notes.create_app(project_dir)
+    app = ttrpg_scribe.notes.create_app(config, project_dir)
     ttrpg_scribe.encounter.flask.extension.extend(app, '/encounter_extension')
     ttrpg_scribe.npc.flask_app.extension.extend(app, '/npc_extension')
     app.config['TOOLS'] = [
@@ -36,8 +37,8 @@ def make_app(project_dir: str | Path):
     app.jinja_env.globals['system'] = system
     app.register_blueprint(system.bestiary_blueprint)
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-        '/encounter': ttrpg_scribe.encounter.flask.create_app(project_dir, system),
-        '/npc': ttrpg_scribe.npc.flask_app.create_app(project_dir)
+        '/encounter': ttrpg_scribe.encounter.flask.create_app(project_dir, system, config),
+        '/npc': ttrpg_scribe.npc.flask_app.create_app(project_dir, config)
     })
 
     @app.post('/clean', endpoint='clean')
@@ -54,8 +55,9 @@ def check_structure(project_dir: Path) -> bool:
     else:
         if not (project_dir/'pages').exists():
             issues.append(f'{project_dir.absolute()}/pages does not exist')
-        if not (project_dir/'config.py').exists():
-            issues.append(f'{project_dir.absolute()}/config.py does not exist')
+        if not (project_dir/'config.py').exists() and not (project_dir/'config').exists():
+            issues.append(f'Neither {project_dir.absolute()}/config.py '
+                          f'nor {project_dir.absolute()}/config exist')
     if issues:
         print(f'{project_dir.absolute()} is not a valid ttrpg_scribe project:')
         for issue in issues:
@@ -69,7 +71,17 @@ def start(args):
 
     if not check_structure(args.project):
         return
-    app = make_app(args.project)
+    config_dir: Path = args.project/'config'
+    if config_dir.exists():
+        if args.config:
+            app = make_app(args.project, config_dir/f'{args.config}.py')
+        else:
+            print('Multiconfig projects must specify --config', file=sys.stderr)
+            print(f'Available configs: {', '.join(path.stem for path in config_dir.glob('*.py'))}',
+                  file=sys.stderr)
+            return
+    else:
+        app = make_app(args.project, Path('config.py'))
     logging.basicConfig(level=logging.INFO,
                         format='%(name)s @ %(levelname)s: %(message)s')
     host, port = '127.0.0.1', 48164
@@ -116,6 +128,7 @@ def main():
 
     start_parser = subcommands.add_parser('start')
     start_parser.add_argument('--debug', action='store_true')
+    start_parser.add_argument('-c', '--config', type=str)
     start_parser.set_defaults(subcommand=start)
 
     clean_parser = subcommands.add_parser('clean')

@@ -15,7 +15,7 @@ from ttrpg_scribe.notes import content_tree, data_script, paths
 
 
 class Notes(flask.Flask):
-    def __init__(self, project_dir: Path):
+    def __init__(self, project_dir: Path, config: Path):
         super().__init__('ttrpg_scribe.notes',
             instance_path=project_dir.absolute().as_posix(),
             instance_relative_config=True)
@@ -23,7 +23,7 @@ class Notes(flask.Flask):
             trim_blocks=True,
             lstrip_blocks=True)
         paths.init(Path(self.instance_path))
-        self.config.from_pyfile('config.py')
+        self.config.from_pyfile(config)
 
     @cached_property
     def jinja_loader(self) -> ChoiceLoader:
@@ -35,8 +35,8 @@ class Notes(flask.Flask):
         ])
 
 
-def create_app(project_dir: str | Path | None = None):
-    app = Notes(Path(project_dir) if project_dir else Path.cwd())
+def create_app(config: Path, project_dir: str | Path | None = None):
+    app = Notes(Path(project_dir) if project_dir else Path.cwd(), config)
     ttrpg_scribe.core.flask.extend(app)
 
     @app.get('/')

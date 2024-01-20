@@ -23,11 +23,6 @@ def templates():
 
 
 @cache
-def config():
-    return project_dir/'config.py'
-
-
-@cache
 def build():
     return project_dir/'_build'
 
