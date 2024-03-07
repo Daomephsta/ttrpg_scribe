@@ -58,3 +58,16 @@ __PLURALIZER = Pluralizer()
 @_blueprint.app_template_filter()
 def plural(s: str, count: int, inclusive: bool = False):
     return __PLURALIZER.pluralize(s, count, inclusive=inclusive)
+
+
+@_blueprint.app_template_filter()
+def ordinal(n: int):
+    match n % 10:
+        case 1:
+            return f'{n}st'
+        case 2:
+            return f'{n}nd'
+        case 3:
+            return f'{n}rd'
+        case _:
+            return f'{n}th'
