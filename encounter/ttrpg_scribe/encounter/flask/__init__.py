@@ -117,6 +117,8 @@ def create_app(instance_path: str | Path, system: System, config: Path):
             return self._encounters[index]
 
     class Encounter(metaclass=__Encounter):
+        SHAPES = '●▲■◆⬢➕'
+
         def __init__(self, enemies: list[tuple[int, InitiativeParticipant]],
                      allies: list[tuple[int, InitiativeParticipant]],
                      pcs: list[str], description: str):
@@ -126,7 +128,8 @@ def create_app(instance_path: str | Path, system: System, config: Path):
                                     for _, participant in itertools.chain(enemies, allies)}
             self.pcs = pcs
             self.description = description
-            self.npc_ids = itertools.count(start=1)
+            self.npc_ids = itertools.chain(Encounter.SHAPES,
+                                           itertools.count(start=len(Encounter.SHAPES) + 1))
             for count, participant in enemies:
                 for _ in range(count):
                     self.add_npc(participant, 'enemy')
