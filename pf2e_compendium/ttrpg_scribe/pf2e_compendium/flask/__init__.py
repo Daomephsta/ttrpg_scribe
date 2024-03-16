@@ -75,12 +75,14 @@ def search():
 @blueprint.app_template_filter()
 def action(kind: int | str):
     match kind:
+        case 0:
+            return ''
         case int(i):
-            return '\u25C6' * i
+            return str(i)
         case 're' | 'reaction':
-            return '\u2B8C'
+            return 'r'
         case 'free':
-            return '\u25C7'
+            return 'f'
 
 
 def create_app():

@@ -1,6 +1,6 @@
 {%-macro simple_action(action) %}
 <b>{{ action.name }}</b>
-{{ action.cost | action }}
+<span class="action">{{ action.cost | action }}</span>
 {% if action.traits -%}
     ({{ action.traits | join(', ') }})
 {% endif %}
@@ -10,7 +10,7 @@
 {%- macro strike_action(action) -%}
 <b>{{ action.weapon_type | title }}</b>
 {{ action.name }}
-{{ action.cost | action }}
+<span class="action">{{ action.cost | action }}</span>
 {%- set malus_sep = joiner('/') -%}
 {% for malus in action.attack_maluses() %}
     {{ malus_sep() }} {{ '%+d' | format(action.bonus - malus) }}
