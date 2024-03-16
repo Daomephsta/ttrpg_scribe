@@ -48,7 +48,9 @@ def enrich(text: str) -> str:
             return f'{amount} {tag}'
         return amount
 
-    text = text.replace('<hr />\n', '<hr class="intrasection"/>')
+    if '<hr />\n' in text:
+        text = text.replace('<hr />\n', '<div class="details">')
+        text += '</div>'
     text = text.replace('\n', '</br>')
     for pattern in [r'@(Damage)\[((?:[^[\]]*|\[[^[\]]*\])*)\](?:{([^}]+)})?',
                     r'@(\w+)\[([^\]]+)\](?:{([^}]+)})?']:
