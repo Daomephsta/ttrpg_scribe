@@ -1,3 +1,4 @@
+import json
 import math
 from typing import Any
 
@@ -46,11 +47,16 @@ def content(id: str):
     type, content = foundry_packs.content(id)
     if isinstance(content, dict):
         return content
-    print(f'{type}.j2.html')
     return render_template(f'{type}.j2.html', **{
         type: content,
         'render': True
     })
+
+
+@blueprint.get('/view/<path:id>.json')
+def raw_content(id: str):
+    with foundry_packs.open_pf2e_file(f'packs/{id}.json') as file:
+        return json.load(file)
 
 
 @blueprint.get('/search')
