@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Debug D&DScribe All-in-One",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -22,7 +22,7 @@
         },
         {
             "name": "Debug PF2eScribe All-in-One",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "flask",
             "env": {

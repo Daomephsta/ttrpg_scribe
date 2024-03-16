@@ -5,7 +5,7 @@ from pathlib import Path
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
-def make_app(project_dir: str | Path, config: Path):
+def make_app(project_dir: str | Path, config: Path | None = None):
     from http import HTTPStatus
 
     from werkzeug.middleware.dispatcher import DispatcherMiddleware
@@ -17,6 +17,7 @@ def make_app(project_dir: str | Path, config: Path):
     import ttrpg_scribe.npc.flask_app.extension
 
     project_dir = Path(project_dir)
+    config = config or Path('config.py')
     app = ttrpg_scribe.notes.create_app(config, project_dir)
     ttrpg_scribe.encounter.flask.extension.extend(app, '/encounter_extension')
     ttrpg_scribe.npc.flask_app.extension.extend(app, '/npc_extension')
@@ -81,7 +82,7 @@ def start(args):
                   file=sys.stderr)
             return
     else:
-        app = make_app(args.project, Path('config.py'))
+        app = make_app(args.project)
     logging.basicConfig(level=logging.INFO,
                         format='%(name)s @ %(levelname)s: %(message)s')
     host, port = '127.0.0.1', 48164
