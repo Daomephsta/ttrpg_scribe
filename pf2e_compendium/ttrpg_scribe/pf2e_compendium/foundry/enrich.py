@@ -32,6 +32,8 @@ def enrich(text: str) -> str:
             case 'Check', dict() as args:
                 if 'basic' in args:
                     return f'DC {args["dc"]} basic {args["type"].title()}'
+                if 'defense' in args:
+                    return args['type'].title()
                 return f'DC {args["dc"]} {args["type"].title()}'
             case 'Damage', str() as args:
                 return _damage_roll(args)
