@@ -33,6 +33,7 @@ def make_app(project_dir: str | Path, config: Path | None = None):
         case 'pf2e':
             from ttrpg_scribe.pf2e_compendium.flask import Pf2eSystem
             system = Pf2eSystem()
+            app.config['TOOLS'].insert(-1, ('/creatures', 'Creature List', {}))
         case _ as system:
             raise ValueError(f'Unknown game system {system}')
     app.jinja_env.globals['system'] = system
