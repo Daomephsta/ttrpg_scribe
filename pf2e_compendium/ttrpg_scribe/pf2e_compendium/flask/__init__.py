@@ -39,7 +39,7 @@ def _bestiary_packs():
 def list_content(pack: str):
     path = foundry_packs.pf2e_dir()/'packs'/pack
     return render_template('content_list.j2.html', pack=pack,
-        content=[path.stem for path in path.glob('*.json')])
+        content=(path.stem for path in path.glob('*.json')))
 
 
 @blueprint.get('/view/<path:id>')
@@ -62,13 +62,14 @@ def raw_content(id: str):
 @blueprint.get('/search')
 def search():
     query = request.args.get('query', '')
-    results = [
-        path.relative_to(foundry_packs.pf2e_dir()/'packs').with_suffix('')
-        for pack in _bestiary_packs()
-        for path in pack.iterdir()
-        if query in path.stem
-    ]
-    return render_template('search_results.j2.html', content=results)
+
+    def results():
+        packs_dir = foundry_packs.pf2e_dir()/'packs'
+        for pack in _bestiary_packs():
+            for path in pack.iterdir():
+                if query in path.stem:
+                    yield path.relative_to(packs_dir).with_suffix('')
+    return render_template('search_results.j2.html', content=results())
 
 
 @blueprint.app_template_filter()
