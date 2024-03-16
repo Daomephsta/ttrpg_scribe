@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
-from ttrpg_scribe.pf2e_compendium.actions import Action
+from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
 
 
 @dataclass
@@ -64,7 +64,7 @@ class PF2Creature(InitiativeParticipant):
     immunities: list[str]
     resistances: list[tuple[str, int]]
     weaknesses: list[tuple[str, int]]
-    defenses: list[tuple[str, str]]
+    defenses: list[SimpleAction]
     speeds: dict[str, int]
     actions: list[Action]
     spellcasting: Spellcasting | None

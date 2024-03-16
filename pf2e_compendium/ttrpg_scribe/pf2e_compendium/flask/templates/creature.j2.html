@@ -1,4 +1,4 @@
-{% from 'actions.j2.html' import action %}
+{% from 'actions.j2.html' import action, simple_action %}
 
 {% macro stat_block(creature, collapsible=False) %}
 {% if creature is exception %}
@@ -88,8 +88,8 @@
     </p>
     <!-- Defenses -->
     <ul class="field_list">
-    {%- for name, desc in creature.defenses %}
-        <li><b>{{ name }}</b> {{ desc | safe }}</li>
+    {%- for defense in creature.defenses %}
+        <li>{{ simple_action(defense) }}</li>
     {%- endfor %}
     </ul>
     <hr>

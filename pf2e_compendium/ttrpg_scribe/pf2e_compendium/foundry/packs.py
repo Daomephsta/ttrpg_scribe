@@ -68,7 +68,7 @@ def _read_creature(data: Json) -> PF2Creature:
 
     skills: list[tuple[str, int]] = []
     interactions: list[tuple[str, str]] = []
-    defenses: list[tuple[str, str]] = []
+    defenses: list[SimpleAction] = []
     actions: list[Action] = []
     inventory: dict[str, int] = {}
     spellcasting: Spellcasting | None = None
@@ -82,7 +82,16 @@ def _read_creature(data: Json) -> PF2Creature:
                     case 'interaction':
                         interactions.append((name, desc))
                     case 'defensive':
-                        defenses.append((name, desc))
+                        match item['system']['actionType']['value']:
+                            case 'passive':
+                                cost = 0
+                            case 'reaction':
+                                cost = 're'
+                            case unknown:
+                                print(f'Unknown action type {unknown} for item {item['name']}',
+                                      file=sys.stderr)
+                                cost = 0
+                        defenses.append(SimpleAction(name, desc, cost))
                     case 'offensive':
                         actions.append(_read_simple_action(item))
             case 'lore':
