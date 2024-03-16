@@ -2,7 +2,7 @@ import math
 from typing import Any
 
 import flask
-from flask import Blueprint, Flask, render_template
+from flask import Blueprint, Flask, render_template, request
 
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.encounter.flask
@@ -25,10 +25,13 @@ _EXCLUDED_PACKS = [
 
 @blueprint.get('/')
 def list_packs():
-    return render_template('pack_list.j2.html',
-        packs=[pack.name
-               for pack in (foundry_packs.pf2e_dir()/'packs').iterdir()
-               if 'bestiary' in pack.name and pack.name not in _EXCLUDED_PACKS])
+    return render_template('pack_list.j2.html', packs=[pack.name for pack in _bestiary_packs()])
+
+
+def _bestiary_packs():
+    for pack in (foundry_packs.pf2e_dir()/'packs').iterdir():
+        if 'bestiary' in pack.name and pack.name not in _EXCLUDED_PACKS:
+            yield pack
 
 
 @blueprint.get('/pack/<string:pack>')
@@ -48,6 +51,18 @@ def content(id: str):
         type: content,
         'render': True
     })
+
+
+@blueprint.get('/search')
+def search():
+    query = request.args.get('query', '')
+    results = [
+        path.relative_to(foundry_packs.pf2e_dir()/'packs').with_suffix('')
+        for pack in _bestiary_packs()
+        for path in pack.iterdir()
+        if query in path.stem
+    ]
+    return render_template('search_results.j2.html', content=results)
 
 
 @blueprint.app_template_filter()
