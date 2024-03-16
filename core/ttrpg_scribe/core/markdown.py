@@ -55,7 +55,7 @@ def parse_metadata(metadata: dict[str, Any]) -> Metadata:
     return {
         'layout': metadata.get('layout', 'base'),
         'extra_scripts': [sanitise(s) if isinstance(s, dict) else dict(src=s)
-            for s in as_list('extra_scripts', str | dict, [])],
+            for s in as_list('extra_scripts', str | dict, [])],  # type: ignore
         'extra_stylesheets': as_list('extra_stylesheets', str, []),
     }
 
