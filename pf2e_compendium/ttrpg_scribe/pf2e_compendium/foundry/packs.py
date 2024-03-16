@@ -35,10 +35,14 @@ def open_pf2e_file(path: str):
 
 def creature(id: str):
     with open_pf2e_file(f'packs/{id}.json') as file:
-        return read_creature(json.load(file))
+        try:
+            return _read_creature(json.load(file))
+        except Exception as e:
+            e.add_note(f'Reading creature {id}')
+            raise
 
 
-def read_creature(data: Json) -> PF2Creature:
+def _read_creature(data: Json) -> PF2Creature:
     ALIGNMENTS = {'good', 'neutral', 'evil', 'lawful', 'chaotic'}
 
     def sort_alignment(alignment: str) -> int:
@@ -137,10 +141,14 @@ def read_creature(data: Json) -> PF2Creature:
 
 def hazard(id: str):
     with open_pf2e_file(f'packs/{id}.json') as file:
-        return read_hazard(json.load(file))
+        try:
+            return _read_hazard(json.load(file))
+        except Exception as e:
+            e.add_note(f'Reading hazard {id}')
+            raise
 
 
-def read_hazard(data: Json) -> PF2Hazard:
+def _read_hazard(data: Json) -> PF2Hazard:
     details = data['system']['details']
     actions: list[Action] = []
     for item in data['items']:
@@ -205,11 +213,15 @@ def content(id: str):
     with open_pf2e_file(f'packs/{id}.json') as file:
         data: Json = json.load(file)
         type: str = data['type']
-        match type:
-            case 'npc':
-                return ('creature', read_creature(data))
-            case 'hazard':
-                return (type, read_hazard(data))
-            case _:
-                print(f'Unknown content type {type}', file=sys.stderr)
-                return (type, data)
+        try:
+            match type:
+                case 'npc':
+                    return ('creature', _read_creature(data))
+                case 'hazard':
+                    return (type, _read_hazard(data))
+                case _:
+                    print(f'Unknown content type {type}', file=sys.stderr)
+                    return (type, data)
+        except Exception as e:
+            e.add_note(f'Reading {type} {id}')
+            raise
