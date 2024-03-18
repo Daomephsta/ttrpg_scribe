@@ -50,6 +50,14 @@ class Skill(NamedTuple):
     mod: int
     notes: list[str]
 
+    @staticmethod
+    def from_json(data: dict):
+        return Skill(
+            name=data['name'],
+            mod=data['mod'],
+            notes=data['notes'],
+        )
+
 
 @dataclass
 class PF2Creature(InitiativeParticipant):
@@ -129,7 +137,7 @@ class PF2Creature(InitiativeParticipant):
             traits=data['traits'],
             perception=data['perception'],
             senses=data['senses'],
-            skills=data['skills'],
+            skills=[Skill.from_json(skill) for skill in data['skills']],
             inventory=data['inventory'],
             abilities=data['abilities'],
             interactions=data['interactions'],
