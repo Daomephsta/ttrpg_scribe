@@ -1,6 +1,6 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Callable, NamedTuple
+from typing import Any, Callable
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
@@ -45,7 +45,8 @@ class Spellcasting:
         )
 
 
-class Skill(NamedTuple):
+@dataclass
+class Skill:
     name: str
     mod: int
     notes: list[str]
@@ -59,7 +60,8 @@ class Skill(NamedTuple):
         )
 
 
-class Sense(NamedTuple):
+@dataclass
+class Sense:
     name: str
     range: int | None
     acuity: str | None
