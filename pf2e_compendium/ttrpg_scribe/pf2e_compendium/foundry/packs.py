@@ -7,7 +7,8 @@ from typing import Any
 import platformdirs
 
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
-from ttrpg_scribe.pf2e_compendium.creature import PF2Creature, Spellcasting
+from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Skill,
+                                                   Spellcasting)
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -66,7 +67,7 @@ def _read_creature(data: Json) -> PF2Creature:
     perception = system['perception']['mod']
     senses = [sense['type'] for sense in system['perception']['senses']]
 
-    skills: list[tuple[str, int]] = []
+    skills: list[Skill] = []
     interactions: list[tuple[str, str]] = []
     defenses: list[SimpleAction] = []
     actions: list[Action] = []
@@ -95,9 +96,11 @@ def _read_creature(data: Json) -> PF2Creature:
                     case 'offensive':
                         actions.append(_read_simple_action(item))
             case 'lore':
-                skills.append((
+                skills.append(Skill(
                     item['name'],
-                    item['system']['mod']['value']))
+                    item['system']['mod']['value'],
+                    [x['label'] for x in item['system'].get('variants', {}).values()]
+                ))
             case 'melee':
                 actions.append(_read_strike(item))
             case 'weapon' | 'armor' | 'consumable' | 'equipment':
