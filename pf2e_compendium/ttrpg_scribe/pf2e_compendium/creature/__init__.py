@@ -59,6 +59,20 @@ class Skill(NamedTuple):
         )
 
 
+class Sense(NamedTuple):
+    name: str
+    range: int | None
+    acuity: str | None
+
+    @staticmethod
+    def from_json(data: dict):
+        return Sense(
+            name=data['name'],
+            range=data['range'],
+            acuity=data['acuity'],
+        )
+
+
 @dataclass
 class PF2Creature(InitiativeParticipant):
     name: str
@@ -67,7 +81,7 @@ class PF2Creature(InitiativeParticipant):
     size: str
     traits: list[str]
     perception: int
-    senses: list[str]
+    senses: list[Sense]
     skills: list[Skill]
     inventory: dict[str, int]
     abilities: dict[str, int]
@@ -136,7 +150,7 @@ class PF2Creature(InitiativeParticipant):
             size=data['size'],
             traits=data['traits'],
             perception=data['perception'],
-            senses=data['senses'],
+            senses=[Sense.from_json(sense) for sense in data['senses']],
             skills=[Skill.from_json(skill) for skill in data['skills']],
             inventory=data['inventory'],
             abilities=data['abilities'],

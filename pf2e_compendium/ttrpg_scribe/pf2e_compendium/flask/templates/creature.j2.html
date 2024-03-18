@@ -30,7 +30,16 @@
         <span class="trait">{{ trait }}</span>
     {%- endfor %}
     </p>
-    <p><b>Perception</b> {{ '{:+d}'.format(creature.perception) }}; {{ creature.senses | join(', ') }}</p>
+    <p>
+        <b>Perception</b> {{ '{:+d}'.format(creature.perception) }};
+        {% set comma = joiner(', ') %}
+        {% for sense in creature.senses -%}
+            {{ comma() }}
+            {{- sense.name }}
+            {{- ' (%s)' % sense.acuity if sense.acuity }}
+            {{- ' %d feet' % sense.range if sense.range }}
+        {%- endfor -%}
+    </p>
     <!-- Skills -->
     <p>
         <b>Skills</b>

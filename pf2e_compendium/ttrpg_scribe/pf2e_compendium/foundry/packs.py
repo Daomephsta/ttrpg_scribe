@@ -7,7 +7,7 @@ from typing import Any
 import platformdirs
 
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
-from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Skill,
+from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
@@ -65,7 +65,8 @@ def _read_creature(data: Json) -> PF2Creature:
         simple_traits.remove(a)
 
     perception = system['perception']['mod']
-    senses = [sense['type'] for sense in system['perception']['senses']]
+    senses = [Sense(sense['type'], sense.get('range'), sense.get('acuity'))
+              for sense in system['perception']['senses']]
 
     skills: list[Skill] = []
     interactions: list[tuple[str, str]] = []
