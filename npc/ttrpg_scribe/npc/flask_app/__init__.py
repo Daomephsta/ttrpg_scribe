@@ -5,7 +5,7 @@ from flask_session import Session
 from werkzeug.exceptions import Forbidden, NotFound
 
 import ttrpg_scribe.core.flask
-from ttrpg_scribe.npc.entity import Entity, EntityGenerator, Features
+from ttrpg_scribe.npc.entity import Entity, EntityBuilder, EntityGenerator, Features
 
 
 def create_app(instance_path: str | Path, config: Path):
@@ -48,13 +48,13 @@ def create_app(instance_path: str | Path, config: Path):
 
     @app.post('/generate')
     def generate_npc():
-        features = dict()
+        builder = EntityBuilder(npc_generator)
         for feature_id, value in flask.request.form.items():
-            Features[feature_id].read_into(features, value)
-        entity = npc_generator.generate(features)
+            Features[feature_id].read_into(builder.features, value)
+        entity = npc_generator.generate(builder)
         flask.session['current_npc'] = entity
         return entity.for_display(
-            order=list(features.keys()),
+            order=list(builder.features.keys()),
             exclude=[Features.REGION])
 
     npcs = Path(app.instance_path)/'npcs'

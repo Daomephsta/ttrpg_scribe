@@ -1,4 +1,3 @@
-from functools import reduce
 from importlib import resources
 from random import Random
 from random import _inst as default_random
@@ -14,53 +13,43 @@ from ttrpg_scribe.npc.race import Race, Subrace
 
 class Feature[T]:
     def __init__(self, name: str,
-                 generator: Callable[['EntityGenerator', 'FeatureMapping'], T],
-                 dependencies: 'list[Feature[Any] | str]' = [],
+                 generator: Callable[['EntityBuilder'], T],
                  display: str | None = None,
                  to_str: 'Callable[[T], str]' = lambda value: str(value),
-                 from_str: 'Callable[[str, FeatureMapping], T]' =
+                 from_str: 'Callable[[str, dict[Feature[Any], Any]], T]' =
                     lambda value, _: cast(T, value)
                  ) -> None:
         self.name = name
         self.generator = generator
-        self.dependencies = dependencies
         self.to_str = to_str
         self.from_str = from_str
         self.display = display if display else name.title()
 
-    def generate_into(self, entity_generator: 'EntityGenerator',
-                      features: 'FeatureMap'):
-        for dependency in self.dependencies:
-            if dependency in features:
-                continue
-            if isinstance(dependency, str):
-                dependency = Features[dependency]
-            dependency.generate_into(entity_generator, features)
-        features[self] = self.generator(entity_generator, features)
+    def generate_into(self, builder: 'EntityBuilder'):
+        builder[self] = self.generator(builder)
 
-    def read_into(self, destination: 'FeatureMap',
-                  value: str | None) -> 'FeatureMap':
+    def read_into(self, destination: 'dict[Feature[Any], Any]',
+                  value: str | None):
         if value:
             destination[self] = self.from_str(value, destination)
         else:
             destination[self] = None
-        return destination
 
     @staticmethod
     def choice(name: str, choices: list[T], *, weights: list[float] = [],
-           filter: Optional[Callable[['FeatureMapping', T], bool]] = None,
+           filter: Optional[Callable[['EntityBuilder', T], bool]] = None,
            display: str | None = None) -> 'Feature[T]':
         if weights:
-            def generator(helper: 'EntityGenerator', _):
-                return helper.choose(choices, weights=weights)
+            def generator(builder: EntityBuilder):
+                return builder.choose(choices, weights=weights)
         elif filter:
-            def generator(helper: 'EntityGenerator', dependencies):  # type: ignore
+            def generator(builder: EntityBuilder):
                 def dependent_filter(option):
-                    return filter(dependencies, option)
-                return helper.choose(choices, filter=dependent_filter)
+                    return filter(builder, option)
+                return builder.choose(choices, filter=dependent_filter)
         else:
-            def generator(helper: 'EntityGenerator', _):
-                return helper.choose(choices)
+            def generator(builder: EntityBuilder):
+                return builder.choose(choices)
         return Feature(name, generator=generator, display=display)
 
     @staticmethod
@@ -73,12 +62,54 @@ class Feature[T]:
     __repr__ = __str__
 
 
-FeatureMapping = Mapping[Feature[Any], Any]
-FeatureMap = dict[Feature[Any], Any]
+class EntityBuilder:
+    features: dict[Feature[Any], Any]
+    context: 'EntityGenerator'
+
+    def __init__(self, context: 'EntityGenerator') -> None:
+        self.features = {}
+        self.context = context
+
+    def __getitem__[F](self, feature: Feature[F]) -> F:
+        if self.get(feature) is None:
+            feature.generate_into(self)
+        return self.features[feature]
+
+    def get[F](self, feature: Feature[F]) -> F | None:
+        return self.features.get(feature)
+
+    def __setitem__[F](self, feature: Feature[F], value: F | None):
+        self.features[feature] = value
+
+    @overload
+    def choose[C](self, options: list[C], *,
+               filter: Callable[[C], bool] | None = None) -> C: ...
+
+    @overload
+    def choose[C](self, options: list[C], *,
+               weights: Sequence[float] | None = None) -> C: ...
+
+    @overload
+    def choose[C](self, options: list[C], *,
+               weights: Sequence[float] | None = None, k: int) -> list[C]: ...
+
+    @overload
+    def choose[C](self, options: list[C], *,
+               filter: Callable[[C], bool] | None = None, k: int) -> list[C]: ...
+
+    def choose[C](self, options: list[C], *, weights: Sequence[float] | None = None,
+               filter: Callable[[C], bool] | None = None, k=1) -> list[C] | C:
+        if filter:
+            weights = [int(filter(option)) for option in options]
+        if k == 1:
+            if weights is not None:
+                return self.context.rng.choices(options, weights)[0]
+            return self.context.rng.choice(options)
+        return self.context.rng.choices(options, weights, k=k)
 
 
 def different(feature_name: str):
-    def filter(npc: FeatureMapping, choice) -> bool:
+    def filter(npc: EntityBuilder, choice) -> bool:
         return choice != npc.get(Features[feature_name])
     return filter
 
@@ -88,59 +119,54 @@ class __Features(type):
         with resources.open_text('ttrpg_scribe.npc', 'features.yaml') as file:
             features_yaml = yaml.safe_load(file)
         cls.REGION: Feature[str] = Feature('region',
-            lambda generator, _: generator.choose(list(generator.config['REGIONS'].keys())))
+            lambda builder: builder.choose(list(builder.context.config['REGIONS'].keys())))
 
-        def race(generator: 'EntityGenerator',
-                          features: FeatureMapping) -> Race:
-            region: str = features[Features.REGION]
+        def race(builder: EntityBuilder) -> Race:
+            region: str = builder[Features.REGION]
             region_race_weights: dict[Race, dict[str, int] | int] =\
-                generator.config['REGIONS'][region]['races']
+                builder.context.config['REGIONS'][region]['races']
             races = list(region_race_weights.keys())
             race_weights = [sum(weights.values()) if isinstance(weights, dict) else weights
                 for weights in region_race_weights.values()]
-            return generator.choose(races, weights=race_weights)
+            return builder.choose(races, weights=race_weights)
         cls.RACE: Feature[Race] = Feature('race', race,
-            from_str=lambda s, _: ttrpg_scribe.npc.race.BY_NAME[s],
-            dependencies=[cls.REGION])
+            from_str=lambda s, _: ttrpg_scribe.npc.race.BY_NAME[s])
 
-        def subrace(generator: 'EntityGenerator',
-                    features: FeatureMapping) -> Subrace | None:
-            region: str = features[Features.REGION]
+        def subrace(builder: EntityBuilder) -> Subrace | None:
+            region: str = builder[Features.REGION]
             region_race_weights: dict[Race, dict[str, int] | int] =\
-                generator.config['REGIONS'][region]['races']
-            race: Race = features[Features.RACE]
+                builder.context.config['REGIONS'][region]['races']
+            race: Race = builder[Features.RACE]
             if race.subraces:
                 match region_race_weights[race]:
                     case dict() as subrace_weights:
                         subraces = [race.subraces[name] for name in subrace_weights.keys()]
-                        return generator.choose(subraces, weights=list(subrace_weights.values()))
+                        return builder.choose(subraces,
+                                                      weights=list(subrace_weights.values()))
                     case int() | float() as race_weight:
-                        return generator.choose(list(race.subraces.values()),
+                        return builder.choose(list(race.subraces.values()),
                             weights=[race_weight / len(race.subraces)] * len(race.subraces))
             return None
         cls.SUBRACE = Feature('subrace', subrace,
             from_str=lambda s, features:
-                features[cls.RACE].subraces[s] if s != 'None' else None,
-            dependencies=[cls.REGION, cls.RACE])
+                features[cls.RACE].subraces[s] if s != 'None' else None)
 
-        def culture(generator: 'EntityGenerator', features: FeatureMapping) -> 'Culture':
-            region: str = features[Features.REGION]
-            region_cultures: dict[str, int] = generator.config['REGIONS'][region]['cultures']
-            culture_name = generator.choose(
+        def culture(builder: EntityBuilder) -> 'Culture':
+            region: str = builder[Features.REGION]
+            region_cultures: dict[str, int] = builder.context.config['REGIONS'][region]['cultures']
+            culture_name = builder.choose(
                 list(region_cultures.keys()),
                 weights=list(region_cultures.values()))
-            return Culture.from_config(generator.config, culture_name)
+            return Culture.from_config(builder.context.config, culture_name)
         cls.CULTURE: Feature[Culture] = Feature('culture', culture,
-            from_str=lambda s, _: Culture.from_config(flask.current_app.config, s),
-            dependencies=[cls.REGION])
+            from_str=lambda s, _: Culture.from_config(flask.current_app.config, s))
 
         cls.SEX: Feature[Sex] = Feature.choice('sex', SEXES)
         cls.AGE: Feature[str] = Feature.choice('age',
             # Age distribution is more or less uniform, only decreasing for old ages
             ['Young Adult', 'Middle Aged', 'Old'], weights=[3, 3, 1])
         cls.NAME: Feature[str] = Feature('name',
-            lambda helper, features: features[cls.CULTURE].namer.name(features, helper.rng),
-            dependencies=[cls.CULTURE, cls.SEX, cls.AGE, cls.RACE])
+            lambda builder: builder[cls.CULTURE].namer.name(builder, builder.context.rng))
         cls.HEIGHT: Feature[str] = Feature.choice('height',
             # 68% of values in a normal distribution are within 1 standard deviation of the mean
             ['Short', 'Average', 'Tall'], weights=[0.16, 0.68, 0.16])
@@ -175,8 +201,10 @@ class Features(metaclass=__Features):
 
 
 class Entity:
-    def __init__(self, feature_values: FeatureMap):
-        self.feature_values = FeatureMap(feature_values)
+    feature_values: dict[Feature[Any], Any]
+
+    def __init__(self, builder: EntityBuilder):
+        self.feature_values = builder.features
 
     @property
     def name(self):
@@ -211,9 +239,9 @@ class Entity:
         return self.to_json()
 
     def __setstate__(self, state: dict[str, str]):
-        self.feature_values = reduce(lambda features, feature:
-                Features[feature[0]].read_into(features, feature[1]),
-            state.items(), {})
+        self.feature_values = {}
+        for k, v in state.items():
+            Features[k].read_into(self.feature_values, v)
 
     def for_display(self, order: list[Feature[Any]] = [],
                     exclude: list[Feature[Any]] = []):
@@ -231,45 +259,19 @@ class EntityGenerator:
         self.rng = rng
         self.config = config
 
-    @overload
-    def choose[C](self, options: list[C], *,
-               filter: Callable[[C], bool] | None = None) -> C: ...
-
-    @overload
-    def choose[C](self, options: list[C], *,
-               weights: Sequence[float] | None = None) -> C: ...
-
-    @overload
-    def choose[C](self, options: list[C], *,
-               weights: Sequence[float] | None = None, k: int) -> list[C]: ...
-
-    @overload
-    def choose[C](self, options: list[C], *,
-               filter: Callable[[C], bool] | None = None, k: int) -> list[C]: ...
-
-    def choose[C](self, options: list[C], *, weights: Sequence[float] | None = None,
-               filter: Callable[[C], bool] | None = None, k=1) -> list[C] | C:
-        if filter:
-            weights = [int(filter(option)) for option in options]
-        if k == 1:
-            if weights is not None:
-                return self.rng.choices(options, weights)[0]
-            return self.rng.choice(options)
-        return self.rng.choices(options, weights, k=k)
-
-    def generate(self, features: FeatureMap) -> Entity:
+    def generate(self, builder: EntityBuilder) -> Entity:
         # Initialise feature values from overrides
-        feature_values = {f: v for f, v in features.items() if v is not None}
+        feature_values = {f: v for f, v in builder.features.items() if v is not None}
         # Generate remaining features afterwards
-        for feature in features:
+        for feature in builder.features:
             if feature in feature_values:
                 continue
-            feature.generate_into(self, feature_values)
-        return Entity(feature_values)
+            feature.generate_into(builder)
+        return Entity(builder)
 
 
 class Namer:
-    def name(self, features: FeatureMapping, rng: Random) -> str:
+    def name(self, builder: EntityBuilder, rng: Random) -> str:
         raise NotImplementedError()
 
 
@@ -280,11 +282,11 @@ class FormattedNamer(Namer):
         self.format = format
         self.names = names
 
-    def name(self, features: FeatureMapping, rng: Random) -> str:
+    def name(self, builder: EntityBuilder, rng: Random) -> str:
         def part_type(part: str | list[str]) -> str:
             match part:
                 case 'Gender':
-                    return features[Features.SEX]
+                    return builder[Features.SEX]
                 case str():
                     return part
                 case list():
