@@ -9,6 +9,15 @@ halfling = Race('Halfling', ['Gutsy', 'Hillock', 'Jinxed', 'Nomadic',
 
 REGIONS = {
     'Default': {
+        'cultures': {
+            'English': 1
+        }
+    }
+}
+
+CULTURES = {
+    'English': {
+        'namer': FormattedNamer(['Gender', 'Group'], namelists.English),
         'races': {
             Race('Human', ['Skilled', 'Versatile', 'Wintertouched']): 16,
             halfling: {
@@ -26,15 +35,8 @@ REGIONS = {
             Race('Elf', ['Ancient', 'Arctic', 'Cavern', 'Desert', 'Seer',
                          'Whisper', 'Woodland']): 2,
             Race('Half-Elf'): 1,
-        },
-        'cultures': {
-            'English': 1
         }
     }
-}
-
-CULTURES = {
-    'English': FormattedNamer(['Gender', 'Group'], namelists.English)
 }
 
 PARTY = ['Alice', 'Bob', 'Charlie', 'Danielle']

@@ -31,20 +31,23 @@ def create_app(instance_path: str | Path, config: Path):
             )
         regions = {
             region_name: {
-                'races': [race_data(race) for race in data['races'].keys()],
                 'cultures': list(data['cultures'].keys())
             } for region_name, data in app.config['REGIONS'].items()
         }
 
         all_races = set()
-        for _, data in app.config['REGIONS'].items():
+        for _, data in app.config['CULTURES'].items():
             all_races.update(data['races'])
         all_races = [race_data(race) for race in all_races]
+        all_cultures = {
+            name: {'races': [race_data(race) for race in data['races']]}
+            for name, data in app.config['CULTURES'].items()
+        }
 
         return flask.render_template('npc_generator.j2.html',
             regions=regions,
             all_races=all_races,
-            all_cultures=list(app.config['CULTURES'].keys()))
+            all_cultures=all_cultures)
 
     @app.post('/generate')
     def generate_npc():

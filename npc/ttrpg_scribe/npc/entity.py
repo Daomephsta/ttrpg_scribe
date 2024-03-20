@@ -122,23 +122,19 @@ class __Features(type):
             lambda builder: builder.choose(list(builder.context.config['REGIONS'].keys())))
 
         def race(builder: EntityBuilder) -> Race:
-            region: str = builder[Features.REGION]
-            region_race_weights: dict[Race, dict[str, int] | int] =\
-                builder.context.config['REGIONS'][region]['races']
-            races = list(region_race_weights.keys())
+            culture = builder[Features.CULTURE]
+            races = list(culture.races.keys())
             race_weights = [sum(weights.values()) if isinstance(weights, dict) else weights
-                for weights in region_race_weights.values()]
+                for weights in culture.races.values()]
             return builder.choose(races, weights=race_weights)
         cls.RACE: Feature[Race] = Feature('race', race,
             from_str=lambda s, _: ttrpg_scribe.npc.race.BY_NAME[s])
 
         def subrace(builder: EntityBuilder) -> Subrace | None:
-            region: str = builder[Features.REGION]
-            region_race_weights: dict[Race, dict[str, int] | int] =\
-                builder.context.config['REGIONS'][region]['races']
+            culture = builder[Features.CULTURE]
             race: Race = builder[Features.RACE]
             if race.subraces:
-                match region_race_weights[race]:
+                match culture.races[race]:
                     case dict() as subrace_weights:
                         subraces = [race.subraces[name] for name in subrace_weights.keys()]
                         return builder.choose(subraces,
@@ -298,17 +294,19 @@ class FormattedNamer(Namer):
 class Culture:
     BY_NAME: dict[str, 'Culture'] = {}
 
-    def __init__(self, name: str, namer: Namer) -> None:
+    def __init__(self, name: str, namer: Namer,
+                 races: dict[Race, dict[str, int] | int]) -> None:
         self.name = name
         self.namer = namer
+        self.races = races
         Culture.BY_NAME[name] = self
 
     @staticmethod
     def from_config(config: dict[str, Any], culture_name: str):
         if culture_name in Culture.BY_NAME:
             return Culture.BY_NAME[culture_name]
-        culture_args = config['CULTURES'][culture_name]
-        return Culture(culture_name, culture_args)
+        culture_args: dict[str, Any] = config['CULTURES'][culture_name]
+        return Culture(culture_name, culture_args['namer'], culture_args['races'])
 
     def __str__(self) -> str:
         return self.name

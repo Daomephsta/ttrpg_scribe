@@ -48,17 +48,33 @@
 
             if (region_selector.value === "")
             {
-                races = ALL_RACES
-                cultures = ALL_CULTURES
+                cultures = Object.keys(ALL_CULTURES)
             }
             else
             {
-                races = REGIONS[region_selector.value]['races']
                 cultures = REGIONS[region_selector.value]['cultures']
             }
 
             for (const culture of cultures)
                 culture_selector.add(new Option(culture))
+        }
+
+        function cultureChanged()
+        {
+            culture_selector = document.getElementById("culture")
+            race_selector = document.getElementById("race")
+
+            race_selector.replaceChildren(new Option(""))
+        
+            if (culture_selector.value === "")
+            {
+                races = ALL_RACES
+            }
+            else
+            {
+                races = ALL_CULTURES[culture_selector.value]['races']
+            }
+
             for (const [race, subraces] of races)
             {
                 if (subraces.length > 0)
@@ -142,7 +158,10 @@
             })
         }
 
-        window.addEventListener('load', event => regionChanged())
+        window.addEventListener('load', event => {
+            regionChanged()
+            cultureChanged()
+        })
         </script>
     </head>
     <body>
@@ -178,7 +197,7 @@
                     <tr>
                         <td>Culture</td>
                         <td>
-                            <select name="culture" id="culture" class="feature_value">
+                            <select name="culture" id="culture" class="feature_value" onchange="cultureChanged()">
                                 <option value=""></option>
                             </select>
                         </td>
