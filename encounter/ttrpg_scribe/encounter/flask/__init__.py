@@ -41,11 +41,11 @@ class System:
         raise NotImplementedError()
 
 
-def create_app(instance_path: str | Path, system: System, config: Path):
+def create_app(instance_path: str | Path, system: System, config: flask.Config):
     app = flask.Flask('ttrpg_scribe.encounter.flask',
         instance_path=Path(instance_path).absolute().as_posix(),
         instance_relative_config=True)
-    app.config.from_pyfile(config)
+    app.config.update(config)
     ttrpg_scribe.core.flask.extend(app)
     app.jinja_env.globals['system'] = system
     app.register_blueprint(system.bestiary_blueprint, url_prefix='/creatures')

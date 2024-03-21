@@ -17,8 +17,7 @@ def make_app(project_dir: str | Path, config: Path | None = None):
     import ttrpg_scribe.npc.flask_app.extension
 
     project_dir = Path(project_dir)
-    config = config or Path('config.py')
-    app = ttrpg_scribe.notes.create_app(config, project_dir)
+    app = ttrpg_scribe.notes.create_app(config or Path('config.py'), project_dir)
     ttrpg_scribe.encounter.flask.extension.extend(app, '/encounter_extension')
     ttrpg_scribe.npc.flask_app.extension.extend(app, '/npc_extension')
     app.config['TOOLS'] = [
@@ -39,8 +38,8 @@ def make_app(project_dir: str | Path, config: Path | None = None):
     app.jinja_env.globals['system'] = system
     app.register_blueprint(system.bestiary_blueprint)
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-        '/encounter': ttrpg_scribe.encounter.flask.create_app(project_dir, system, config),
-        '/npc': ttrpg_scribe.npc.flask_app.create_app(project_dir, config)
+        '/encounter': ttrpg_scribe.encounter.flask.create_app(project_dir, system, app.config),
+        '/npc': ttrpg_scribe.npc.flask_app.create_app(project_dir, app.config)
     })
 
     @app.post('/clean', endpoint='clean')

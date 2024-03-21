@@ -8,12 +8,12 @@ import ttrpg_scribe.core.flask
 from ttrpg_scribe.npc.entity import Entity, EntityBuilder, EntityGenerator, Features
 
 
-def create_app(instance_path: str | Path, config: Path):
+def create_app(instance_path: str | Path, config: flask.Config):
     instance_path = Path(instance_path).absolute().as_posix()
     app = flask.Flask('ttrpg_scribe.npc.flask_app',
         instance_path=instance_path,
         instance_relative_config=True)
-    app.config.from_pyfile(config)
+    app.config.update(config)
     app.config.update(SESSION_TYPE='filesystem',
                       SESSION_PERMANENT=False,
                       SESSION_FILE_DIR=f'{instance_path}/_build/_session')
