@@ -43,10 +43,14 @@ class Feature[T]:
             def generator(builder: EntityBuilder):
                 return builder.choose(choices, weights=weights)
         elif filter:
-            def generator(builder: EntityBuilder):
+            def generator(builder: EntityBuilder) -> T:
                 def dependent_filter(option):
                     return filter(builder, option)
-                return builder.choose(choices, filter=dependent_filter)
+                match builder.choose(choices, filter=dependent_filter):
+                    case None:
+                        raise RuntimeError(f'All values for {name} were filtered')
+                    case some:
+                        return some
         else:
             def generator(builder: EntityBuilder):
                 return builder.choose(choices)
@@ -82,25 +86,30 @@ class EntityBuilder:
         self.features[feature] = value
 
     @overload
-    def choose[C](self, options: list[C], *,
-               filter: Callable[[C], bool] | None = None) -> C: ...
+    def choose[C](self, options: Sequence[C]) -> C: ...
 
     @overload
-    def choose[C](self, options: list[C], *,
+    def choose[C](self, options: Sequence[C], *,
+               filter: Callable[[C], bool] | None = None) -> C | None: ...
+
+    @overload
+    def choose[C](self, options: Sequence[C], *,
                weights: Sequence[float] | None = None) -> C: ...
 
     @overload
-    def choose[C](self, options: list[C], *,
+    def choose[C](self, options: Sequence[C], *,
                weights: Sequence[float] | None = None, k: int) -> list[C]: ...
 
     @overload
-    def choose[C](self, options: list[C], *,
+    def choose[C](self, options: Sequence[C], *,
                filter: Callable[[C], bool] | None = None, k: int) -> list[C]: ...
 
-    def choose[C](self, options: list[C], *, weights: Sequence[float] | None = None,
-               filter: Callable[[C], bool] | None = None, k=1) -> list[C] | C:
+    def choose[C](self, options: Sequence[C], *, weights: Sequence[float] | None = None,
+               filter: Callable[[C], bool] | None = None, k=1) -> list[C] | C | None:
         if filter:
             weights = [int(filter(option)) for option in options]
+            if sum(weights) == 0:  # Abort if all options filtered
+                return None if k == 1 else []
         if k == 1:
             if weights is not None:
                 return self.context.rng.choices(options, weights)[0]
