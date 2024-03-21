@@ -200,6 +200,10 @@ class __Features(type):
     def __contains__(cls, key: str):
         return key in cls._BY_NAME
 
+    def register(cls, feature: Feature) -> Feature:
+        cls._BY_NAME[feature.name] = feature
+        return feature
+
 
 class Features(metaclass=__Features):
     pass
@@ -267,6 +271,9 @@ class EntityGenerator:
     def generate(self, builder: EntityBuilder) -> Entity:
         # Initialise feature values from overrides
         feature_values = {f: v for f, v in builder.features.items() if v is not None}
+        region_config = self.config['REGIONS'][builder[Features.REGION]]
+        for feature in region_config.get('extra_features', []):
+            builder[feature] = None
         # Generate remaining features afterwards
         for feature in builder.features:
             if feature in feature_values:
