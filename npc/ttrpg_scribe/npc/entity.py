@@ -26,6 +26,8 @@ class Feature[T]:
         self.display = display if display else name.title()
 
     def generate_into(self, builder: 'EntityBuilder'):
+        if builder.get(self) is not None:
+            return
         builder[self] = self.generator(builder)
 
     def read_into(self, destination: 'dict[Feature[Any], Any]',
@@ -83,6 +85,12 @@ class EntityBuilder:
         return self.features.get(feature)
 
     def __setitem__[F](self, feature: Feature[F], value: F | None):
+        match self.features.get(feature):
+            case None:
+                pass
+            case existing:
+                raise RuntimeError('Attempt to overwrite value '
+                                   f'{existing} {feature.name} with {value}')
         self.features[feature] = value
 
     @overload
