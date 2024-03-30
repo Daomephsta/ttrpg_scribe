@@ -1,9 +1,4 @@
-import sys
-from importlib.abc import MetaPathFinder
-from importlib.machinery import ModuleSpec
-from importlib.util import spec_from_file_location
-from types import ModuleType
-from typing import Any, Sequence
+from typing import Any
 
 from ttrpg_scribe.core import script_loader
 from ttrpg_scribe.notes import data_cache, paths
@@ -33,13 +28,4 @@ def bind(template: str) -> dict[str, Any]:
     return {}
 
 
-class DataScriptFinder(MetaPathFinder):
-    def find_spec(self, fullname: str, path: Sequence[str] | None,
-                  target: ModuleType | None = None) -> ModuleSpec | None:
-        if fullname == 'pages':
-            spec = spec_from_file_location(fullname, paths.pages()/'__init__.py')
-            return spec
-        return None
-
-
-sys.meta_path.append(DataScriptFinder())
+script_loader.add_library_folder('pages')

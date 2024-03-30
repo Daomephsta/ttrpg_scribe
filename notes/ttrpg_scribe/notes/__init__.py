@@ -10,7 +10,7 @@ from werkzeug.exceptions import NotFound
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.dnd_bestiary.apis
 import ttrpg_scribe.dnd_bestiary.flask
-from ttrpg_scribe.core import markdown
+from ttrpg_scribe.core import markdown, script_loader
 from ttrpg_scribe.notes import content_tree, data_script, paths
 
 
@@ -23,6 +23,7 @@ class Notes(flask.Flask):
             trim_blocks=True,
             lstrip_blocks=True)
         paths.init(Path(self.instance_path))
+        script_loader.add_library_folder('scripts')
         self.config.from_pyfile(config)
 
     @cached_property

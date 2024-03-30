@@ -5,10 +5,12 @@ from pathlib import Path
 def init(project_dir_in: Path):
     global project_dir
     project_dir = project_dir_in
+    print('Set project dir', project_dir)
 
 
 @cache
 def pages():
+    global project_dir
     return project_dir/'pages'
 
 
