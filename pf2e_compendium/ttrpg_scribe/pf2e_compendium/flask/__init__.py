@@ -17,11 +17,11 @@ blueprint = Blueprint('pf2e_compendium', __name__,
     template_folder='templates',
     url_prefix='/creatures')
 
-_EXCLUDED_PACKS = [
+_EXCLUDED_PACKS = {
     'bestiary-ability-glossary-srd',
     'bestiary-effects',
     'bestiary-family-ability-glossary'
-]
+}
 
 
 @blueprint.get('/')
@@ -31,7 +31,9 @@ def list_packs():
 
 def _bestiary_packs():
     for pack in (foundry_packs.pf2e_dir()/'packs').iterdir():
-        if 'bestiary' in pack.name and pack.name not in _EXCLUDED_PACKS:
+        if pack.name in _EXCLUDED_PACKS:
+            continue
+        if 'bestiary' in pack.name or pack.name == 'pathfinder-monster-core':
             yield pack
 
 
