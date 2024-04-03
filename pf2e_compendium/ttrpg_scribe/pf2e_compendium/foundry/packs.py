@@ -34,6 +34,13 @@ def open_pf2e_file(path: str):
     return (pf2e_dir()/path).open(encoding='utf8')
 
 
+def update():
+    subprocess.run(
+        ['git', 'pull', '--depth', '1',],
+        cwd=pf2e_dir()
+    )
+
+
 def creature(id: str):
     with open_pf2e_file(f'packs/{id}.json') as file:
         try:
