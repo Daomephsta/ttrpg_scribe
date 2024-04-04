@@ -2,16 +2,18 @@ import os
 from functools import cached_property
 from http import HTTPStatus
 from pathlib import Path
+import subprocess
 
 import flask
 from jinja2 import ChoiceLoader, FileSystemLoader, TemplateNotFound
+from markupsafe import Markup
 from werkzeug.exceptions import NotFound
 
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.dnd_bestiary.apis
 import ttrpg_scribe.dnd_bestiary.flask
 from ttrpg_scribe.core import markdown, script_loader
-from ttrpg_scribe.notes import content_tree, data_script, paths
+from ttrpg_scribe.notes import content_tree, data_script, paths, run_script_shim
 
 
 class Notes(flask.Flask):
@@ -84,5 +86,26 @@ def create_app(config: Path, project_dir: str | Path | None = None):
             return flask.send_from_directory(paths.assets(), asset)
         except NotFound:
             raise NotFound(f'{asset} not found in {paths.assets()}')
+
+    @app.get('/scripts')
+    def list_scripts():
+        scripts_folder = paths.project_dir/'scripts'
+
+        def scripts():
+            for path in scripts_folder.glob('*.py'):
+                if path.name.startswith('__'):
+                    continue
+                yield path, Markup(path.with_suffix('.html').read_text('utf8'))
+        return flask.render_template('script_list.j2.html', scripts=scripts())
+
+    @app.post('/scripts/run')
+    def run_script():
+        script = flask.request.form['script']
+        args = [f'{k}={v}' for k, v in flask.request.form.items() if k != 'script']
+        script_file = paths.project_dir/'scripts'/script
+        script_result = subprocess.run(
+            ['python', run_script_shim.__file__, script_file.as_posix(), *args],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf8')
+        return script_result.stdout, {'Content-Type': 'text/plain'}
 
     return app
