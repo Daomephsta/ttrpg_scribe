@@ -25,6 +25,7 @@
                     <th>Initiative</th>
                     <th>Damage</th>
                     <th>Max HP</th>
+                    <th>Notes</th>
                 </thead>
                 <tbody>
                     {% for name in pcs %}
@@ -34,6 +35,7 @@
                         <!-- Empty cells so background shows -->
                         <td></td>
                         <td></td>
+                        <td class="notes"><input type="text"/></td>
                     </tr>
                     {% endfor %}
                     {% for npc in enemies %}
@@ -42,6 +44,7 @@
                         <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
                         <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
                         <td class="max_hp">{{ npc.initial_hp }}</td>
+                        <td class="notes"><input type="text"/></td>
                     </tr>
                     {% endfor %}
                     {% for npc in allies %}
@@ -50,6 +53,7 @@
                         <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
                         <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
                         <td class="max_hp">{{ npc.initial_hp }}</td>
+                        <td class="notes"><input type="text"/></td>
                     </tr>
                     {% endfor %}
                 </tbody>

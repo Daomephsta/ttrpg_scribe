@@ -31,6 +31,9 @@
 .initiative {
     appearance: textfield;
 }
+.notes, .notes input {
+    width: 95%;
+}
 .dead {
     color: whitesmoke;
 }
