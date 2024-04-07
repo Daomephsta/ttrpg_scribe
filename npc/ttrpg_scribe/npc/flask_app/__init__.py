@@ -5,7 +5,9 @@ from flask_session import Session
 from werkzeug.exceptions import Forbidden, NotFound
 
 import ttrpg_scribe.core.flask
-from ttrpg_scribe.npc.entity import Entity, EntityBuilder, EntityGenerator, Features
+from ttrpg_scribe.notes import paths
+from ttrpg_scribe.npc.entity import (Entity, EntityBuilder, EntityGenerator,
+                                     Features)
 
 
 def create_app(instance_path: str | Path, config: flask.Config):
@@ -82,9 +84,11 @@ def create_app(instance_path: str | Path, config: flask.Config):
     @app.get('/view')
     def list_npcs():
         return flask.render_template('npc_list.j2.html',
-            npcs=[(path.stem, path.stem) for path in npcs.glob('*.json')])
+            npcs=[path.relative_to(paths.project_dir/'npcs')
+                      .with_suffix('').as_posix()
+                  for path in npcs.glob('**/*.json')])
 
-    @app.get('/view/<name>')
+    @app.get('/view/<path:name>')
     def view_npc(name):
         path = npcs/f'{name}.json'
         if not path.exists():
