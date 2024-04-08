@@ -196,6 +196,7 @@ class __Features(type):
         cls.NEGATIVE_PERSONALITY: Feature[str] = Feature.from_yaml(features_yaml,
             'negative_personality', display='Negative Personality')
         cls.MANNERISM: Feature[str] = Feature.from_yaml(features_yaml, 'mannerism')
+        cls.NOTES: Feature[str] = Feature('notes', lambda _: '')
         cls._BY_NAME = {value.name: value for value in vars(cls).values()
             if isinstance(value, Feature)}
 
