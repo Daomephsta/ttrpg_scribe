@@ -51,7 +51,7 @@ class Content:
 
 def walk(path: Path) -> Content:
     def walk_subtree(dir: Path, subtree: Content):
-        for path in dir.iterdir():
+        for path in sorted(dir.iterdir(), key=lambda path: path.name):
             if path.name in ['assets', '__pycache__'] or path.suffix == '.py':
                 continue
             child = subtree.add_child(path)
