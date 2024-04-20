@@ -1,3 +1,7 @@
-{% macro npc_link(name) %}
+{% macro npc_link(name, html=False) %}
+{%- if html -%}
+<a href="/npc/view/{{ name }}" target="popup">{{ name.split('/')[-1] }}</a>
+{%- else -%}
 [{{ name.split('/')[-1] }}](/npc/view/{{ name }}){target='popup'}
+{%- endif -%}
 {%- endmacro %}
