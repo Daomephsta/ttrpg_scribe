@@ -101,3 +101,10 @@ document.addEventListener('keyup', (event) =>
     if (event.key == 'n')
         nextTurn();
 })
+// Require confirmation when closing Initiative Tracker
+window.addEventListener('beforeunload', (event) =>
+{
+    // except if all enemies are dead
+    if (document.querySelectorAll('.enemy.dead').length < document.querySelectorAll('.enemy').length)
+        event.preventDefault();
+})
