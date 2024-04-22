@@ -31,17 +31,32 @@
 .initiative {
     appearance: textfield;
 }
-.notes, .notes input {
+.notes {
     width: 95%;
 }
 .dead {
     color: whitesmoke;
 }
 #buttons {
-    display: flex;
+    display: grid;
     margin-top: 2px;
+    grid-template-areas:
+        "sort next"
+        "save load";
 }
-#sort_initiative, #next_turn, #add_reinforcements {
+#sort_initiative {
+    grid-area: "sort";
+}
+#next_turn {
+    grid-area: "next";
+}
+#save {
+    grid-area: "save";
+}
+#load {
+    grid-area: "load";
+}
+#add_reinforcements {
     flex-grow: 1;
 }
 #current_turn {

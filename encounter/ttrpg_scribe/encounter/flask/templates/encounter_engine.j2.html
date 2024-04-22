@@ -29,13 +29,13 @@
                 </thead>
                 <tbody>
                     {% for name in pcs %}
-                    <tr>
+                    <tr class="player">
                         <td class="name">{{ name }}</td>
                         <td><input class="initiative" type="number"/></td>
                         <!-- Empty cells so background shows -->
                         <td></td>
                         <td></td>
-                        <td class="notes"><input type="text"/></td>
+                        <td><input class="notes" type="text"/></td>
                     </tr>
                     {% endfor %}
                     {% for npc in enemies %}
@@ -44,7 +44,7 @@
                         <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
                         <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
                         <td class="max_hp">{{ npc.initial_hp }}</td>
-                        <td class="notes"><input type="text"/></td>
+                        <td><input class="notes" type="text"/></td>
                     </tr>
                     {% endfor %}
                     {% for npc in allies %}
@@ -53,7 +53,7 @@
                         <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
                         <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
                         <td class="max_hp">{{ npc.initial_hp }}</td>
-                        <td class="notes"><input type="text"/></td>
+                        <td><input class="notes" type="text"/></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -62,6 +62,14 @@
         <div id="buttons">
             <button onclick="sortInitiative()" id="sort_initiative">Sort</button>
             <button onclick="nextTurn()" id="next_turn">Next Turn</button>
+            <button onclick="save()" id="save">Save</button>
+            <dialog id="load_dialog">
+                <form method="dialog" enctype="multipart/form-data" id="load_dialog_form">
+                    <input type="file" name="file_picker" accept="application/json">
+                    <input type="submit" value="Load">
+                </form>
+            </dialog>
+            <button onclick="load()" id="load">Load</button>
         </div>
         <fieldset id="reinforcements">
             <legend>Reinforce With</legend>
