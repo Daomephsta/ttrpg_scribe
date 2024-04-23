@@ -53,12 +53,6 @@ def creature(id: str):
 def _read_creature(data: Json) -> PF2Creature:
     ALIGNMENTS = {'good', 'neutral', 'evil', 'lawful', 'chaotic'}
 
-    def sort_alignment(alignment: str) -> int:
-        match alignment:
-            case 'lawful' | 'good':
-                return -1
-            case _:
-                return 0
     SIZES = {'sm': 'small', 'med': 'medium'}
 
     system: Json = data['system']
@@ -66,10 +60,8 @@ def _read_creature(data: Json) -> PF2Creature:
     traits: Json = system['traits']
 
     simple_traits: list[str] = traits['value']
-    alignments = sorted((x for x in simple_traits if x in ALIGNMENTS),
-                        key=sort_alignment)
-    for a in alignments:
-        simple_traits.remove(a)
+    # Filter out legacy alignment traits
+    simple_traits = [t for t in simple_traits if t not in ALIGNMENTS]
 
     perception = system['perception']['mod']
     senses = [Sense(sense['type'], sense.get('range'), sense.get('acuity'))
@@ -134,7 +126,6 @@ def _read_creature(data: Json) -> PF2Creature:
     return PF2Creature(
         name=data['name'],
         level=system['details']['level']['value'],
-        alignments=alignments if alignments else ['neutral'],
         size=SIZES.get(traits['size']['value'],
                        traits['size']['value']),
         traits=simple_traits,

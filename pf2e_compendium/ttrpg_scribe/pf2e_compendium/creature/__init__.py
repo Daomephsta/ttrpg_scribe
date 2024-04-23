@@ -79,7 +79,6 @@ class Sense:
 class PF2Creature(InitiativeParticipant):
     name: str
     level: int
-    alignments: list[str]
     size: str
     traits: list[str]
     perception: int
@@ -122,7 +121,6 @@ class PF2Creature(InitiativeParticipant):
             type='creature',
             name=self.name,
             level=self.level,
-            alignments=self.alignments,
             size=self.size,
             traits=self.traits,
             perception=self.perception,
@@ -148,7 +146,6 @@ class PF2Creature(InitiativeParticipant):
         return PF2Creature(
             name=data['name'],
             level=data['level'],
-            alignments=data['alignments'],
             size=data['size'],
             traits=data['traits'],
             perception=data['perception'],

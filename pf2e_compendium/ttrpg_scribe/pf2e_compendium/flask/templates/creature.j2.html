@@ -22,9 +22,6 @@
     {% endif %}
     <!-- Traits -->
     <p>
-    {%- for trait in creature.alignments %}
-        <span class="trait alignment">{{ trait }}</span>
-    {%- endfor %}
         <span class="trait size">{{ creature.size }}</span>
     {%- for trait in creature.traits %}
         <span class="trait">{{ trait }}</span>
