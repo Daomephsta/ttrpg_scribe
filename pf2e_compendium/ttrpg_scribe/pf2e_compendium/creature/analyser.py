@@ -4,28 +4,30 @@ import re
 from ttrpg_scribe.pf2e_compendium.actions import Strike
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature.statistics import (
-    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, SAVING_THROWS, SKILLS,
+    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, SAVING_THROWS, SKILLS,
     STRIKE_ATTACK_BONUS, STRIKE_DAMAGE)
 
 
 def analyse(creature: PF2Creature):
     print(creature.name)
 
-    print('AC', ARMOR_CLASS.classify(creature.level, creature.ac))
+    print('Perception', PERCEPTION.classify(creature.level, creature.perception))
+
+    print('Skills')
+    for skill in creature.skills:
+        print(f'\t{skill.name} {SKILLS.classify(creature.level, skill.mod)}')
 
     print('Attributes')
     for ability, value in creature.abilities.items():
         print(f'\t{ability} {ATTRIBUTE_MODIFIERS.classify(creature.level, value)}')
 
-    print('HP', HIT_POINTS.classify(creature.level, creature.max_hp))
+    print('AC', ARMOR_CLASS.classify(creature.level, creature.ac))
 
     print('Saves')
     for save, value in creature.saves.items():
         print(f'\t{save} {SAVING_THROWS.classify(creature.level, value)}')
 
-    print('Skills')
-    for skill in creature.skills:
-        print(f'\t{skill.name} {SKILLS.classify(creature.level, skill.mod)}')
+    print('HP', HIT_POINTS.classify(creature.level, creature.max_hp))
 
     print('Strikes')
     for action in creature.actions:
