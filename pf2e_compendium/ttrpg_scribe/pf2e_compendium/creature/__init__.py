@@ -1,9 +1,12 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any, Callable, Literal, Mapping
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
+from ttrpg_scribe.pf2e_compendium.creature.statistics import (
+    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, SAVING_THROWS,
+    SKILLS, StatisticBracket, Table)
 
 
 @dataclass
@@ -49,7 +52,7 @@ class Spellcasting:
 class Skill:
     name: str
     mod: int
-    notes: list[str]
+    notes: list[str] = field(default_factory=list)
 
     @staticmethod
     def from_json(data: dict):
@@ -165,4 +168,51 @@ class PF2Creature(InitiativeParticipant):
             actions=[Action.from_json(action) for action in data['actions']],
             spellcasting=Spellcasting.from_json(data['spellcasting'])
                          if data['spellcasting'] else None,
+        )
+
+    type _Ability = Literal['str', 'dex', 'con', 'int', 'wis', 'cha']
+    type _Save = Literal['fortitude', 'reflex', 'will']
+    type _Skills = Callable[[Callable[[StatisticBracket], int]], list[Skill]]
+    type _Lookup = Callable[[Table, StatisticBracket], Any]
+
+    @staticmethod
+    def from_brackets(
+            name: str, level: int, size: str, traits: list[str], perception: StatisticBracket,
+            skills: _Skills, inventory: dict[str, int],
+            abilities: dict[_Ability, StatisticBracket], ac: StatisticBracket,
+            saves:  dict[_Save, StatisticBracket], hp: StatisticBracket, speeds: dict[str, int],
+            actions: Callable[[_Lookup], list[Any | list[Action]] | list[Action]]
+            ):
+
+        def lookup(table: Table, bracket: StatisticBracket):
+            return bracket.lookup(table, level)
+
+        def convert_dict(table: Table, d: Mapping) -> dict[str, int]:
+            return {key: lookup(table, bracket) for key, bracket in d.items()}
+
+        match actions(lookup):
+            case [*_, [*actions0]]: pass
+            case [*actions0]: pass
+
+        return PF2Creature(
+            name=name,
+            level=level,
+            size=size,
+            traits=traits,
+            perception=lookup(PERCEPTION, perception),
+            senses=[],
+            skills=skills(lambda bracket: lookup(SKILLS, bracket)),
+            inventory=inventory,
+            abilities=convert_dict(ATTRIBUTE_MODIFIERS, abilities),
+            interactions=[],
+            ac=ac.lookup(ARMOR_CLASS, level),
+            saves=convert_dict(SAVING_THROWS, saves),
+            max_hp=hp.lookup(HIT_POINTS, level),
+            immunities=[],
+            resistances=[],
+            weaknesses=[],
+            defenses=[],
+            speeds=speeds,
+            actions=actions0,
+            spellcasting=None,
         )
