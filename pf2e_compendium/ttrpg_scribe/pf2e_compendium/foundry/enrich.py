@@ -21,7 +21,7 @@ def enrich(text: str) -> str:
         if display:
             return display
         if '|' in args:
-            args = dict(arg.split(':') for arg in args.split('|'))
+            args = dict(arg.split(':', maxsplit=1) for arg in args.split('|'))
         match name, args:
             case 'Localize', str() as args:
                 return enrich(i18n.translate(args))
