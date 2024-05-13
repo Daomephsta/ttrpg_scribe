@@ -49,7 +49,8 @@ def create_app(instance_path: str | Path, config: flask.Config):
         return flask.render_template('npc_generator.j2.html',
             regions=regions,
             all_races=all_races,
-            all_cultures=all_cultures)
+            all_cultures=all_cultures,
+            features=Features)
 
     @app.post('/generate')
     def generate_npc():

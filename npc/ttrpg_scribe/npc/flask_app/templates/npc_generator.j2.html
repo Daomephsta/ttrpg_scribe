@@ -1,17 +1,16 @@
-{% macro ability_options() %}
-<option value=""></option>
-<option>STR</option>
-<option>DEX</option>
-<option>CON</option>
-<option>INT</option>
-<option>WIS</option>
-<option>CHA</option>
-{% endmacro %}
-
 {% macro embed_json(id, data) %}
 <script type="application/json" id="{{ id }}">
 {{ data | tojson }}
 </script>
+{% endmacro %}
+
+{% macro choice_feature(name) %}
+<select name="{{ name }}" class="feature_value">
+    <option value=""></option>
+    {% for choice in features[name].choices %}
+    <option>{{ choice }}</option>
+    {% endfor %}
+</select>
 {% endmacro %}
 
 <!DOCTYPE html>
@@ -185,14 +184,7 @@
                     </tr>
                     <tr>
                         <td>Age</td>
-                        <td>
-                            <select name="age" class="feature_value">
-                                <option value=""></option>
-                                <option>Young Adult</option>
-                                <option>Middle Aged</option>
-                                <option>Old</option>
-                            </select>
-                        </td>
+                        <td>{{ choice_feature('age') }}</td>
                     </tr>
                     <tr>
                         <td>Culture</td>
@@ -213,44 +205,23 @@
                     </tr>
                     <tr>
                         <td>Sex</td>
-                        <td>
-                            <select name="sex" class="feature_value">
-                                <option value=""></option>
-                                <option>Male</option>
-                                <option>Female</option>
-                            </select>
-                        </td>
+                        <td>{{ choice_feature('sex') }}</td>
                     </tr>
                     <tr>
                         <td>Height</td>
-                        <td>
-                            <select name="height" class="feature_value">
-                                <option value=""></option>
-                                <option>Short</option>
-                                <option>Average</option>
-                                <option>Tall</option>
-                            </select>
-                        </td>
+                        <td>{{ choice_feature('height') }}</td>
                     </tr>
                     <tr>
                         <td>Weight</td>
-                        <td>
-                            <select name="weight" class="feature_value">
-                                <option value=""></option>
-                                <option>Thin</option>
-                                <option>Average</option>
-                                <option>Plump</option>
-                                <option>Fat</option>
-                            </select>
-                        </td>
+                        <td>{{ choice_feature('weight') }}</td>
                     </tr>
                     <tr>
                         <td>High</td>
-                        <td><select name="high_stat" class="feature_value">{{ ability_options() }}</select></td>
+                        <td>{{ choice_feature('high_stat') }}</td>
                     </tr>
                     <tr>
                         <td>Low</td>
-                        <td><select name="low_stat" class="feature_value">{{ ability_options() }}</select></td>
+                        <td>{{ choice_feature('low_stat') }}</td>
                     </tr>
                     <tr>
                         <td>Appearance</td>

@@ -1,7 +1,8 @@
+from abc import ABC, abstractmethod
 from importlib import resources
 from random import Random
 from random import _inst as default_random
-from typing import Any, Callable, Mapping, Optional, Sequence, cast, overload
+from typing import Any, Callable, Mapping, Sequence, cast, overload
 
 import flask
 import yaml
@@ -11,19 +12,33 @@ from ttrpg_scribe.npc.character import ABILITIES, SEXES, Ability, Sex
 from ttrpg_scribe.npc.race import Race, Subrace
 
 
-class Feature[T]:
-    def __init__(self, name: str,
-                 generator: Callable[['EntityBuilder'], T],
-                 display: str | None = None,
-                 to_str: 'Callable[[T], str]' = lambda value: str(value),
-                 from_str: 'Callable[[str, dict[Feature[Any], Any]], T]' =
-                    lambda value, _: cast(T, value)
-                 ) -> None:
+class Feature[T](ABC):
+    def __init__(self, name: str, display: str | None = None) -> None:
         self.name = name
-        self.generator = generator
-        self.to_str = to_str
-        self.from_str = from_str
         self.display = display if display else name.title()
+
+    @staticmethod
+    def from_lambdas(name: str,
+                  generator: Callable[['EntityBuilder'], T],
+                  display: str | None = None,
+                  to_str: 'Callable[[T], str] | None' = None,
+                  from_str: 'Callable[[str, dict[Feature[Any], Any]], T] | None' = None):
+        methods: dict[str, Callable] = {'generator': staticmethod(generator)}
+        if to_str is not None:
+            methods['to_str'] = staticmethod(to_str)
+        if from_str is not None:
+            methods['from_str'] = staticmethod(from_str)
+        subclass = type(f'{name.title()}Feature', (Feature,), methods)
+        return subclass(name, display)
+
+    @abstractmethod
+    def generator(self, builder: 'EntityBuilder') -> T: ...
+
+    def to_str(self, value: T) -> str:
+        return str(value)
+
+    def from_str(self, value: str, destination: 'dict[Feature[Any], Any]') -> T:
+        return cast(T, value)
 
     def generate_into(self, builder: 'EntityBuilder'):
         if builder.get(self) is not None:
@@ -38,34 +53,48 @@ class Feature[T]:
             destination[self] = None
 
     @staticmethod
-    def choice(name: str, choices: list[T], *, weights: list[float] = [],
-           filter: Optional[Callable[['EntityBuilder', T], bool]] = None,
-           display: str | None = None) -> 'Feature[T]':
-        if weights:
-            def generator(builder: EntityBuilder):
-                return builder.choose(choices, weights=weights)
-        elif filter:
-            def generator(builder: EntityBuilder) -> T:
-                def dependent_filter(option):
-                    return filter(builder, option)
-                match builder.choose(choices, filter=dependent_filter):
-                    case None:
-                        raise RuntimeError(f'All values for {name} were filtered')
-                    case some:
-                        return some
-        else:
-            def generator(builder: EntityBuilder):
-                return builder.choose(choices)
-        return Feature(name, generator=generator, display=display)
-
-    @staticmethod
     def from_yaml(yaml, name: str, display=None):
-        return Feature.choice(name, yaml[name], display=display)
+        return ChoiceFeature(name, yaml[name], display=display)
 
     def __str__(self) -> str:
         return self.name
 
     __repr__ = __str__
+
+
+class ChoiceFeature[T](Feature[T]):
+    def __init__(self, name: str, choices: list[T], **kwargs):
+        super().__init__(name, **kwargs)
+        self.choices = choices
+
+    def generator(self, builder: 'EntityBuilder'):
+        return builder.choose(self. choices)
+
+
+class WeightedChoiceFeature[T](ChoiceFeature[T]):
+    def __init__(self, name: str, choices: list[T], *,
+                 weights: list[float], **kwargs):
+        super().__init__(name, choices, **kwargs)
+        self.weights = weights
+
+    def generator(self, builder: 'EntityBuilder'):
+        return builder.choose(self.choices, weights=self.weights)
+
+
+class FilteredChoiceFeature[T](ChoiceFeature[T]):
+    def __init__(self, name: str, choices: list[T], *,
+                 filter: Callable[['EntityBuilder', T], bool], **kwargs):
+        super().__init__(name, choices, **kwargs)
+        self.filter = filter
+
+    def generator(self, builder: 'EntityBuilder') -> T:
+        def dependent_filter(option):
+            return self.filter(builder, option)
+        match builder.choose(self.choices, filter=dependent_filter):
+            case None:
+                raise ValueError(f'All values for {self.name} were filtered')
+            case some:
+                return some
 
 
 class EntityBuilder:
@@ -135,7 +164,7 @@ class __Features(type):
     def __init__(cls, *_):
         with resources.open_text('ttrpg_scribe.npc', 'features.yaml') as file:
             features_yaml = yaml.safe_load(file)
-        cls.REGION: Feature[str] = Feature('region',
+        cls.REGION: Feature[str] = Feature.from_lambdas('region',
             lambda builder: builder.choose(list(builder.context.config['REGIONS'].keys())))
 
         def race(builder: EntityBuilder) -> Race:
@@ -144,7 +173,7 @@ class __Features(type):
             race_weights = [sum(weights.values()) if isinstance(weights, dict) else weights
                 for weights in culture.races.values()]
             return builder.choose(races, weights=race_weights)
-        cls.RACE: Feature[Race] = Feature('race', race,
+        cls.RACE: Feature[Race] = Feature.from_lambdas('race', race,
             from_str=lambda s, _: ttrpg_scribe.npc.race.BY_NAME[s])
 
         def subrace(builder: EntityBuilder) -> Subrace | None:
@@ -160,7 +189,7 @@ class __Features(type):
                         return builder.choose(list(race.subraces.values()),
                             weights=[race_weight / len(race.subraces)] * len(race.subraces))
             return None
-        cls.SUBRACE = Feature('subrace', subrace,
+        cls.SUBRACE = Feature.from_lambdas('subrace', subrace,
             from_str=lambda s, features:
                 features[cls.RACE].subraces[s] if s != 'None' else None)
 
@@ -171,24 +200,24 @@ class __Features(type):
                 list(region_cultures.keys()),
                 weights=list(region_cultures.values()))
             return Culture.from_config(builder.context.config, culture_name)
-        cls.CULTURE: Feature[Culture] = Feature('culture', culture,
+        cls.CULTURE: Feature[Culture] = Feature.from_lambdas('culture', culture,
             from_str=lambda s, _: Culture.from_config(flask.current_app.config, s))
 
-        cls.SEX: Feature[Sex] = Feature.choice('sex', SEXES)
-        cls.AGE: Feature[str] = Feature.choice('age',
+        cls.SEX: Feature[Sex] = ChoiceFeature('sex', SEXES)
+        cls.AGE: Feature[str] = WeightedChoiceFeature('age',
             # Age distribution is more or less uniform, only decreasing for old ages
             ['Young Adult', 'Middle Aged', 'Old'], weights=[3, 3, 1])
-        cls.NAME: Feature[str] = Feature('name',
+        cls.NAME: Feature[str] = Feature.from_lambdas('name',
             lambda builder: builder[cls.CULTURE].namer.name(builder, builder.context.rng))
-        cls.HEIGHT: Feature[str] = Feature.choice('height',
+        cls.HEIGHT: Feature[str] = WeightedChoiceFeature('height',
             # 68% of values in a normal distribution are within 1 standard deviation of the mean
             ['Short', 'Average', 'Tall'], weights=[0.16, 0.68, 0.16])
-        cls.WEIGHT: Feature[str] = Feature.choice('weight',
+        cls.WEIGHT: Feature[str] = WeightedChoiceFeature('weight',
             # 68% of values in a normal distribution are within 1 standard deviation of the mean
             ['Light', 'Average', 'Heavy'], weights=[0.16, 0.68, 0.16])
-        cls.HIGH_STAT: Feature[Ability] = Feature.choice('high_stat',
+        cls.HIGH_STAT: Feature[Ability] = FilteredChoiceFeature('high_stat',
             ABILITIES, filter=different('low_stat'), display='High')
-        cls.LOW_STAT: Feature[Ability] = Feature.choice('low_stat',
+        cls.LOW_STAT: Feature[Ability] = FilteredChoiceFeature('low_stat',
             ABILITIES, filter=different('high_stat'), display='Low')
         cls.APPEARANCE: Feature[str] = Feature.from_yaml(features_yaml, 'appearance')
         cls.POSITIVE_PERSONALITY: Feature[str] = Feature.from_yaml(features_yaml,
@@ -196,7 +225,7 @@ class __Features(type):
         cls.NEGATIVE_PERSONALITY: Feature[str] = Feature.from_yaml(features_yaml,
             'negative_personality', display='Negative Personality')
         cls.MANNERISM: Feature[str] = Feature.from_yaml(features_yaml, 'mannerism')
-        cls.NOTES: Feature[str] = Feature('notes', lambda _: '')
+        cls.NOTES: Feature[str] = Feature.from_lambdas('notes', lambda _: '')
         cls._BY_NAME = {value.name: value for value in vars(cls).values()
             if isinstance(value, Feature)}
 
