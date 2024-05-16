@@ -36,7 +36,7 @@ def open_pf2e_file(path: str):
 
 def update():
     subprocess.run(
-        ['git', 'pull', '--depth', '1',],
+        ['git', 'pull', '--depth', '1', '--rebase'],
         cwd=pf2e_dir()
     )
 
