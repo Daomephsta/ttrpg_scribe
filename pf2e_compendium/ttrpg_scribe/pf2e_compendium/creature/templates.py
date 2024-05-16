@@ -1,5 +1,5 @@
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
-from ttrpg_scribe.pf2e_compendium.actions import Action
+from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
 
 
 def compose(*templates: PF2Creature.Template) -> PF2Creature.Template:
@@ -28,32 +28,23 @@ def replace_actions(actions: dict[str, Action]) -> PF2Creature.Template:
     return template
 
 
-def rename(full: str) -> PF2Creature.Template:
+def rename(full: str, *other_names: tuple[str, str]) -> PF2Creature.Template:
+    replacements = list(other_names)
+
+    def process(target: str) -> str:
+        for replacement in replacements:
+            target = target.replace(*replacement)
+        return target
+
     def template(creature: PF2Creature):
+        for case in [str.lower, str.title]:
+            replacements.append((case(creature.name), case(full)))
+
         creature.name = full
+        for action in creature.actions:
+            match action:
+                case SimpleAction():
+                    print(action.desc)
+                    action.desc = process(action.desc)
+                    print(action.desc)
     return template
-
-
-# def rename(full: str, *other_names: tuple[str, str]):
-#     replacements = list(other_names)
-#
-#     def process(target: str) -> str:
-#         for replacement in replacements:
-#             target = target.replace(*replacement)
-#         return target
-#
-#     def process_feature(x: PF2Creature.Feature):
-#         match x:
-#             case (n, d):
-#                 return process(n), process(d)
-#             case _ as template:
-#                 return lambda creature: process_feature(template(creature))
-#
-#     def template(creature: PF2Creature):
-#         for case in [str.lower, str.title]:
-#             replacements.append((case(creature['name']), case(full)))
-#         creature['name'] = full
-#         for feature in ['traits', 'actions', 'bonus_actions', 'reactions']:
-#             creature[feature] = [process_feature(x) for x in creature[feature]]
-#         creature['lore'] = process(creature['lore'])
-#     return template

@@ -120,7 +120,9 @@ class PF2Creature(InitiativeParticipant):
             setattr(self, name, value)
         return self
 
-    def apply(self, *templates: Callable[['PF2Creature'], None]):
+    type Template = Callable[['PF2Creature'], None]
+
+    def apply(self, *templates: Template):
         for template in templates:
             template(self)
         return self
