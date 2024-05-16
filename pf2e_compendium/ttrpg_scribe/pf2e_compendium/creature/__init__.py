@@ -101,6 +101,12 @@ class PF2Creature(InitiativeParticipant):
     actions: list[Action]
     spellcasting: Spellcasting | None
 
+    def __post_init__(self):
+        if 'construct' in self.traits:
+            self.immunities += ['bleed', 'death effects', 'disease', 'healing', 'necromancy',
+                                'nonlethal attacks', 'poison', 'doomed', 'drained', 'fatigued',
+                                'paralyzed', 'sickened', 'unconscious ',]
+
     def initiative_mod(self) -> int:
         return self.abilities['dex']
 
