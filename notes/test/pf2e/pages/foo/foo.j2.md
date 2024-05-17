@@ -1,6 +1,6 @@
 ---
 layout: session
-extra_stylesheets: ['/encounter/creatures/static/stat_block.css']
+extra_stylesheets: ['/encounter/compendium/static/stat_block.css']
 ---
 {% from 'creature.j2.html' import stat_block %}
 {% from 'encounter.j2.html' import encounter %}

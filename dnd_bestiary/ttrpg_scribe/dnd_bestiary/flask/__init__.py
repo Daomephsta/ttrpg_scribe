@@ -9,7 +9,7 @@ from ttrpg_scribe.encounter.flask import InitiativeParticipant, System
 blueprint = Blueprint('dnd_bestiary', __name__,
     static_folder='static',
     template_folder='templates',
-    url_prefix='/creatures')
+    url_prefix='/compendium')
 
 
 @blueprint.get('/view/<string:id>')
@@ -26,7 +26,7 @@ def create_app():
 
 
 class Dnd5eSystem(System):
-    bestiary_blueprint = blueprint
+    compendium_blueprint = blueprint
 
     def read_participant(self, json) -> InitiativeParticipant:
         return DndCreature.from_json(json)

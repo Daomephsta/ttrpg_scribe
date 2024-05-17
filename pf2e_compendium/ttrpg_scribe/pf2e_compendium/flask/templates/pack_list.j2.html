@@ -1,15 +1,15 @@
 <html>
-    <head><title>Creature Packs</title></head>
+    <head><title>Compendium Packs</title></head>
     <span>
-    <h1>Creature Packs</h1>
-    <form action="/creatures/search">
+    <h1>Compendium Packs</h1>
+    <form action="/compendium/search">
         <input type="text" name="query">
         <input type="submit" value="Search">
     </form>
     </span>
     <ul>
     {% for pack in packs | sort %}
-        <li><a href="/creatures/pack/{{ pack }}">{{ pack }}</a></li>
+        <li><a href="/compendium/pack/{{ pack }}">{{ pack }}</a></li>
     {% endfor %}
     </ul>
 </html>

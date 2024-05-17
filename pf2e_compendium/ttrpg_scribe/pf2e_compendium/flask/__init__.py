@@ -15,7 +15,7 @@ from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 blueprint = Blueprint('pf2e_compendium', __name__,
     static_folder='static',
     template_folder='templates',
-    url_prefix='/creatures')
+    url_prefix='/compendium')
 
 _EXCLUDED_PACKS = {
     'bestiary-ability-glossary-srd',
@@ -26,25 +26,19 @@ _EXCLUDED_PACKS = {
 
 @blueprint.get('/')
 def list_packs():
-    return render_template('pack_list.j2.html', packs=[pack.name for pack in _bestiary_packs()])
-
-
-def _bestiary_packs():
-    for pack in (foundry_packs.pf2e_dir()/'packs').iterdir():
-        if pack.name in _EXCLUDED_PACKS:
-            continue
-        if 'bestiary' in pack.name or pack.name == 'pathfinder-monster-core':
-            yield pack
+    return render_template('pack_list.j2.html', packs=[
+        pack.name for pack in (foundry_packs.pf2e_dir()/'packs').iterdir()])
 
 
 @blueprint.get('/pack/<string:pack>')
 def list_content(pack: str):
     path = foundry_packs.pf2e_dir()/'packs'/pack
     return render_template('content_list.j2.html', pack=pack,
-        content=(path.stem for path in path.glob('*.json')))
+        content=(path.stem for path in path.glob('*.json')
+                 if not path.name.startswith('_')))
 
 
-@blueprint.get('/view/<path:id>')
+@blueprint.get('/view/<path:id>')  # type: ignore
 def content(id: str):
     type, content = foundry_packs.content(id)
     if isinstance(content, dict):
@@ -67,7 +61,7 @@ def search():
 
     def results():
         packs_dir = foundry_packs.pf2e_dir()/'packs'
-        for pack in _bestiary_packs():
+        for pack in (foundry_packs.pf2e_dir()/'packs').iterdir():
             for path in pack.iterdir():
                 if query in path.stem:
                     yield path.relative_to(packs_dir).with_suffix('')
@@ -95,7 +89,7 @@ def create_app():
 
 
 class Pf2eSystem(System):
-    bestiary_blueprint = blueprint
+    compendium_blueprint = blueprint
     _CREATURE_XP_BY_DELTA = {-4: 10, -3: 15, -2: 20, -1: 30, 0: 40, 1: 60, 2: 80, 3: 120}
 
     def read_participant(self, json) -> InitiativeParticipant:

@@ -32,7 +32,7 @@ class InitiativeParticipant(ABC):
 
 
 class System:
-    bestiary_blueprint: flask.Blueprint
+    compendium_blueprint: flask.Blueprint
 
     def read_participant(self, json) -> InitiativeParticipant:
         raise NotImplementedError()
@@ -48,7 +48,7 @@ def create_app(instance_path: str | Path, system: System, config: flask.Config):
     app.config.update(config)
     ttrpg_scribe.core.flask.extend(app)
     app.jinja_env.globals['system'] = system
-    app.register_blueprint(system.bestiary_blueprint, url_prefix='/creatures')
+    app.register_blueprint(system.compendium_blueprint, url_prefix='/compendium')
 
     @app.post('/')
     def create_encounter():

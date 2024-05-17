@@ -32,11 +32,11 @@ def make_app(project_dir: str | Path, config: Path | None = None):
         case 'pf2e':
             from ttrpg_scribe.pf2e_compendium.flask import Pf2eSystem
             system = Pf2eSystem()
-            app.config['TOOLS'].insert(-1, ('/creatures', 'Creature List', {}))
+            app.config['TOOLS'].insert(-1, ('/compendium', 'Compendium', {}))
         case _ as system:
             raise ValueError(f'Unknown game system {system}')
     app.jinja_env.globals['system'] = system
-    app.register_blueprint(system.bestiary_blueprint)
+    app.register_blueprint(system.compendium_blueprint)
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
         '/encounter': ttrpg_scribe.encounter.flask.create_app(project_dir, system, app.config),
         '/npc': ttrpg_scribe.npc.flask_app.create_app(project_dir, app.config)

@@ -223,6 +223,9 @@ def _read_strike(item):
 def content(id: str):
     with open_pf2e_file(f'packs/{id}.json') as file:
         data: Json = json.load(file)
+        if 'type' not in data:
+            print(f'Cannot determine content type for {id}, using \'json\'', file=sys.stderr)
+            return ('json', data)
         type: str = data['type']
         try:
             match type:

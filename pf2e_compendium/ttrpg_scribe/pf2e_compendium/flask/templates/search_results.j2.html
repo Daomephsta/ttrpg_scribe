@@ -1,13 +1,13 @@
 <html>
     <head><title>Search Results</title></head>
     <h1>Search Results</h1>
-    <form action="/creatures/search">
+    <form action="/compendium/search">
         <input type="text" name="query" value="{{ request.args.get('query', '') }}">
         <input type="submit" value="Search">
     </form>
     <ul>
     {% for content in content | sort %}
-        <li><a href="/creatures/view/{{ content }}">
+        <li><a href="/compendium/view/{{ content }}">
         {{ content }}</a></li>
     {% endfor %}
     </ul>
