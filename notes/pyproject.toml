@@ -10,6 +10,7 @@ packages = [{include = "ttrpg_scribe/notes"}]
 python = "^3.11"
 flask = "^2.3.2"
 ttrpg_scribe_dnd_bestiary = { path = "../dnd_bestiary", develop = true }
+dill = "^0.3.8"
 
 
 [build-system]

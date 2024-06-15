@@ -1,4 +1,4 @@
-import pickle
+import dill
 from functools import cache
 from pathlib import Path
 from typing import Any, Self
@@ -17,7 +17,7 @@ _file_times: dict[Path, float] = {}
 def file_times():
     global _file_times
     if not _file_times and FILE_TIMES().exists():
-        _file_times = pickle.loads(FILE_TIMES().read_bytes())
+        _file_times = dill.loads(FILE_TIMES().read_bytes())
     return _file_times
 
 
@@ -45,7 +45,7 @@ class DataCache:
     def __enter__(self) -> tuple[Self, bool]:
         if self.cache.exists():
             if self.is_valid():
-                self.data = pickle.loads(self.cache.read_bytes())
+                self.data = dill.loads(self.cache.read_bytes())
                 self.modified = True
                 return (self, True)
         else:
@@ -55,8 +55,8 @@ class DataCache:
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         if exc_type is None:
             if self.modified:
-                self.cache.write_bytes(pickle.dumps(self.data))
-            FILE_TIMES().write_bytes(pickle.dumps(file_times()))
+                self.cache.write_bytes(dill.dumps(self.data))
+            FILE_TIMES().write_bytes(dill.dumps(file_times()))
         return False
 
 
