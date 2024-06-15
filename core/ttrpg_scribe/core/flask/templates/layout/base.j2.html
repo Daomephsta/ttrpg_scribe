@@ -3,6 +3,9 @@
     <head>
         <meta charset="utf-8">
         {% block head %}
+        {% if toc %}
+            <title>{{ toc[0].name }}</title>
+        {% endif %}
         {% for sheet in extra_stylesheets %}
             <link rel="stylesheet" href="{{ sheet }}"/>
         {% endfor %}
