@@ -37,6 +37,8 @@
             {{- ' %d feet' % sense.range if sense.range }}
         {%- endfor -%}
     </p>
+    <!-- Languages -->
+    <b>Languages</b> {{ creature.languages | map('title') | join(', ') }}
     <!-- Skills -->
     <p>
         <b>Skills</b>

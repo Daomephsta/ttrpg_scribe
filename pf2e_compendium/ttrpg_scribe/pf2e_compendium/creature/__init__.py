@@ -85,6 +85,7 @@ class PF2Creature(InitiativeParticipant):
     size: str
     traits: list[str]
     perception: int
+    languages: list[str]
     senses: list[Sense]
     skills: list[Skill]
     inventory: dict[str, int]
@@ -135,6 +136,7 @@ class PF2Creature(InitiativeParticipant):
             size=self.size,
             traits=self.traits,
             perception=self.perception,
+            languages=self.languages,
             senses=self.senses,
             skills=self.skills,
             inventory=self.inventory,
@@ -160,6 +162,7 @@ class PF2Creature(InitiativeParticipant):
             size=data['size'],
             traits=data['traits'],
             perception=data['perception'],
+            languages=data['languages'],
             senses=[Sense.from_json(sense) for sense in data['senses']],
             skills=[Skill.from_json(skill) for skill in data['skills']],
             inventory=data['inventory'],
@@ -208,6 +211,7 @@ class PF2Creature(InitiativeParticipant):
             size=size,
             traits=traits,
             perception=lookup(PERCEPTION, perception),
+            languages=[],
             senses=[],
             skills=skills(lambda bracket: lookup(SKILLS, bracket)),
             inventory=inventory,

@@ -130,6 +130,7 @@ def _read_creature(data: Json) -> PF2Creature:
                        traits['size']['value']),
         traits=simple_traits,
         perception=perception,
+        languages=system['details']['languages']['value'],
         senses=senses,
         skills=skills,
         inventory=inventory,
