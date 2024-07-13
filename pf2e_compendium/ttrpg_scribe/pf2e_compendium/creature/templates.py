@@ -44,7 +44,5 @@ def rename(full: str, *other_names: tuple[str, str]) -> PF2Creature.Template:
         for action in creature.actions:
             match action:
                 case SimpleAction():
-                    print(action.desc)
                     action.desc = process(action.desc)
-                    print(action.desc)
     return template

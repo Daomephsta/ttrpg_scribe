@@ -128,8 +128,6 @@ def _read_creature(data: Json) -> PF2Creature:
                 print(f"Ignored item {item['name']} of {data['name']} with type {unknown}",
                       file=sys.stderr)
 
-    print(spellcasting_lists)
-
     return PF2Creature(
         name=data['name'],
         level=system['details']['level']['value'],
