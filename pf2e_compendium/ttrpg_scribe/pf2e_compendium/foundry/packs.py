@@ -72,7 +72,7 @@ def _read_creature(data: Json) -> PF2Creature:
     defenses: list[SimpleAction] = []
     actions: list[Action] = []
     inventory: dict[str, int] = {}
-    spellcasting: Spellcasting | None = None
+    spellcasting_lists: dict[str, Spellcasting] = {}
 
     for item in data['items']:
         match item['type']:
@@ -106,22 +106,29 @@ def _read_creature(data: Json) -> PF2Creature:
             case 'weapon' | 'armor' | 'consumable' | 'equipment':
                 inventory[item['name']] = item['system']['quantity']
             case 'spellcastingEntry':
-                spellcasting = Spellcasting(
+                spellcasting_lists[item['_id']] = spellcasting = Spellcasting(
                     item['name'], item['system']['tradition']['value'],
-                    item['system']['spelldc']['dc'], item['system']['spelldc']['value'],
-                    slots={}
+                    item['system']['spelldc']['dc'], item['system']['spelldc']['value']
                 )
                 for level, slot_data in item['system']['slots'].items():
                     level = int(level.removeprefix('slot'))
                     if slot_data['prepared']:
-                        spellcasting.slots[level] = [spell['id']
-                            for spell in slot_data['prepared'].values()]
+                        spellcasting.spells[level] = [spell['id']
+                            for spell in slot_data['prepared']]
             case 'spell':
-                assert spellcasting is not None
-                spellcasting.spells[item['_id']] = item['name']
+                location = item['system']['location']['value']
+                spellcasting = spellcasting_lists[location]
+                level = item['system']['level']['value']
+                level = item['system']['level']['value']
+                if not level in spellcasting.spells:
+                    spellcasting.spells[level] = []
+                spellcasting.spells[level].append(item['_id'])
+                spellcasting.id_to_name[item['_id']] = item['name']
             case _ as unknown:
                 print(f"Ignored item {item['name']} of {data['name']} with type {unknown}",
                       file=sys.stderr)
+
+    print(spellcasting_lists)
 
     return PF2Creature(
         name=data['name'],
@@ -147,7 +154,7 @@ def _read_creature(data: Json) -> PF2Creature:
               **{speed['type']: speed['value']
                 for speed in attributes['speed']['otherSpeeds']}},
         actions=actions,
-        spellcasting=spellcasting
+        spellcasting=spellcasting_lists
     )
 
 

@@ -15,16 +15,17 @@ class Spellcasting:
     tradition: str
     dc: int
     attack: int
-    slots: dict[int, list[str]]
-    spells: dict[str, str] = field(default_factory=dict)
+    spells: dict[int, list[str]] = field(default_factory=dict)
+    id_to_name: dict[str, str] = field(default_factory=dict)
 
-    def prepared(self):
-        for level, spell_ids in self.slots.items():
+    def iter_spells(self):
+        for level, spell_ids in self.spells.items():
             def inner():
                 spell_counts = collections.Counter(spell_ids)
                 for id in spell_counts:
-                    yield (self.spells[id], spell_counts[id])
+                    yield (self.id_to_name[id], spell_counts[id])
             yield (level, inner())
+
 
     def to_json(self) -> dict[str, Any]:
         return dict(
@@ -32,8 +33,8 @@ class Spellcasting:
             tradition=self.tradition,
             dc=self.dc,
             attack=self.attack,
-            slots=self.slots,
             spells=self.spells,
+            id_to_name=self.id_to_name,
         )
 
     @staticmethod
@@ -43,8 +44,8 @@ class Spellcasting:
             tradition=data['tradition'],
             dc=data['dc'],
             attack=data['attack'],
-            slots={int(level): spells for level, spells in data['slots'].items()},
-            spells=data['spells'],
+            spells={int(level): spells for level, spells in data['spells'].items()},
+            id_to_name=data['id_to_name'],
         )
 
 
@@ -100,7 +101,7 @@ class PF2Creature(InitiativeParticipant):
     defenses: list[SimpleAction]
     speeds: dict[str, int]
     actions: list[Action]
-    spellcasting: Spellcasting | None
+    spellcasting: dict[str, Spellcasting]
 
     def __post_init__(self):
         if 'construct' in self.traits:
@@ -177,8 +178,7 @@ class PF2Creature(InitiativeParticipant):
             defenses=data['defenses'],
             speeds=data['speeds'],
             actions=[Action.from_json(action) for action in data['actions']],
-            spellcasting=Spellcasting.from_json(data['spellcasting'])
-                         if data['spellcasting'] else None,
+            spellcasting={id: Spellcasting.from_json(e) for id, e in data.get('spellcasting', {}).items()},
         )
 
     type _Ability = Literal['str', 'dex', 'con', 'int', 'wis', 'cha']
@@ -226,5 +226,5 @@ class PF2Creature(InitiativeParticipant):
             defenses=[],
             speeds=speeds,
             actions=actions0,
-            spellcasting=None,
+            spellcasting={},
         )

@@ -121,32 +121,36 @@
         <li>{{ action(data) }}</li>
         {%- endfor %}
     </ul>
-    {% if creature.spellcasting %}
-    <p>
-    <b>{{ creature.spellcasting.name }}</b> {{ creature.name }} can cast these spells
-    (spell DC {{ creature.spellcasting.dc }}, spell attack {{ '%+d' % creature.spellcasting.attack }}).
-    {% set semicolon = joiner('; ') %}
-    {%- for level, spells in creature.spellcasting.prepared() -%}
-        {{ semicolon() }}
-        <b>
-        {% if level > 0 %}
-        Level {{ level if level != 0 else ''}}
-        {% else %}
-        Cantrips
-        {% endif %}
-        </b>
-        {% set comma = joiner(', ') %}
-        {%- for name, quantity in spells -%}
-            {{ comma() }}
-            {%- if quantity > 1 -%}
-            <i>{{ name }}</i> (x{{ quantity }})
-            {%- else -%}
-            <i>{{ name }}</i>
-            {%- endif -%}
+    <!-- Spellcasting -->
+    {% for spellcasting in creature.spellcasting.values() %}
+        <p>
+        <b>{{ spellcasting.name }}</b> {{ creature.name }} can cast these spells
+        (spell DC {{ spellcasting.dc }}, spell attack {{ '%+d' % spellcasting.attack }}).
+        {% set semicolon = joiner('; ') %}
+        <ul style="list-style: none; margin-top: 0;">
+        {%- for level, spells in spellcasting.iter_spells() -%}
+            <li>
+                <b>
+                {% if level > 0 %}
+                Level {{ level if level != 0 else ''}}
+                {% else %}
+                Cantrips
+                {% endif %}
+                </b>
+                {% set comma = joiner(', ') %}
+                {%- for name, quantity in spells -%}
+                    {{ comma() }}
+                    {%- if quantity > 1 -%}
+                    <i>{{ name }}</i> (x{{ quantity }})
+                    {%- else -%}
+                    <i>{{ name }}</i>
+                    {%- endif -%}
+                {%- endfor -%}
+            </li>
         {%- endfor -%}
-    {%- endfor -%}
+        </ul>
     </p>
-    {% endif %}
+    {% endfor %}
     <hr>
     {% if collapsible %}
     </div>
