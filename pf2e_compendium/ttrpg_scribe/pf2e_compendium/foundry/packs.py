@@ -2,6 +2,7 @@ import json
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -81,7 +82,33 @@ def _read_creature(json: Json) -> PF2Creature:
     defenses: list[SimpleAction] = []
     actions: list[Action] = []
     inventory: dict[str, int] = {}
-    spellcasting_lists: dict[str, Spellcasting] = {}
+
+    @dataclass
+    class SpellcastingBuilder:
+        name: str
+        tradition: str
+        dc: int
+        attack: int
+        spells: dict[int, list[str]] = field(default_factory=dict)
+
+        def add_spell(self, item):
+            level = system.level.value(item)
+            if level not in self.spells:
+                self.spells[level] = []
+            self.spells[level].append(item['_id'])
+            # Replace ids with names
+            for spells in self.spells.values():
+                for i in range(len(spells)):
+                    if spells[i] == item['_id']:
+                        spells[i] = item['name']
+
+        def add_prepared(self, level: int, spell_ids: list[str]):
+            self.spells[level] = spell_ids
+
+        def build(self):
+            return Spellcasting(self.name, self.tradition, self.dc, self.attack, self.spells)
+
+    spellcasting_lists: dict[str, SpellcastingBuilder] = {}
 
     for item in json['items']:
         match item['type']:
@@ -115,23 +142,17 @@ def _read_creature(json: Json) -> PF2Creature:
             case 'weapon' | 'armor' | 'consumable' | 'equipment':
                 inventory[item['name']] = system.quantity(item)
             case 'spellcastingEntry':
-                spellcasting_lists[item['_id']] = spellcasting = Spellcasting(
+                spellcasting_lists[item['_id']] = builder = SpellcastingBuilder(
                     item['name'], system.tradition.value(item),
                     system.spelldc.dc(item), system.spelldc.value(item)
                 )
                 for level, slot_data in system.slots(item).items():
                     level = int(level.removeprefix('slot'))
                     if slot_data['prepared']:
-                        spellcasting.spells[level] = [spell['id']
-                            for spell in slot_data['prepared']]
+                        builder.spells[level] = [spell['id'] for spell in slot_data['prepared']]
             case 'spell':
                 location = system.location.value(item)
-                spellcasting = spellcasting_lists[location]
-                level = system.level.value(item)
-                if level not in spellcasting.spells:
-                    spellcasting.spells[level] = []
-                spellcasting.spells[level].append(item['_id'])
-                spellcasting.id_to_name[item['_id']] = item['name']
+                spellcasting_lists[location].add_spell(item)
             case _ as unknown:
                 print(f"Ignored item {item['name']} of {json['name']} with type {unknown}",
                       file=sys.stderr)
@@ -161,7 +182,7 @@ def _read_creature(json: Json) -> PF2Creature:
               **{speed['type']: speed['value']
                 for speed in attributes.speed.otherSpeeds(json)}},
         actions=actions,
-        spellcasting=spellcasting_lists
+        spellcasting=[builder.build() for builder in spellcasting_lists.values()]
     )
 
 

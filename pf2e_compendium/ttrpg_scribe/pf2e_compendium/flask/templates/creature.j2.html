@@ -122,7 +122,7 @@
         {%- endfor %}
     </ul>
     <!-- Spellcasting -->
-    {% for spellcasting in creature.spellcasting.values() %}
+    {% for spellcasting in creature.spellcasting %}
         <p>
         <b>{{ spellcasting.name }}</b> {{ creature.name }} can cast these spells
         (spell DC {{ spellcasting.dc }}, spell attack {{ '%+d' % spellcasting.attack }}).
