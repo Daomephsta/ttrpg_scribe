@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -6,16 +7,16 @@ from typing import Any
 
 import platformdirs
 
+from ttrpg_scribe.core.json_path import JsonPath
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
-import shutil
 
 type Json = dict[str, Any]
 VERSION = '6.0.4'
-_pf2e_dir = (platformdirs.user_data_path('ttrpg_scribe') / 
+_pf2e_dir = (platformdirs.user_data_path('ttrpg_scribe') /
                 'pf2e_compendium/data/foundryvtt/pf2e').absolute()
 
 
@@ -59,22 +60,21 @@ def creature(id: str):
             raise
 
 
-def _read_creature(data: Json) -> PF2Creature:
+def _read_creature(json: Json) -> PF2Creature:
     ALIGNMENTS = {'good', 'neutral', 'evil', 'lawful', 'chaotic'}
 
     SIZES = {'sm': 'small', 'med': 'medium'}
 
-    system: Json = data['system']
-    attributes: Json = system['attributes']
-    traits: Json = system['traits']
+    system = JsonPath('system')
+    attributes = system.attributes
+    traits = system.traits
 
-    simple_traits: list[str] = traits['value']
+    simple_traits: list[str] = traits.value(json)
     # Filter out legacy alignment traits
     simple_traits = [t for t in simple_traits if t not in ALIGNMENTS]
 
-    perception = system['perception']['mod']
     senses = [Sense(sense['type'], sense.get('range'), sense.get('acuity'))
-              for sense in system['perception']['senses']]
+              for sense in system.perception.senses(json)]
 
     skills: list[Skill] = []
     interactions: list[tuple[str, str]] = []
@@ -83,16 +83,16 @@ def _read_creature(data: Json) -> PF2Creature:
     inventory: dict[str, int] = {}
     spellcasting_lists: dict[str, Spellcasting] = {}
 
-    for item in data['items']:
+    for item in json['items']:
         match item['type']:
             case 'action':
                 name = item['name']
-                desc = enrich(item['system']['description']['value'])
-                match item['system']['category']:
+                desc = enrich(system.description.value(item))
+                match system.category(item):
                     case 'interaction':
                         interactions.append((name, desc))
                     case 'defensive':
-                        match item['system']['actionType']['value']:
+                        match system.actionType.value(item):
                             case 'passive':
                                 cost = 0
                             case 'reaction':
@@ -107,59 +107,59 @@ def _read_creature(data: Json) -> PF2Creature:
             case 'lore':
                 skills.append(Skill(
                     item['name'],
-                    item['system']['mod']['value'],
-                    [x['label'] for x in item['system'].get('variants', {}).values()]
+                    system.mod.value(item),
+                    [x['label'] for x in system.variants(item, _or={}).values()]
                 ))
             case 'melee':
                 actions.append(_read_strike(item))
             case 'weapon' | 'armor' | 'consumable' | 'equipment':
-                inventory[item['name']] = item['system']['quantity']
+                inventory[item['name']] = system.quantity(item)
             case 'spellcastingEntry':
                 spellcasting_lists[item['_id']] = spellcasting = Spellcasting(
-                    item['name'], item['system']['tradition']['value'],
-                    item['system']['spelldc']['dc'], item['system']['spelldc']['value']
+                    item['name'], system.tradition.value(item),
+                    system.spelldc.dc(item), system.spelldc.value(item)
                 )
-                for level, slot_data in item['system']['slots'].items():
+                for level, slot_data in system.slots(item).items():
                     level = int(level.removeprefix('slot'))
                     if slot_data['prepared']:
                         spellcasting.spells[level] = [spell['id']
                             for spell in slot_data['prepared']]
             case 'spell':
-                location = item['system']['location']['value']
+                location = system.location.value(item)
                 spellcasting = spellcasting_lists[location]
-                level = item['system']['level']['value']
-                level = item['system']['level']['value']
-                if not level in spellcasting.spells:
+                level = system.level.value(item)
+                if level not in spellcasting.spells:
                     spellcasting.spells[level] = []
                 spellcasting.spells[level].append(item['_id'])
                 spellcasting.id_to_name[item['_id']] = item['name']
             case _ as unknown:
-                print(f"Ignored item {item['name']} of {data['name']} with type {unknown}",
+                print(f"Ignored item {item['name']} of {json['name']} with type {unknown}",
                       file=sys.stderr)
 
+    size = traits.size.value(json)
+
     return PF2Creature(
-        name=data['name'],
-        level=system['details']['level']['value'],
-        size=SIZES.get(traits['size']['value'],
-                       traits['size']['value']),
+        name=json['name'],
+        level=system.details.level.value(json),
+        size=SIZES.get(size, size),
         traits=simple_traits,
-        perception=perception,
-        languages=system['details']['languages']['value'],
+        perception=system.perception.mod(json),
+        languages=system.details.languages.value(json),
         senses=senses,
         skills=skills,
         inventory=inventory,
-        abilities={k: v['mod'] for k, v in system['abilities'].items()},
+        abilities={k: v['mod'] for k, v in system.abilities(json).items()},
         interactions=interactions,
-        ac=attributes['ac']['value'],
-        saves={k: v['value'] for k, v in system['saves'].items()},
-        max_hp=attributes['hp']['max'],
-        immunities=[x['type'] for x in attributes.get('immunities', [])],
-        resistances=[(x['type'], x['value']) for x in attributes.get('resistances', [])],
-        weaknesses=[(x['type'], x['value']) for x in attributes.get('weaknesses', [])],
+        ac=attributes.ac.value(json),
+        saves={k: v['value'] for k, v in system.saves(json).items()},
+        max_hp=attributes.hp.max(json),
+        immunities=[x['type'] for x in attributes.immunities(json, _or=[])],
+        resistances=[(x['type'], x['value']) for x in attributes.resistances(json, _or=[])],
+        weaknesses=[(x['type'], x['value']) for x in attributes.weaknesses(json, _or=[])],
         defenses=defenses,
-        speeds={'walk': attributes['speed']['value'],
+        speeds={'walk': attributes.speed.value(json),
               **{speed['type']: speed['value']
-                for speed in attributes['speed']['otherSpeeds']}},
+                for speed in attributes.speed.otherSpeeds(json)}},
         actions=actions,
         spellcasting=spellcasting_lists
     )
@@ -174,10 +174,13 @@ def hazard(id: str):
             raise
 
 
-def _read_hazard(data: Json) -> PF2Hazard:
-    details = data['system']['details']
+def _read_hazard(json: Json) -> PF2Hazard:
+    system = JsonPath('system')
+    attributes = system.attributes
+    details = system.data.details
+
     actions: list[Action] = []
-    for item in data['items']:
+    for item in json['items']:
         match item['type']:
             case 'action':
                 actions.append(_read_simple_action(item))
@@ -186,52 +189,56 @@ def _read_hazard(data: Json) -> PF2Hazard:
             case _ as unknown:
                 print(f"Ignored item {item['name']} with type {unknown}",
                       file=sys.stderr)
-    attributes = data['system']['attributes']
+
     return PF2Hazard(
-        name=data['name'],
-        level=details['level']['value'],
-        complex=details['isComplex'],
-        stealth=data['system']['attributes']['stealth']['value'],
-        disable=enrich(details['disable']),
-        ac=attributes['ac']['value'],
-        saves={k: v['value'] for k, v in data['system']['saves'].items()},
-        hp=attributes['hp']['value'],
-        hardness=attributes['hardness'],
-        routine=enrich(details['routine']),
+        name=json['name'],
+        level=details.level.value(json),
+        complex=details.isComplex(json),
+        stealth=attributes.stealth.value(json),
+        disable=enrich(details.disable(json)),
+        ac=attributes.ac.value(json),
+        saves={k: v['value'] for k, v in json['system']['saves'].items()},
+        hp=attributes.hp.value(json),
+        hardness=attributes.hardness(json),
+        routine=enrich(details.routine(json)),
         actions=actions,
-        reset=enrich(details['reset']),
+        reset=enrich(details.reset(json)),
     )
 
 
 def _read_simple_action(item):
-    match item['system']['actionType']['value']:
+    system = JsonPath('system')
+
+    match system.actionType.value(item):
         case 'action':
-            cost = item['system']['actions']['value']
+            cost = system.actions.value(item)
         case 'reaction':
             cost = 'reaction'
         case str():
             cost = 0
         case unknown:
             raise ValueError(f'Unknown action type {unknown}')
-    return SimpleAction(item['name'], enrich(item['system']['description']['value']), cost,
-                        item['system']['traits']['value'])
+    return SimpleAction(item['name'], enrich(system.description.value(item)),
+                        cost, system.traits.value(item))
 
 
 def _read_strike(item):
-    def damage(data):
-        damage_type = data['damageType']
-        damage_category = data.get('category')
+    def damage(json):
+        damage_type = json['damageType']
+        damage_category = json.get('category')
         if damage_category:
             damage_type = f'{damage_category} {damage_type}'
-        return data['damage'], damage_type
+        return json['damage'], damage_type
+
+    system = JsonPath('system')
     return Strike(
         item['name'],
-        item['system']['weaponType']['value'],
-        item['system']['bonus']['value'],
-        [damage(data) for data in item['system']['damageRolls'].values()],
-        traits=item['system']['traits']['value'],
-        effects=item['system']['attackEffects']['value']
-            if 'attackEffects' in item['system'] else []
+        system.weaponType.value(item),
+        system.bonus.value(item),
+        [damage(data) for data in system.damageRolls(item).values()],
+        traits=system.traits.value(item),
+        effects=system.attackEffects.value(item)
+            if 'attackEffects' in system(item) else []
     )
 
 
