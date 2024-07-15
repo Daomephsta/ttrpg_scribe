@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Configure Party</title>
+        <style>
+        #centered {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #party {
+            display: flex;
+            flex-direction: column;
+            width: 33%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .character {
+            display: inline-block;
+            width: 5em;
+        }
+        </style>
+        <script>
+        function addCharacter()
+        {
+            const party = document.getElementById("party")
+            const addCharacterName = document.getElementById("add_character_name")
+
+            const label = document.createElement('label')
+            const name = label.appendChild(document.createElement('span'))
+            name.className = "character"
+            name.textContent = addCharacterName.value
+            const checkbox = label.appendChild(document.createElement('input'))
+            checkbox.type = "checkbox"
+            checkbox.name = addCharacterName.value
+            checkbox.checked = true
+
+            party.insertBefore(label, addCharacterName.parentNode)
+        }
+        </script>
+    </head>
+    <div id="centered">
+        <h1>Configure Party</h1>
+        <form action="/encounter/party/set" method="post" id="party">
+        {% for name in config.PARTY | sort %}
+            <label>
+                <span class="character">{{ name }}</span><input type="checkbox" name="{{ name }}" checked>
+            </label>
+        {% endfor %}
+            <div>
+                <input type="text" class="character" id="add_character_name">
+                <input type="button" value="+" onclick="addCharacter()">
+            </div>
+            <input type="submit" value="Set Party" style="margin-top: 5px;">
+        </form>
+    </div>
+</html>

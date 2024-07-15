@@ -22,6 +22,7 @@ def make_app(project_dir: str | Path, config: Path | None = None):
     ttrpg_scribe.npc.flask_app.extension.extend(app, '/npc_extension')
     app.config['TOOLS'] = [
         ('/encounter', 'Launch Encounter', {'method': 'post'}),
+        ('/encounter/party/configure', 'Configure Party', {}),
         ('/npc/gui', 'NPC Generator', {}),
         ('/clean', 'Clean _build', {'method': 'post'}),
     ]

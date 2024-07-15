@@ -50,6 +50,16 @@ def create_app(instance_path: str | Path, system: System, config: flask.Config):
     app.jinja_env.globals['system'] = system
     app.register_blueprint(system.compendium_blueprint, url_prefix='/compendium')
 
+    @app.get('/party/configure')
+    def configure_party():
+        return flask.render_template('configure_party.j2.html')
+
+    @app.post('/party/set')
+    def set_party():
+        app.config['PARTY'] = list(flask.request.form.keys())
+        return flask.redirect(flask.url_for('configure_party',
+            code=HTTPStatus.SEE_OTHER))
+
     @app.post('/')
     def create_encounter():
         encounter = Encounter.from_json(flask.request.json) if flask.request.is_json\
