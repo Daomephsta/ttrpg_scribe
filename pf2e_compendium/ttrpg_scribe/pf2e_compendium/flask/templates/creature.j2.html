@@ -38,7 +38,9 @@
         {%- endfor -%}
     </p>
     <!-- Languages -->
+    {% if creature.languages %}
     <b>Languages</b> {{ creature.languages | map('title') | join(', ') }}
+    {% endif %}
     <!-- Skills -->
     <p>
         <b>Skills</b>
