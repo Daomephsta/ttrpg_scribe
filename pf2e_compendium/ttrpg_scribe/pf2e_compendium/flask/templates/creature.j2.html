@@ -169,4 +169,5 @@
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='actions_font.css') }}">
 </head>
 <body>{{stat_block(creature, collapsible=False)}}</body>
+<footer><a href="{{ request.base_url }}.json">View JSON</a></footer>
 {% endif %}
