@@ -224,6 +224,7 @@ def _read_hazard(json: Json) -> PF2Hazard:
         routine=enrich(details.routine(json)),
         actions=actions,
         reset=enrich(details.reset(json)),
+        description=system.details.description(json)
     )
 
 

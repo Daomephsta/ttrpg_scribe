@@ -19,6 +19,7 @@ class PF2Hazard(InitiativeParticipant):
     routine: str
     actions: list[Action]
     reset: str
+    description: str
 
     def initiative_mod(self) -> int:
         return self.stealth
@@ -40,6 +41,7 @@ class PF2Hazard(InitiativeParticipant):
             routine=self.routine,
             actions=self.actions,
             reset=self.reset,
+            description=self.description,
         )
 
     @classmethod
@@ -57,4 +59,5 @@ class PF2Hazard(InitiativeParticipant):
             routine=data['routine'],
             actions=[Action.from_json(action) for action in data['actions']],
             reset=data['reset'],
+            description=data['description'],
         )
