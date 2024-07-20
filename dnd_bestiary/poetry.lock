@@ -189,21 +189,6 @@ files = [
 ]
 
 [[package]]
-name = "dill"
-version = "0.3.8"
-description = "serialize all of Python"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "dill-0.3.8-py3-none-any.whl", hash = "sha256:c36ca9ffb54365bdd2f8eb3eff7d2a21237f8452b57ace88b1ac615b7e815bd7"},
-    {file = "dill-0.3.8.tar.gz", hash = "sha256:3ebe3c479ad625c4553aca177444d89b486b1d84982eeacded644afc0cf797ca"},
-]
-
-[package.extras]
-graph = ["objgraph (>=1.7.2)"]
-profile = ["gprof2dot (>=2022.7.29)"]
-
-[[package]]
 name = "flask"
 version = "2.3.3"
 description = "A simple framework for building complex web applications."
@@ -535,26 +520,6 @@ type = "directory"
 url = "../core"
 
 [[package]]
-name = "ttrpg-scribe-dnd-bestiary"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-flask = "^2.3.2"
-requests = "^2.31.0"
-requests-cache = "^1.1.0"
-ttrpg_scribe_core = {path = "../core", develop = true}
-ttrpg_scribe_encounter = {path = "../encounter", develop = true}
-
-[package.source]
-type = "directory"
-url = "../dnd_bestiary"
-
-[[package]]
 name = "ttrpg-scribe-encounter"
 version = "0.1.0"
 description = ""
@@ -622,4 +587,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0ab801d183535d65aa40e1394a372235940520389caa2bfa70cbd5abbdddf82d"
+content-hash = "e589c34a23222aec0bba1e9c08a0096037a244210c7a141e0eb1306cfb561787"

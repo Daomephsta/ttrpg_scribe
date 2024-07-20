@@ -171,22 +171,6 @@ files = [
 ]
 
 [[package]]
-name = "platformdirs"
-version = "4.2.2"
-description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "platformdirs-4.2.2-py3-none-any.whl", hash = "sha256:2d7a1657e36a80ea911db832a8a6ece5ee53d8de21edd5cc5879af6530b1bfee"},
-    {file = "platformdirs-4.2.2.tar.gz", hash = "sha256:38b7b51f512eed9e84a22788b4bce1de17c0adb134d6becb09836e37d8654cd3"},
-]
-
-[package.extras]
-docs = ["furo (>=2023.9.10)", "proselint (>=0.13)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.25.2)"]
-test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)"]
-type = ["mypy (>=1.8)"]
-
-[[package]]
 name = "pluralizer"
 version = "1.2.0"
 description = "Singularize or pluralize a given word useing a pre-defined list of rules"
@@ -276,42 +260,6 @@ files = [
 ]
 
 [[package]]
-name = "ttrpg-scribe-core"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-flask = "^2.3.2"
-markdown = "^3.4.3"
-pluralizer = "^1.2.0"
-python-frontmatter = "^1.0.0"
-
-[package.source]
-type = "directory"
-url = "../core"
-
-[[package]]
-name = "ttrpg-scribe-encounter"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.11"
-files = []
-develop = true
-
-[package.dependencies]
-flask = "^2.3.2"
-ttrpg_scribe_core = {path = "../core", develop = true}
-
-[package.source]
-type = "directory"
-url = "../encounter"
-
-[[package]]
 name = "werkzeug"
 version = "3.0.3"
 description = "The comprehensive WSGI web application library."
@@ -331,4 +279,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "139b8f879cd865538792c0f0f7c9ca76086e5efbe6e40fef24e9199a57c983cf"
+content-hash = "19a82ebd2d88c751a2a131787031b994b5d0884f04d7dfb26bfb49f4375f0c14"
