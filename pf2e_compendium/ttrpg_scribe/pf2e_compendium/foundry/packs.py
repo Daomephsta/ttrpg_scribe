@@ -198,7 +198,7 @@ def hazard(id: str):
 def _read_hazard(json: Json) -> PF2Hazard:
     system = JsonPath('system')
     attributes = system.attributes
-    details = system.data.details
+    details = system.details
 
     actions: list[Action] = []
     for item in json['items']:
