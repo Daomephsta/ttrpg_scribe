@@ -211,7 +211,7 @@ class Table[C: TableCell](ABC):
     def __init__(self, cell_type: type[C], table: str):
         self.cell_type = cell_type
         header, *rows = table.splitlines()
-        level, *self.brackets = header.split('\t')
+        level, *self.brackets = re.split(r'\s+', header)
 
         def read_row(row: str):
             level, *values = row.split('\t')
