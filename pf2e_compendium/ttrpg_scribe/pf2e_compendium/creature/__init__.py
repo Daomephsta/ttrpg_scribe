@@ -63,8 +63,8 @@ class Skill:
 @dataclass
 class Sense:
     name: str
-    range: int | None
-    acuity: str | None
+    range: int | None = None
+    acuity: str | None = None
 
     @staticmethod
     def from_json(data: dict):
