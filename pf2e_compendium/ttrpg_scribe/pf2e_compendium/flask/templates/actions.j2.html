@@ -25,9 +25,15 @@
 <b>{{ action.weapon_type | title }}</b>
 {{ action.name }}
 <span class="action">{{ action.cost | action }}</span>
-{%- set malus_sep = joiner('/') -%}
 {% for malus in action.attack_maluses() %}
-    {{ malus_sep() }} {{ '%+d' | format(action.bonus - malus) }}
+    {% if not loop.first %}
+        {% if 'reload' in action.traits %}
+        / reload <span class="action">{{ action.traits['reload'] }}</span> /
+        {% else %}
+        /
+        {% endif %}
+    {% endif %}
+    {{ '%+d' | format(action.bonus - malus) }}
 {% endfor %}
 {{ fmt_traits(action.traits) }}
 {% if action.damage %}
