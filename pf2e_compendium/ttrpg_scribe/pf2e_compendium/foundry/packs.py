@@ -148,7 +148,7 @@ def _read_creature(json: Json) -> PF2Creature:
                 )
                 for level, slot_data in system.slots(item).items():
                     level = int(level.removeprefix('slot'))
-                    if slot_data['prepared']:
+                    if 'prepared' in slot_data and slot_data['prepared']:
                         builder.spells[level] = [spell['id'] for spell in slot_data['prepared']]
             case 'spell':
                 location = system.location.value(item)
