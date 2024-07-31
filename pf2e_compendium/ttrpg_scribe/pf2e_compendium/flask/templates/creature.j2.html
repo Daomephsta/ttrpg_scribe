@@ -134,11 +134,14 @@
             <li>
                 <b>
                 {% if level > 0 %}
-                Level {{ level if level != 0 else ''}}
+                Level {{ level }}
                 {% else %}
                 Cantrips
                 {% endif %}
                 </b>
+                {% if level in spellcasting.slots %}
+                ({{ spellcasting.slots[level] }} slots)
+                {% endif %}
                 {% set comma = joiner(', ') %}
                 {%- for name, quantity in spells -%}
                     {{ comma() }}
