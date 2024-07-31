@@ -1,9 +1,23 @@
+{%-macro fmt_traits(traits) %}
+{%- set trait_sep = joiner(', ') -%}
+{% if traits -%}({% endif %}
+{%- for trait, value in traits.items() -%}
+    {{ trait_sep() }}{{ trait | replace('-', ' ') }}
+    {%- if trait in ['reach', 'thrown', 'range-increment'] %}
+        {{ value }} ft
+    {%- elif trait == 'versatile' %}
+        {{ value | upper }}
+    {%- elif value %}
+        {{ value }}
+    {%- endif -%}
+{%- endfor %}
+{% if traits -%}){% endif %}
+{% endmacro %}
+
 {%-macro simple_action(action) %}
 <b>{{ action.name }}</b>
 <span class="action">{{ action.cost | action }}</span>
-{% if action.traits -%}
-    ({{ action.traits | join(', ') }})
-{% endif %}
+{{ fmt_traits(action.traits) }}
 {{ action.desc | safe }}
 {% endmacro %}
 
@@ -15,9 +29,7 @@
 {% for malus in action.attack_maluses() %}
     {{ malus_sep() }} {{ '%+d' | format(action.bonus - malus) }}
 {% endfor %}
-{% if action.traits %}
-    ({{ action.traits | join(', ') }})
-{% endif %}
+{{ fmt_traits(action.traits) }}
 {% if action.damage %}
     <b>Damage</b>
     {%- set damage_sep = joiner('plus') -%}

@@ -1,11 +1,21 @@
+import re
 from typing import Any
 
 
 class Action:
+    traits: dict[str, Any]
+
     def __init__(self, name: str, cost: str | int = 1, traits: list[str] = []):
         self.name = name
         self.cost = cost
-        self.traits = list(traits)  # Copy to avoid sharing with other actions
+
+        def parse_trait(trait: str) -> tuple[str, Any]:
+            trait = trait.lower().replace(' ', '-')
+            m = re.match(r'([a-z-]+)-(d\d+|\d+|\w$)', trait)
+            if m:
+                return m[1], m[2]
+            return trait, None
+        self.traits = dict(parse_trait(t) for t in traits)
 
     def kind(self):
         return self.__class__.__name__
