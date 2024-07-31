@@ -118,6 +118,15 @@ def new(project_dir: Path, system: str):
         raise ValueError(f'No project template for {system} game system') from None
 
 
+def pf2e_foundry(args):
+    from ttrpg_scribe.pf2e_compendium.foundry import packs
+    match args.foundry_command:
+        case 'update':
+            packs.update()
+        case 'dir':
+            print(packs.pf2e_dir().as_posix())
+
+
 def main():
     from argparse import ArgumentParser
 
@@ -139,6 +148,10 @@ def main():
     new_parser = subcommands.add_parser('new')
     new_parser.add_argument('--system')
     new_parser.set_defaults(subcommand=lambda args: new(args.project, args.system))
+
+    foundry_parser = subcommands.add_parser('pf2e_foundry')
+    foundry_parser.add_argument('foundry_command', choices=['dir', 'update'])
+    foundry_parser.set_defaults(subcommand=pf2e_foundry)
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
