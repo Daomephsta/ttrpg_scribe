@@ -4,11 +4,13 @@ from typing import Any
 
 import flask
 from flask import Blueprint, Flask, render_template, request
+from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.encounter.flask
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, System
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
+from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -38,15 +40,26 @@ def list_content(pack: str):
                  if not path.name.startswith('_')))
 
 
-@blueprint.get('/view/<path:id>')  # type: ignore
+@blueprint.get('/view/<path:id>')
 def content(id: str):
     type, content = foundry_packs.content(id)
     if isinstance(content, dict):
         return content
     return render_template(f'{type}.j2.html', **{
         type: content,
-        'render': True
+        'render': True,
     })
+
+
+@blueprint.get('/analyse/<path:id>')
+def analyse(id: str):
+    type, content = foundry_packs.content(id)
+    match type, content:
+        case 'creature', PF2Creature():
+            report = creature_analyser.analyse(content)
+        case _:
+            raise BadRequest(f'No analyser for content type {type}')
+    return render_template(f'analyse/{type}.j2.html', report=report)
 
 
 @blueprint.get('/view/<path:id>.json')

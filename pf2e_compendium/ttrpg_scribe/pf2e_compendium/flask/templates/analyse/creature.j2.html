@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<head>
+    <title>{{ report.name | title }}</title>
+</head>
+<body>
+    <h1>{{ report.name  | title }}</h1>
+    <ul>
+        <li><b>Perception</b> {{ report.perception }}</li>
+
+        <li>
+            <b>Skills</b>
+            <ul>
+            {% for skill, value in report.skills %}
+                <li>{{ skill }} {{ value }}</li>
+            {% endfor %}
+            </ul>
+        </li>
+
+        <li>
+            <b>Attributes</b>
+            <ul>
+            {% for ability, value in report.attributes %}
+                <li><b>{{ ability | upper }}</b> {{ value }}</li>
+            {% endfor %}
+            </ul>
+        </li>
+
+        <li><b>AC</b> {{ report.ac }}</li>
+
+        <li>
+            <b>Saves</b>
+            <ul>
+            {% for save, value in report.saves %}
+                <li><b>{{ save | title }}</b> {{ value }}</li>
+            {% endfor %}
+            </ul>
+        </li>
+
+        <li><b>HP</b> {{ report.hp }} </li>
+
+        <li>
+            <b>Strikes</b>
+            <ul>
+            {% for strike in report.strikes %}
+                <li>
+                    <b>{{ strike.name }}</b>
+                    <ul>
+                        <li><b>Attack Bonus</b> {{ strike.bonus }}</li>
+                        {% if strike.damage %}
+                        <li><b>Damage</b> {{ strike.damage }}</li>
+                        {% endif %}
+                    </ul>
+                </li>
+            {% endfor %}
+            </ul>
+        </li>
+    </ul>
+</body>
