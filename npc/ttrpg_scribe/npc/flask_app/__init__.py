@@ -15,7 +15,7 @@ def create_app(instance_path: str | Path, config: flask.Config):
     app = flask.Flask('ttrpg_scribe.npc.flask_app',
         instance_path=instance_path,
         instance_relative_config=True)
-    app.config.update(config)
+    app.config = config
     app.config.update(SESSION_TYPE='filesystem',
                       SESSION_PERMANENT=False,
                       SESSION_FILE_DIR=f'{instance_path}/_build/_session')
