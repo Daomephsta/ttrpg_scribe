@@ -12,7 +12,7 @@ for (let button of document.getElementsByClassName('launch_encounter'))
             body: event.target.dataset['encounter']
         })
         .then(r => {
-            let initiative = window.open(r.url, 'initiative')
+            let initiative = window.open(r.url, '_blank')
             // Clear session storage for new encounter
             initiative.sessionStorage.clear()
         });
