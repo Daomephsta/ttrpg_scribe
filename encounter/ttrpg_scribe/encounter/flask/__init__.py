@@ -127,7 +127,7 @@ def create_app(instance_path: str | Path, system: System, config: flask.Config):
             return self._encounters[index]
 
     class Encounter(metaclass=__Encounter):
-        SHAPES = '●▲■◆⬢➕'
+        SHAPES = [f'{n} ({shape})' for n, shape in zip(range(1, 6 + 1), '●▲■◆⬢➕')]
 
         def __init__(self, enemies: list[tuple[int, InitiativeParticipant]],
                      allies: list[tuple[int, InitiativeParticipant]],
