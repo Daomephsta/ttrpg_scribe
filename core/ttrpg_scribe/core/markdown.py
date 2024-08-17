@@ -19,7 +19,7 @@ def find_title(markdown: str) -> str | None:
     if 'title' in metadata:
         return str(metadata['title'])
     match = MD_HEADER.search(markdown)
-    return match.group() if match else None
+    return match.group(1) if match else None
 
 
 class Metadata(TypedDict):
