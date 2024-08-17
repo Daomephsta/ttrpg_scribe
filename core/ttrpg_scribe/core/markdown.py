@@ -14,12 +14,12 @@ __renderer = Markdown(extensions=['attr_list', 'md_in_html', 'tables',
     output_format='html')
 
 
-def find_title(markdown: str):
+def find_title(markdown: str) -> str | None:
     metadata, markdown = frontmatter.parse(markdown)
     if 'title' in metadata:
-        return metadata['title']
+        return str(metadata['title'])
     match = MD_HEADER.search(markdown)
-    return match.group(1) if match else None
+    return match.group() if match else None
 
 
 class Metadata(TypedDict):

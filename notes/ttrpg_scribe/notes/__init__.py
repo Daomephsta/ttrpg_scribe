@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 
 import flask
-from jinja2 import ChoiceLoader, FileSystemLoader, TemplateNotFound
+from jinja2 import FileSystemLoader, TemplateNotFound
 from markupsafe import Markup
 from werkzeug.exceptions import NotFound
 
@@ -29,13 +29,10 @@ class Notes(flask.Flask):
         self.config.from_pyfile(config)
 
     @cached_property
-    def jinja_loader(self) -> ChoiceLoader:
+    def jinja_loader(self) -> FileSystemLoader | None:  # type: ignore
         super_loader = super().jinja_loader
         assert super_loader
-        return ChoiceLoader([
-            super_loader,
-            FileSystemLoader([paths.pages(), paths.templates()])
-        ])
+        return FileSystemLoader([*super_loader.searchpath, paths.pages(), paths.templates()])
 
 
 def create_app(config: Path, project_dir: str | Path | None = None):
