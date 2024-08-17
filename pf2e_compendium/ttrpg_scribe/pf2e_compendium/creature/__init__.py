@@ -102,8 +102,8 @@ class PF2Creature(InitiativeParticipant):
     saves: dict[str, int]
     max_hp: int
     immunities: list[str]
-    resistances: list[tuple[str, int]]
-    weaknesses: list[tuple[str, int]]
+    resistances: dict[str, int]
+    weaknesses: dict[str, int]
     defenses: list[SimpleAction]
     speeds: dict[str, int]
     actions: list[Action]
@@ -227,8 +227,8 @@ class PF2Creature(InitiativeParticipant):
             saves=convert_dict(SAVING_THROWS, saves),
             max_hp=hp.lookup(HIT_POINTS, level),
             immunities=[],
-            resistances=[],
-            weaknesses=[],
+            resistances={},
+            weaknesses={},
             defenses=[],
             speeds=speeds,
             actions=actions0,
