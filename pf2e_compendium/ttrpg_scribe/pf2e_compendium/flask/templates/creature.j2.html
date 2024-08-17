@@ -87,13 +87,13 @@
         {%- endif %}
         {%- if creature.resistances -%}
         ; <b>Resistances</b>
-        {%- for key, value in creature.resistances %}
+        {%- for key, value in creature.resistances.items() %}
             {{ key }} {{ value }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
         {%- endif %}
         {%- if creature.weaknesses -%}
         ; <b>Weaknesses</b>
-        {%- for key, value in creature.weaknesses %}
+        {%- for key, value in creature.weaknesses.items() %}
             {{ key }} {{ value }}{% if not loop.last %}, {% endif %}
         {%- endfor %}
         {%- endif %}
