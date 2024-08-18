@@ -5,7 +5,7 @@ from typing import Any
 class Action:
     traits: dict[str, Any]
 
-    def __init__(self, name: str, cost: str | int = 1, traits: list[str] = []):
+    def __init__(self, name: str, cost: str | int = 1, traits: list[str] | dict[str, Any] = []):
         self.name = name
         self.cost = cost
 
@@ -15,7 +15,11 @@ class Action:
             if m:
                 return m[1], m[2]
             return trait, None
-        self.traits = dict(parse_trait(t) for t in traits)
+        match traits:
+            case dict():
+                self.traits = traits
+            case list():
+                self.traits = dict(parse_trait(t) for t in traits)
 
     def kind(self):
         return self.__class__.__name__
