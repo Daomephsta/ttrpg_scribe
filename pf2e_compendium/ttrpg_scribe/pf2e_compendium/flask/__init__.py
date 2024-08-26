@@ -11,6 +11,7 @@ import ttrpg_scribe.encounter.flask
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, System
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
+from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -29,12 +30,12 @@ _EXCLUDED_PACKS = {
 @blueprint.get('/')
 def list_packs():
     return render_template('pack_list.j2.html', packs=[
-        pack.name for pack in (foundry_packs.pf2e_dir()/'packs').iterdir()])
+        pack.name for pack in (foundry.pf2e_dir()/'packs').iterdir()])
 
 
 @blueprint.get('/pack/<string:pack>')
 def list_content(pack: str):
-    path = foundry_packs.pf2e_dir()/'packs'/pack
+    path = foundry.pf2e_dir()/'packs'/pack
     return render_template('content_list.j2.html', pack=pack,
         content=(path.stem for path in path.glob('*.json')
                  if not path.name.startswith('_')))
@@ -64,7 +65,7 @@ def analyse(id: str):
 
 @blueprint.get('/view/<path:id>.json')
 def raw_content(id: str):
-    with foundry_packs.open_pf2e_file(f'packs/{id}.json') as file:
+    with foundry.open_pf2e_file(f'packs/{id}.json') as file:
         return json.load(file)
 
 
@@ -73,8 +74,8 @@ def search():
     query = request.args.get('query', '')
 
     def results():
-        packs_dir = foundry_packs.pf2e_dir()/'packs'
-        for pack in (foundry_packs.pf2e_dir()/'packs').iterdir():
+        packs_dir = foundry.pf2e_dir()/'packs'
+        for pack in (foundry.pf2e_dir()/'packs').iterdir():
             for path in pack.iterdir():
                 if query in path.stem:
                     yield path.relative_to(packs_dir).with_suffix('')

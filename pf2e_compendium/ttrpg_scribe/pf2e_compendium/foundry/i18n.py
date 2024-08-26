@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from ttrpg_scribe.pf2e_compendium.foundry import packs
+from ttrpg_scribe.pf2e_compendium import foundry
 
 type Json = dict[str, Any]
 
@@ -9,7 +9,7 @@ _translations = {}
 
 
 def _initialise():
-    with packs.open_pf2e_file('static/lang/en.json') as file:
+    with foundry.open_pf2e_file('static/lang/en.json') as file:
         def visit(obj: Json, path: list[str]):
             for k, v in obj.items():
                 match v:

@@ -1,14 +1,10 @@
 import json
-import shutil
-import subprocess
 import sys
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
-import platformdirs
-
 from ttrpg_scribe.core.json_path import JsonPath
+from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
@@ -16,44 +12,10 @@ from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
 type Json = dict[str, Any]
-VERSION = '6.0.4'
-_pf2e_dir = (platformdirs.user_data_path('ttrpg_scribe') /
-                'pf2e_compendium/data/foundryvtt/pf2e').absolute()
-
-
-def pf2e_dir() -> Path:
-    return _get_or_create_pf2e_dir()
-
-
-def _get_or_create_pf2e_dir():
-    if not _pf2e_dir.exists():
-        subprocess.run([
-            'git', 'clone',
-            '--depth', '1',
-            '--branch', VERSION,
-            'https://github.com/foundryvtt/pf2e',
-            _pf2e_dir.as_posix()])
-    return _pf2e_dir
-
-
-def open_pf2e_file(path: str):
-    return (pf2e_dir()/path).open(encoding='utf8')
-
-
-def update():
-    if _pf2e_dir.exists():
-        package_data = json.loads((_pf2e_dir/'package.json').read_text())
-        if package_data['version'] == VERSION:
-            print(f'PF2e system already compatible ({VERSION})')
-            return
-        else:
-            print(f'Replacing {package_data['version']} with {VERSION}')
-            shutil.rmtree(_pf2e_dir)
-    _get_or_create_pf2e_dir()
 
 
 def creature(id: str):
-    with open_pf2e_file(f'packs/{id}.json') as file:
+    with foundry.open_pf2e_file(f'packs/{id}.json') as file:
         try:
             return _read_creature(json.load(file))
         except Exception as e:
@@ -187,7 +149,7 @@ def _read_creature(json: Json) -> PF2Creature:
 
 
 def hazard(id: str):
-    with open_pf2e_file(f'packs/{id}.json') as file:
+    with foundry.open_pf2e_file(f'packs/{id}.json') as file:
         try:
             return _read_hazard(json.load(file))
         except Exception as e:
@@ -251,7 +213,6 @@ def _read_strike(item):
         if damage_category:
             damage_type = f'{damage_category} {damage_type}'
         return json['damage'], damage_type
-
     system = JsonPath('system')
     return Strike(
         item['name'],
@@ -265,7 +226,7 @@ def _read_strike(item):
 
 
 def content(id: str):
-    with open_pf2e_file(f'packs/{id}.json') as file:
+    with foundry.open_pf2e_file(f'packs/{id}.json') as file:
         data: Json = json.load(file)
         if 'type' not in data:
             print(f'Cannot determine content type for {id}, using \'json\'', file=sys.stderr)
@@ -283,3 +244,25 @@ def content(id: str):
         except Exception as e:
             e.add_note(f'Reading {type} {id}')
             raise
+
+
+def __test_read_all_content():
+    import logging
+
+    packs = foundry.pf2e_dir()/'packs'
+    logging.basicConfig(filename='__test_read_all_content.log', filemode='w')
+    errors = 0
+    for pack in packs.iterdir():
+        print(f'Testing pack {pack.name}')
+        for item in pack.iterdir():
+            id = item.relative_to(packs).with_suffix('').as_posix()
+            try:
+                content(id)
+            except Exception as e:
+                errors += 1
+                logging.exception(e)
+    print(f'{errors=}')
+
+
+if __name__ == '__main__':
+    __test_read_all_content()
