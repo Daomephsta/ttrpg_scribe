@@ -5,7 +5,7 @@ from ttrpg_scribe.pf2e_compendium.foundry import i18n
 def _damage_roll(s: str) -> str:
     buf = []
     for part in re.split(r',(?![A-z])', s):
-        amountEnd = part.rindex('[')
+        amountEnd = part.rfind('[')
         amount = part[:amountEnd].strip('()')
         damage_types = part[amountEnd:].strip('[]').split(',')
         if '[splash]' in amount:
