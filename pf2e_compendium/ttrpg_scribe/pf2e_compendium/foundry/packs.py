@@ -81,14 +81,7 @@ def _read_creature(json: Json) -> PF2Creature:
                         case 'interaction':
                             interactions.append((name, desc))
                         case 'defensive':
-                            match system.actionType.value(item):
-                                case 'passive':
-                                    cost = 0
-                                case 'reaction':
-                                    cost = 're'
-                                case unknown:
-                                    raise ValueError(f'Unknown action type {unknown}')
-                            defenses.append(SimpleAction(name, desc, cost))
+                            defenses.append(_read_simple_action(item))
                         case 'offensive':
                             actions.append(_read_simple_action(item))
                 case 'lore':
@@ -224,7 +217,9 @@ def _read_simple_action(item):
             cost = system.actions.value(item)
         case 'reaction':
             cost = 'reaction'
-        case str():
+        case 'free':
+            cost = 'free'
+        case 'passive':
             cost = 0
         case unknown:
             raise ValueError(f'Unknown action type {unknown}')
@@ -282,8 +277,10 @@ def __test_read_all_content():
     logging.basicConfig(filename='__test_read_all_content.log', filemode='w')
     errors = 0
     for directory, _, files in packs.walk():
+        relative_dir = directory.relative_to(packs)
+        print(f'Testing directory {relative_dir}')
         for file in files:
-            id = (directory.relative_to(packs)/file).with_suffix('').as_posix()
+            id = (relative_dir/file).with_suffix('').as_posix()
             try:
                 content(id)
             except Exception as e:
