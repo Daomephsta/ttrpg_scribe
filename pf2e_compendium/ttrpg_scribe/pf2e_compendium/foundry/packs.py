@@ -72,57 +72,62 @@ def _read_creature(json: Json) -> PF2Creature:
 
     spellcasting_lists: dict[str, SpellcastingBuilder] = {}
 
-    for item in json['items']:
-        match item['type']:
-            case 'action':
-                name = item['name']
-                desc = enrich(system.description.value(item))
-                match system.category(item):
-                    case 'interaction':
-                        interactions.append((name, desc))
-                    case 'defensive':
-                        match system.actionType.value(item):
-                            case 'passive':
-                                cost = 0
-                            case 'reaction':
-                                cost = 're'
-                            case unknown:
-                                print(f'Unknown action type {unknown} for item {item['name']}',
-                                      file=sys.stderr)
-                                cost = 0
-                        defenses.append(SimpleAction(name, desc, cost))
-                    case 'offensive':
-                        actions.append(_read_simple_action(item))
-            case 'lore':
-                skills.append(Skill(
-                    item['name'],
-                    system.mod.value(item),
-                    [x['label'] for x in system.variants(item, _or={}).values()]
-                ))
-            case 'melee':
-                actions.append(_read_strike(item))
-            case 'weapon' | 'armor' | 'consumable' | 'equipment':
-                inventory[item['name']] = system.quantity(item)
-            case 'spellcastingEntry':
-                spellcasting_lists[item['_id']] = builder = SpellcastingBuilder(
-                    item['name'], system.tradition.value(item),
-                    system.spelldc.dc(item), system.spelldc.value(item)
-                )
-                for level, slot_data in system.slots(item).items():
-                    level = int(level.removeprefix('slot'))
-                    if 'prepared' in slot_data and slot_data['prepared']:
-                        builder.spells[level] = [spell['id'] for spell in slot_data['prepared']]
-            case 'spell':
-                if 'ritual' in system(item):
-                    ritual_dc = system.spellcasting.rituals.dc(json, _or=0)
-                    spellcasting_lists[location := 'ritual'] = SpellcastingBuilder(
-                        'Rituals', '', ritual_dc, 0)
-                else:
-                    location = system.location.value(item, _or=None)
-                spellcasting_lists[location].add_spell(item)
-            case _ as unknown:
-                print(f"Ignored item {item['name']} of {json['name']} with type {unknown}",
-                      file=sys.stderr)
+    for i, item in enumerate(json['items']):
+        try:
+            match item['type']:
+                case 'action':
+                    name = item['name']
+                    desc = enrich(system.description.value(item))
+                    match system.category(item):
+                        case 'interaction':
+                            interactions.append((name, desc))
+                        case 'defensive':
+                            match system.actionType.value(item):
+                                case 'passive':
+                                    cost = 0
+                                case 'reaction':
+                                    cost = 're'
+                                case unknown:
+                                    print(f'Unknown action type {unknown} for item {item['name']}',
+                                          file=sys.stderr)
+                                    cost = 0
+                            defenses.append(SimpleAction(name, desc, cost))
+                        case 'offensive':
+                            actions.append(_read_simple_action(item))
+                case 'lore':
+                    skills.append(Skill(
+                        item['name'],
+                        system.mod.value(item),
+                        [x['label'] for x in system.variants(item, _or={}).values()]
+                    ))
+                case 'melee':
+                    actions.append(_read_strike(item))
+                case 'weapon' | 'armor' | 'consumable' | 'equipment':
+                    inventory[item['name']] = system.quantity(item)
+                case 'spellcastingEntry':
+                    spellcasting_lists[item['_id']] = builder = SpellcastingBuilder(
+                        item['name'], system.tradition.value(item),
+                        system.spelldc.dc(item), system.spelldc.value(item)
+                    )
+                    for level, slot_data in system.slots(item).items():
+                        level = int(level.removeprefix('slot'))
+                        if 'prepared' in slot_data and slot_data['prepared']:
+                            builder.spells[level] = [spell['id'] for spell
+                                                     in slot_data['prepared']]
+                case 'spell':
+                    if 'ritual' in system(item):
+                        ritual_dc = system.spellcasting.rituals.dc(json, _or=0)
+                        spellcasting_lists[location := 'ritual'] = SpellcastingBuilder(
+                            'Rituals', '', ritual_dc, 0)
+                    else:
+                        location = system.location.value(item, _or=None)
+                    spellcasting_lists[location].add_spell(item)
+                case _ as unknown:
+                    print(f"Ignored item {item['name']} of {json['name']} with type {unknown}",
+                          file=sys.stderr)
+        except Exception as e:
+            e.add_note(f'Item {i}: {item['name']}')
+            raise
     size = traits.size.value(json)
 
     return PF2Creature(
