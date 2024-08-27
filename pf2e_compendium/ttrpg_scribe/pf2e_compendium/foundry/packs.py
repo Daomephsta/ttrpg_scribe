@@ -265,10 +265,9 @@ def __test_read_all_content():
     packs = foundry.pf2e_dir()/'packs'
     logging.basicConfig(filename='__test_read_all_content.log', filemode='w')
     errors = 0
-    for pack in packs.iterdir():
-        print(f'Testing pack {pack.name}')
-        for item in pack.iterdir():
-            id = item.relative_to(packs).with_suffix('').as_posix()
+    for directory, _, files in packs.walk():
+        for file in files:
+            id = (directory.relative_to(packs)/file).with_suffix('').as_posix()
             try:
                 content(id)
             except Exception as e:
