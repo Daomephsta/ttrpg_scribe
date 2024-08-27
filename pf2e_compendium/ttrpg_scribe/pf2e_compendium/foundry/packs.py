@@ -109,11 +109,20 @@ def _read_creature(json: Json) -> PF2Creature:
                         item['name'], system.tradition.value(item),
                         system.spelldc.dc(item), system.spelldc.value(item)
                     )
+                    casting_type = system.prepared.value(item)
                     for level, slot_data in system.slots(item).items():
                         level = int(level.removeprefix('slot'))
-                        if 'prepared' in slot_data and slot_data['prepared']:
-                            builder.spells[level] = [spell['id'] for spell
+                        if 'prepared' in slot_data:
+                            match casting_type:
+                                case 'innate':
+                                    builder.spells[level] = slot_data['prepared']
+                                case 'prepared':
+                                    builder.spells[level] = [spell['id'] for spell
                                                      in slot_data['prepared']]
+                                case 'spontaneous':
+                                    pass
+                                case unknown:
+                                    raise ValueError(f'Unknown casting type {unknown}')
                 case 'spell':
                     if 'ritual' in system(item):
                         ritual_dc = system.spellcasting.rituals.dc(json, _or=0)
