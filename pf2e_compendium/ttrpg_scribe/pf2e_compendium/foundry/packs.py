@@ -192,7 +192,7 @@ def _read_hazard(json: Json) -> PF2Hazard:
         saves={k: v['value'] for k, v in json['system']['saves'].items()},
         hp=attributes.hp.value(json),
         hardness=attributes.hardness(json),
-        routine=enrich(details.routine(json)),
+        routine=enrich(details.routine(json) or ''),  # routine can be null
         actions=actions,
         reset=enrich(details.reset(json)),
         description=system.details.description(json)
