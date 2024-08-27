@@ -223,9 +223,14 @@ def _read_strike(item):
             damage_type = f'{damage_category} {damage_type}'
         return json['damage'], damage_type
     system = JsonPath('system')
+    strike_type = 'melee'
+    if 'weaponType' in system(item):
+        strike_type = system.weaponType.value(item)
+    if any(t for t in system.traits.value(item) if t.startswith('thrown')):
+        strike_type = 'ranged'
     return Strike(
         item['name'],
-        system.weaponType.value(item),
+        strike_type,
         system.bonus.value(item),
         [damage(data) for data in system.damageRolls(item).values()],
         traits=system.traits.value(item),
@@ -248,7 +253,6 @@ def content(id: str):
                 case 'hazard':
                     return (type, _read_hazard(data))
                 case _:
-                    print(f'Unknown content type {type}', file=sys.stderr)
                     return (type, data)
         except Exception as e:
             e.add_note(f'Reading {type} {id}')
