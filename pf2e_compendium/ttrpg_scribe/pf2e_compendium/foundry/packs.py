@@ -1,5 +1,4 @@
 import json
-import sys
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -88,9 +87,7 @@ def _read_creature(json: Json) -> PF2Creature:
                                 case 'reaction':
                                     cost = 're'
                                 case unknown:
-                                    print(f'Unknown action type {unknown} for item {item['name']}',
-                                          file=sys.stderr)
-                                    cost = 0
+                                    raise ValueError(f'Unknown action type {unknown}')
                             defenses.append(SimpleAction(name, desc, cost))
                         case 'offensive':
                             actions.append(_read_simple_action(item))
@@ -102,7 +99,8 @@ def _read_creature(json: Json) -> PF2Creature:
                     ))
                 case 'melee':
                     actions.append(_read_strike(item))
-                case 'weapon' | 'armor' | 'consumable' | 'equipment':
+                case 'weapon' | 'armor' | 'consumable' | 'equipment' |\
+                     'treasure' | 'shield' | 'backpack':
                     inventory[item['name']] = system.quantity(item)
                 case 'spellcastingEntry':
                     spellcasting_lists[item['_id']] = builder = SpellcastingBuilder(
@@ -131,9 +129,13 @@ def _read_creature(json: Json) -> PF2Creature:
                     else:
                         location = system.location.value(item, _or=None)
                     spellcasting_lists[location].add_spell(item)
+                case 'condition':
+                    interactions.append((item['name'], enrich(system.description.value(item))))
+                case 'effect':
+                    # Items that don't need to be in the stat block
+                    pass
                 case _ as unknown:
-                    print(f"Ignored item {item['name']} of {json['name']} with type {unknown}",
-                          file=sys.stderr)
+                    raise ValueError(f'Unknown item type {unknown}')
         except Exception as e:
             e.add_note(f'Item {i}: {item['name']}')
             raise
@@ -181,15 +183,21 @@ def _read_hazard(json: Json) -> PF2Hazard:
     details = system.details
 
     actions: list[Action] = []
-    for item in json['items']:
-        match item['type']:
-            case 'action':
-                actions.append(_read_simple_action(item))
-            case 'melee':
-                actions.append(_read_strike(item))
-            case _ as unknown:
-                print(f"Ignored item {item['name']} with type {unknown}",
-                      file=sys.stderr)
+    for i, item in enumerate(json['items']):
+        try:
+            match item['type']:
+                case 'action':
+                    actions.append(_read_simple_action(item))
+                case 'melee':
+                    actions.append(_read_strike(item))
+                case 'consumable':
+                    # Items that don't need to be in the stat block
+                    pass
+                case _ as unknown:
+                    raise ValueError(f'Unknown item type {unknown}')
+        except Exception as e:
+            e.add_note(f'Item {i}: {item['name']}')
+            raise
 
     return PF2Hazard(
         name=json['name'],
@@ -252,7 +260,6 @@ def content(id: str):
     with foundry.open_pf2e_file(f'packs/{id}.json') as file:
         data: Json = json.load(file)
         if 'type' not in data:
-            print(f'Cannot determine content type for {id}, using \'json\'', file=sys.stderr)
             return ('json', data)
         type: str = data['type']
         try:
