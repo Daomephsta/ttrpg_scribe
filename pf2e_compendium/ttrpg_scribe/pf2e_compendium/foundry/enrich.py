@@ -46,16 +46,20 @@ def enrich(text: str) -> str:
                 _, args = parse_args(raw_args)
                 return f'{args["distance"]}-foot {args["type"]}'
             case 'Check':
-                _, args = parse_args(raw_args)
-                if 'basic' in args:
-                    return f'DC {args["dc"]} basic {args["type"].title()}'
-                if 'defense' in args or ('type' in args and 'dc' not in args):
-                    return args['type'].title()
-                return f'DC {args["dc"]} {args["type"].title()}'
+                match parse_args(raw_args):
+                    case ([check_type, 'basic'], {'dc': dc}) |\
+                         ([], {'basic': True, 'dc': dc, 'type': check_type}):
+                        return f'DC {dc} basic {check_type.title()}'
+                    case [], {'type': check_type} | {'type': check_type, 'defense': _}:
+                        return check_type.title()
+                    case ([check_type], {'dc': dc}) |\
+                         ([], {'dc': dc, 'type': check_type}):
+                        return f'DC {dc} {check_type.title()}'
+                    case _:
+                        raise ValueError(f'Unknown @Check enricher args {raw_args}')
             case 'Damage':
                 return _damage_roll(*parse_args(raw_args))
         raise ValueError(f'Unknown enricher {name} with args {raw_args}')
-        return result[0]
 
     def inline_enrichers(result: re.Match) -> str:
         amount, tag, display = result.groups()
