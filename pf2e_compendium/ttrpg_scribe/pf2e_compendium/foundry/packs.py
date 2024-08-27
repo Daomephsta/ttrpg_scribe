@@ -113,12 +113,16 @@ def _read_creature(json: Json) -> PF2Creature:
                     if 'prepared' in slot_data and slot_data['prepared']:
                         builder.spells[level] = [spell['id'] for spell in slot_data['prepared']]
             case 'spell':
-                location = system.location.value(item)
+                if 'ritual' in system(item):
+                    ritual_dc = system.spellcasting.rituals.dc(json, _or=0)
+                    spellcasting_lists[location := 'ritual'] = SpellcastingBuilder(
+                        'Rituals', '', ritual_dc, 0)
+                else:
+                    location = system.location.value(item, _or=None)
                 spellcasting_lists[location].add_spell(item)
             case _ as unknown:
                 print(f"Ignored item {item['name']} of {json['name']} with type {unknown}",
                       file=sys.stderr)
-
     size = traits.size.value(json)
 
     return PF2Creature(
