@@ -17,20 +17,20 @@ class JsonPath:
             case str():
                 if path.startswith('$.'):
                     path = path[2:]
-                self.path = [int(part[1]) if part.startswith('[') else part
+                self.__path = [int(part[1]) if part.startswith('[') else part
                              for part in re.split(r'\.|(?=\[)', path)]
             case list():
-                self.path = path
+                self.__path = path
 
     def __getattr__(self, key: str) -> 'JsonPath':
         return self[key]
 
     def __getitem__(self, key: str | int) -> 'JsonPath':
-        return JsonPath(self.path + [key])
+        return JsonPath(self.__path + [key])
 
     def __call__(self, json_obj: dict[str, Any], _or: Any = _or_sentinel) -> Any:
         json = json_obj
-        for part in self.path:
+        for part in self.__path:
             match json, part:
                 case dict(), str():
                     if part not in json and _or is not _or_sentinel:
@@ -46,7 +46,7 @@ class JsonPath:
 
     def __str__(self) -> str:
         def parts():
-            for part in self.path:
+            for part in self.__path:
                 match part:
                     case str():
                         yield f'.{part}'
