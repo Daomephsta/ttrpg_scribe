@@ -53,3 +53,6 @@ class JsonPath:
                     case int():
                         yield f'[{part}]'
         return ''.join(itertools.chain('$', parts()))
+
+    def __repr__(self) -> str:
+        return f"JsonPath('{self}')"
