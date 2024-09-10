@@ -1,3 +1,4 @@
+import itertools
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
 
@@ -41,8 +42,11 @@ def rename(full: str, *other_names: tuple[str, str]) -> PF2Creature.Template:
             replacements.append((case(creature.name), case(full)))
 
         creature.name = full
-        for action in creature.actions:
+        for action in itertools.chain(creature.actions, creature.defenses):
             match action:
                 case SimpleAction():
+                    action.name = process(action.name)
                     action.desc = process(action.desc)
+        creature.interactions = [(process(name), process(desc))
+                                 for name, desc in creature.interactions]
     return template
