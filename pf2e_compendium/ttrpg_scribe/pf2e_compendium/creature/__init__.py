@@ -1,6 +1,6 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Callable, Literal, Mapping
+from typing import Any, Callable, Mapping, TypedDict
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
@@ -187,19 +187,27 @@ class PF2Creature(InitiativeParticipant):
             spellcasting=[Spellcasting.from_json(e) for e in data.get('spellcasting', [])],
         )
 
-    type _Ability = Literal['str', 'dex', 'con', 'int', 'wis', 'cha']
-    type _Save = Literal['fortitude', 'reflex', 'will']
+    class Abilities(TypedDict):
+        str: StatisticBracket
+        dex: StatisticBracket
+        con: StatisticBracket
+        int: StatisticBracket
+        wis: StatisticBracket
+        cha: StatisticBracket
+
+    class Saves(TypedDict):
+        fortitude: StatisticBracket
+        reflex: StatisticBracket
+        will: StatisticBracket
     type _Skills = Callable[[Callable[[StatisticBracket], int]], list[Skill]]
     type _Lookup = Callable[[Table, StatisticBracket], Any]
 
     @staticmethod
     def from_brackets(
             name: str, level: int, size: str, traits: list[str], perception: StatisticBracket,
-            skills: _Skills, inventory: dict[str, int],
-            abilities: dict[_Ability, StatisticBracket], ac: StatisticBracket,
-            saves:  dict[_Save, StatisticBracket], hp: StatisticBracket, speeds: dict[str, int],
-            actions: Callable[[_Lookup], list[Any | list[Action]] | list[Action]]
-            ):
+            skills: _Skills, inventory: dict[str, int], abilities: Abilities, ac: StatisticBracket,
+            saves:  Saves, hp: StatisticBracket, speeds: dict[str, int],
+            actions: Callable[[_Lookup], list[Any | list[Action]] | list[Action]]):
 
         def lookup(table: Table, bracket: StatisticBracket):
             return bracket.lookup(table, level)
