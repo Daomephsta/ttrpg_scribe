@@ -1,5 +1,4 @@
 import math
-import re
 from dataclasses import dataclass
 
 from ttrpg_scribe.pf2e_compendium.actions import Strike
@@ -31,18 +30,7 @@ def analyse(creature: PF2Creature):
     def analyse_strike(strike: Strike) -> Report.Strike:
         bonus_bracket = STRIKE_ATTACK_BONUS.classify(creature.level, strike.bonus)
         if strike.damage:
-            average_damage: int = 0
-            for dice, _ in strike.damage:
-                result = re.fullmatch(
-                    r'(?P<count>\d+)d(?P<size>\d+)(?:[+-](?P<mod>\d+))?',
-                    dice
-                )
-                assert result
-                groups = result.groupdict()
-                count = int(groups['count'] or '1')
-                size = int(groups['size'])
-                mod = int(groups['mod'] or '0')
-                average_damage += count * math.floor((size + 1) / 2) + mod
+            average_damage = sum(math.floor(dice.average()) for dice, _ in strike.damage)
             damage_bracket = STRIKE_DAMAGE.classify(creature.level, average_damage)
             return Report.Strike(strike.name, bonus_bracket, damage_bracket)
         return Report.Strike(strike.name, bonus_bracket, '')

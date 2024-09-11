@@ -1,6 +1,8 @@
+import re
 from dataclasses import dataclass
 from random import Random
 from random import _inst as default_random
+from typing import Any, Self
 
 
 class Rollable:
@@ -21,6 +23,19 @@ class SimpleDice(Rollable):
     def average(self) -> float:
         return (self.size + 1) / 2 * self.count + self.mod
 
+    @classmethod
+    def parse(cls, value: str) -> Self:
+        value = value.replace(' ', '')  # Remove all spaces
+        result = re.match(r'(?P<count>\d+)d(?P<size>\d+)(?P<mod>[+-]\d+)?', value)
+        if result is None:
+            raise ValueError(f'Cannot parse {value}')
+        groups = result.groupdict()
+        return cls(
+            int(groups['count'] or '1'),
+            int(groups['size']),
+            int(groups['mod'] or '0')
+        )
+
     def __mul__(self, mult: int) -> 'SimpleDice':
         return SimpleDice(mult * self.count, self.size, self.mod)
 
@@ -40,6 +55,17 @@ class SimpleDice(Rollable):
         if self.mod:
             return f'{self.count}d{self.size} + {self.mod}'
         return f'{self.count}d{self.size}'
+
+    def to_json(self) -> dict[str, Any]:
+        return dict(
+            count=self.count,
+            size=self.size,
+            mod=self.mod
+        )
+
+    @staticmethod
+    def from_json(data: dict):
+        return SimpleDice(data['count'], data['size'], data['mod'])
 
 
 def d(size: int) -> SimpleDice:

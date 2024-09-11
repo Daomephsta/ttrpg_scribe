@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
+from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
@@ -228,12 +229,12 @@ def _read_simple_action(item):
 
 
 def _read_strike(item):
-    def damage(json):
+    def damage(json) -> tuple[SimpleDice, str]:
         damage_type = json['damageType']
         damage_category = json.get('category')
         if damage_category:
             damage_type = f'{damage_category} {damage_type}'
-        return json['damage'], damage_type
+        return SimpleDice.parse(json['damage']), damage_type
     system = JsonPath('system')
     strike_type = 'melee'
     if 'weaponType' in system(item):

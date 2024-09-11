@@ -1,5 +1,8 @@
 import re
-from typing import Any
+from functools import partial
+from typing import Any, Self
+
+from ttrpg_scribe.core.dice import SimpleDice
 
 
 class Action:
@@ -34,19 +37,32 @@ class Action:
 
     @staticmethod
     def from_json(data: dict):
+        def from_json_as(kind: type[Action]):
+            return kind.from_json_with(
+                partial(kind, name=data['name'], cost=data['cost'], traits=data['traits']),
+                data
+            )
         match data.pop('kind'):
             case 'SimpleAction':
-                return SimpleAction(**data)
+                return from_json_as(SimpleAction)
             case 'Strike':
-                return Strike(**data)
+                return from_json_as(Strike)
             case _ as kind:
                 raise ValueError(f'Unknown kind {kind} for action {data}')
+
+    @classmethod
+    def from_json_with(cls, curried_constructor: partial, data: dict) -> Self:
+        ...
 
 
 class SimpleAction(Action):
     def __init__(self, name: str, desc: str = '', cost: str | int = 1, traits: list[str] = []):
         super().__init__(name, cost, traits)
         self.desc = desc
+
+    @classmethod
+    def from_json_with(cls, curried_constructor: partial, data: dict) -> Self:
+        return curried_constructor(desc=data['desc'])
 
     def to_json(self):
         data = super().to_json()
@@ -55,8 +71,9 @@ class SimpleAction(Action):
 
 
 class Strike(Action):
-    def __init__(self, name: str, weapon_type: str, bonus: int, damage: list[tuple[str, str]],
-                 cost: int = 1, traits: list[str] = [], effects: list[str] = []):
+    def __init__(self, name: str, weapon_type: str, bonus: int,
+                 damage: list[tuple[SimpleDice, str]], cost: int = 1,
+                 traits: list[str] = [], effects: list[str] = []):
         super().__init__(name, cost, traits)
         self.weapon_type = weapon_type
         self.bonus = bonus
@@ -68,12 +85,23 @@ class Strike(Action):
             return [0, 4, 8]
         return [0, 5, 10]
 
+    @classmethod
+    def from_json_with(cls, curried_constructor: partial, data: dict) -> Self:
+        return curried_constructor(
+            weapon_type=data['weapon_type'],
+            bonus=data['bonus'],
+            damage=[(SimpleDice.from_json(amount), damage_type)
+                    for amount, damage_type in data['damage']],
+            effects=data['effects']
+        )
+
     def to_json(self):
         data = super().to_json()
         data.update(
             weapon_type=self.weapon_type,
             bonus=self.bonus,
-            damage=self.damage,
+            damage=[(amount.to_json(), damage_type)
+                    for amount, damage_type in self.damage],
             effects=self.effects
         )
         return data

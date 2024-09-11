@@ -128,21 +128,13 @@ class NumberCell(TableCell[int]):
 
 
 class DiceCell(TableCell[SimpleDice]):
-    def __init__(self, count: int, size: int, mod: int):
-        self.dice = SimpleDice(count, size, mod)
+    def __init__(self, dice: SimpleDice):
+        self.dice = dice
         self.average = math.floor(self.dice.average())
 
     @classmethod
     def parse(cls, value: str) -> Self:
-        result = re.fullmatch(r'(?P<count>\d+)d(?P<size>\d+)(?P<mod>[+-]\d+)? \(\d+\)', value)
-        if result is None:
-            raise ValueError(f'Cannot parse {value}')
-        groups = result.groupdict()
-        return cls(
-            int(groups['count'] or '1'),
-            int(groups['size']),
-            int(groups['mod'] or '0')
-        )
+        return cls(SimpleDice.parse(value))
 
     def value_for(self, rank: int, adjustment: int) -> SimpleDice:
         if adjustment != 0:
