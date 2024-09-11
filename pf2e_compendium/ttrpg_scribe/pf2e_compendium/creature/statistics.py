@@ -1,9 +1,11 @@
-from abc import ABC, abstractmethod
 import itertools
 import math
 import re
 import sys
+from abc import ABC, abstractmethod
 from typing import Self
+
+from ttrpg_scribe.core.dice import SimpleDice
 
 
 class TableCell[V](ABC):
@@ -125,32 +127,10 @@ class NumberCell(TableCell[int]):
         return f'NumberCell({self.low} to {self.high})'
 
 
-class Dice:
+class DiceCell(TableCell[SimpleDice]):
     def __init__(self, count: int, size: int, mod: int):
-        self.count = count
-        self.size = size
-        self.mod = mod
-        self.average = count * math.floor((size + 1) / 2) + mod
-
-    def unparse(self) -> str:
-        if self.mod > 0:
-            return f'{self.count}d{self.size}+{self.mod}'
-        if self.mod < 0:
-            return f'{self.count}d{self.size}-{abs(self.mod)}'
-        return f'{self.count}d{self.size}'
-
-    def __str__(self) -> str:
-        if self.mod > 0:
-            return f'{self.count}d{self.size} + {self.mod}'
-        if self.mod < 0:
-            return f'{self.count}d{self.size} - {abs(self.mod)}'
-        return f'{self.count}d{self.size}'
-
-
-class DiceCell(TableCell[str]):
-    def __init__(self, count: int, size: int, mod: int):
-        self.dice = Dice(count, size, mod)
-        self.average = count * math.floor((size + 1) / 2) + mod
+        self.dice = SimpleDice(count, size, mod)
+        self.average = math.floor(self.dice.average())
 
     @classmethod
     def parse(cls, value: str) -> Self:
@@ -164,12 +144,11 @@ class DiceCell(TableCell[str]):
             int(groups['mod'] or '0')
         )
 
-    def value_for(self, rank: int, adjustment: int) -> str:
+    def value_for(self, rank: int, adjustment: int) -> SimpleDice:
         if adjustment != 0:
-            mod = self.dice.mod + adjustment
+            return self.dice + adjustment
         else:  # self.adjustment == 0
-            mod = self.dice.mod + rank - 1  # Rank 1 is +0
-        return Dice(self.dice.count, self.dice.size, mod).unparse()
+            return self.dice + rank - 1  # Rank 1 is +0
 
     def in_description(self, name: str, value: int) -> str:
         return name
@@ -187,8 +166,7 @@ class DiceCell(TableCell[str]):
         return cls._between_description0(
             lower.average, lower_name,
             upper.average, upper_name,
-            value
-            )
+            value)
 
     def __contains__(self, value: int) -> bool:
         return value == self.average

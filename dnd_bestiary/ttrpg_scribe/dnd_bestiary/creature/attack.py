@@ -1,6 +1,7 @@
+import math
 from typing import Literal
 
-from ttrpg_scribe.core.dice import Dice, d
+from ttrpg_scribe.core.dice import SimpleDice, d
 
 from . import DndCreature
 from .ability import DEX, STR, Ability
@@ -11,7 +12,7 @@ type DamageType = Literal['acid', 'bludgeoning', 'cold', 'fire', 'force', 'light
 class Attack:
     default_ability = STR
 
-    def __init__(self, name: str, dice: Dice, type: DamageType,
+    def __init__(self, name: str, dice: SimpleDice, type: DamageType,
                  ability: Ability | None, attack: int | None, damage_bonus: int | None,
                  range: str, extra: str):
         self.name = name
@@ -33,7 +34,7 @@ class Attack:
             damage = self.dice + self.ability.mod(creature)
         attack_mod = self.attack if self.attack is not None\
             else self.ability.mod(creature) + creature.prof
-        desc = self.describe(attack_mod, f'{damage.damage_notation()} {self.type}')
+        desc = self.describe(attack_mod, f'{math.floor(damage.average())} ({damage}) {self.type}')
         if self.extra:
             if self.extra[0].isupper():
                 desc += '.'
@@ -44,7 +45,7 @@ class Attack:
 
 
 class Melee(Attack):
-    def __init__(self, name: str, dice: Dice, type: DamageType,
+    def __init__(self, name: str, dice: SimpleDice, type: DamageType,
                  ability: Ability | None = None, attack: int | None = None,
                  damage_bonus: int | None = None, reach: int = 5, extra: str = ''):
 
@@ -59,7 +60,7 @@ class Melee(Attack):
 class Ranged(Attack):
     default_ability = DEX
 
-    def __init__(self, name: str, range: tuple[int, int], dice: Dice,
+    def __init__(self, name: str, range: tuple[int, int], dice: SimpleDice,
                  type: DamageType, ability: Ability | None = None,
                  attack: int | None = None, damage_bonus: int | None = None, extra: str = ''):
 
@@ -71,7 +72,7 @@ class Ranged(Attack):
                f'range {self.range}, one target. *Hit*: {damage} damage'
 
 
-def thrown(name: str, range: tuple[int, int], dice: Dice, type: DamageType):
+def thrown(name: str, range: tuple[int, int], dice: SimpleDice, type: DamageType):
     def weapon(ability: Ability = DEX) -> list[Attack]:
         return [
             Melee(name, dice, type, ability),
@@ -80,7 +81,7 @@ def thrown(name: str, range: tuple[int, int], dice: Dice, type: DamageType):
     return weapon
 
 
-def versatile(name: str, dice_1h: Dice, dice_2h: Dice, type: DamageType):
+def versatile(name: str, dice_1h: SimpleDice, dice_2h: SimpleDice, type: DamageType):
     return [
         Melee(f'{name} (1H)', dice_1h, type),
         Melee(f'{name} (2H)', dice_2h, type),

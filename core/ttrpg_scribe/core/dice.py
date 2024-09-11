@@ -8,101 +8,39 @@ class Rollable:
         raise NotImplementedError()
 
 
-class DiceFormulaPart:
-    def apply(self, total) -> int:
-        raise NotImplementedError()
-
-    def average(self) -> float:
-        raise NotImplementedError()
-
-
 @dataclass
-class DiceFormula(Rollable):
-    parts: list[DiceFormulaPart]
-
-    def roll(self) -> int:
-        total: int = 0
-        for part in self.parts:
-            total = part.apply(total)
-        return total
-
-    def average_floored(self) -> int:
-        return int(self.average())
-
-    def average(self) -> float:
-        return sum(part.average() for part in self.parts)
-
-    def damage_notation(self) -> str:
-        return f'{self.average_floored()} ({self})'
-
-    def __str__(self) -> str:
-        return ' '.join(map(str, self.parts))
-
-
-class Symbol(str, DiceFormulaPart):
-    def apply(self, total) -> int:
-        return total
-
-    def average(self) -> float:
-        return 0
-
-
-@dataclass
-class Constant(DiceFormulaPart):
-    value: int
-
-    def apply(self, total) -> int:
-        return total + self.value
-
-    def average(self) -> float:
-        return self.value
-
-    def __str__(self) -> str:
-        return str(abs(self.value))
-
-
-@dataclass
-class Dice(DiceFormulaPart, Rollable):
+class SimpleDice(Rollable):
     count: int
     size: int
+    mod: int
 
     def roll(self, rng: Random = default_random) -> int:
         return sum(rng.randrange(1, self.size + 1)
             for _ in range(self.count))
 
-    def apply(self, total) -> int:
-        return total + self.roll()
-
     def average(self) -> float:
-        return self.count * (self.size + 1) / 2
+        return (self.size + 1) / 2 * self.count + self.mod
 
-    def __str__(self) -> str:
-        return f'{self.count}d{self.size}'
+    def __mul__(self, mult: int) -> 'SimpleDice':
+        return SimpleDice(mult * self.count, self.size, self.mod)
 
-    def __mul__(self, mult: int):
-        return Dice(mult * self.count, self.size)
-
-    def __rmul__(self, mult: int):
+    def __rmul__(self, mult: int) -> 'SimpleDice':
         return self.__mul__(mult)
 
-    def __add__(self, bonus: 'int | Dice') -> DiceFormula:
-        match bonus:
-            case 0:
-                return DiceFormula([self])
-            case int(bonus):
-                symbol = '+' if bonus > 0 else '-'
-                return DiceFormula([self, Symbol(symbol), Constant(bonus)])
-            case Dice():
-                return DiceFormula([self, Symbol('+'), bonus])
+    def __add__(self, bonus: int) -> 'SimpleDice':
+        return SimpleDice(self.count, self.size, self.mod + bonus)
 
-    def __radd__(self, bonus: int):
-        return self.__add__(bonus)
+    def __radd__(self, bonus: int) -> 'SimpleDice':
+        return self + bonus
 
-    def __sub__(self, malus: int):
-        if malus == 0:
-            return DiceFormula([self])
-        return DiceFormula([self, Symbol('-'), Constant(-malus)])
+    def __sub__(self, malus: int) -> 'SimpleDice':
+        return SimpleDice(self.count, self.size, self.mod - malus)
+
+    def __str__(self, joiner='') -> str:
+        if self.mod:
+            return f'{self.count}d{self.size} + {self.mod}'
+        return f'{self.count}d{self.size}'
 
 
-def d(size: int) -> Dice:
-    return Dice(1, size)
+def d(size: int) -> SimpleDice:
+    return SimpleDice(1, size, 0)
