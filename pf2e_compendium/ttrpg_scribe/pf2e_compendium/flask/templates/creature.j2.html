@@ -46,7 +46,7 @@
         <b>Skills</b>
         {%- for skill in creature.skills %}
             {{ '{} {:+d}'.format(skill.name, skill.mod) }}
-            {{- '(%s)' % skill.notes | join(', ') if skill.notes }}
+            {{- ' (%s)' % skill.notes | join(', ') if skill.notes }}
             {{- ', ' if not loop.last }}
         {%- endfor %}
     </p>
