@@ -1,4 +1,5 @@
 import itertools
+from typing import Callable
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
 
@@ -29,24 +30,31 @@ def replace_actions(actions: dict[str, Action]) -> PF2Creature.Template:
     return template
 
 
-def rename(full: str, *other_names: tuple[str, str]) -> PF2Creature.Template:
-    replacements = list(other_names)
-
-    def process(target: str) -> str:
-        for replacement in replacements:
-            target = target.replace(*replacement)
-        return target
-
+def map_all_text(mapper: Callable[[str], str]) -> PF2Creature.Template:
     def template(creature: PF2Creature):
-        for case in [str.lower, str.title]:
-            replacements.append((case(creature.name), case(full)))
-
-        creature.name = full
         for action in itertools.chain(creature.actions, creature.defenses):
             match action:
                 case SimpleAction():
-                    action.name = process(action.name)
-                    action.desc = process(action.desc)
-        creature.interactions = [(process(name), process(desc))
+                    action.name = mapper(action.name)
+                    action.desc = mapper(action.desc)
+        creature.interactions = [(mapper(name), mapper(desc))
                                  for name, desc in creature.interactions]
+    return template
+
+
+def replace_in_all_text(*replacements: tuple[str, str]) -> PF2Creature.Template:
+    def apply_replacements(target: str) -> str:
+        for old, new in replacements:
+            target = target.replace(old, new)
+        return target
+    return map_all_text(apply_replacements)
+
+
+def rename(full: str, *other_names: tuple[str, str]) -> PF2Creature.Template:
+    def template(creature: PF2Creature):
+        name_cases = ((case(creature.name), case(full))
+            for case in [str.lower, str.title, str.capitalize])
+        creature.apply(replace_in_all_text(*other_names, *name_cases))
+        # Change the name after, so name replacement in other text works
+        creature.name = full
     return template
