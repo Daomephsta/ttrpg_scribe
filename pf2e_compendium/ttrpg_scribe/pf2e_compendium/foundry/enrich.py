@@ -1,4 +1,5 @@
 import re
+
 from ttrpg_scribe.pf2e_compendium.foundry import i18n
 
 
@@ -43,20 +44,24 @@ def enrich(text: str) -> str:
             case 'UUID':
                 return raw_args[raw_args.rindex('.') + 1:]
             case 'Template':
-                _, args = parse_args(raw_args)
-                return f'{args["distance"]}-foot {args["type"]}'
+                match parse_args(raw_args):
+                    case ([shape], {'distance': distance}) |\
+                         ([], {'type': shape, 'distance': distance}):
+                        return f'{distance}-foot {shape}'
+                    case unknown:
+                        raise ValueError(f'Unknown @Template enricher args {raw_args} {unknown}')
             case 'Check':
                 match parse_args(raw_args):
                     case ([check_type, 'basic'], {'dc': dc}) |\
                          ([], {'basic': True, 'dc': dc, 'type': check_type}):
                         return f'DC {dc} basic {check_type.title()}'
-                    case [], {'type': check_type} | {'type': check_type, 'defense': _}:
+                    case [check_type], {'against': _} | {'defense': _} | {}:
                         return check_type.title()
                     case ([check_type], {'dc': dc}) |\
                          ([], {'dc': dc, 'type': check_type}):
                         return f'DC {dc} {check_type.title()}'
-                    case _:
-                        raise ValueError(f'Unknown @Check enricher args {raw_args}')
+                    case unknown:
+                        raise ValueError(f'Unknown @Check enricher args {raw_args} {unknown}')
             case 'Damage':
                 return _damage_roll(*parse_args(raw_args))
         raise ValueError(f'Unknown enricher {name} with args {raw_args}')

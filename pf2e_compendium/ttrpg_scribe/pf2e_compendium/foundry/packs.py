@@ -282,8 +282,9 @@ def __test_read_all_content():
 
     packs = foundry.pf2e_dir()/'packs'
     logging.basicConfig(filename='__test_read_all_content.log', filemode='w')
-    errors = 0
+    total_errors = 0
     for directory, _, files in packs.walk():
+        directory_errors = 0
         relative_dir = directory.relative_to(packs)
         print(f'Testing directory {relative_dir}')
         for file in files:
@@ -291,9 +292,11 @@ def __test_read_all_content():
             try:
                 content(id)
             except Exception as e:
-                errors += 1
+                directory_errors += 1
                 logging.exception(e)
-    print(f'{errors=}')
+        print(f'{directory_errors=}')
+        total_errors += directory_errors
+    print(f'{total_errors=}')
 
 
 if __name__ == '__main__':
