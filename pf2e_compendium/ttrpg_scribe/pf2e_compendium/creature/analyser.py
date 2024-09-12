@@ -30,7 +30,10 @@ def analyse(creature: PF2Creature):
     def analyse_strike(strike: Strike) -> Report.Strike:
         bonus_bracket = STRIKE_ATTACK_BONUS.classify(creature.level, strike.bonus)
         if strike.damage:
-            average_damage = sum(math.floor(dice.average()) for dice, _ in strike.damage)
+            average_damage = sum(
+                math.floor(amount if isinstance(amount, int) else amount.average())
+                for amount, _ in strike.damage
+            )
             damage_bracket = STRIKE_DAMAGE.classify(creature.level, average_damage)
             return Report.Strike(strike.name, bonus_bracket, damage_bracket)
         return Report.Strike(strike.name, bonus_bracket, '')
