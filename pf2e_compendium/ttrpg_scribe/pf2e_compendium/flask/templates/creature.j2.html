@@ -44,10 +44,12 @@
     <!-- Skills -->
     <p>
         <b>Skills</b>
+        {% set comma = joiner(',') %}
         {%- for skill in creature.skills %}
-            {{ '{} {:+d}'.format(skill.name, skill.mod) }}
-            {{- ' (%s)' % skill.notes | join(', ') if skill.notes }}
-            {{- ', ' if not loop.last }}
+            {{- comma() }} {{ skill.name | title }} {{ '{:+d}'.format(skill.mod) }}
+            {%- if skill.notes %}
+            ({{ skill.notes | join(', ') }})
+            {%- endif -%}
         {%- endfor %}
     </p>
     <!-- Inventory -->
