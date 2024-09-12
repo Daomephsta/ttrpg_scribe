@@ -1,4 +1,5 @@
 import json
+import logging
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -282,26 +283,33 @@ def content(id: str):
             raise
 
 
+def __try_load(id: str) -> int:
+    try:
+        content(id)
+        return 0
+    except Exception as e:
+        logging.exception(e)
+        return 1
+
+
 def __test_read_all_content():
-    import logging
+    import multiprocessing
+    import time
 
     packs = foundry.pf2e_dir()/'packs'
     logging.basicConfig(filename='__test_read_all_content.log', filemode='w')
-    total_errors = 0
-    for directory, _, files in packs.walk():
-        directory_errors = 0
-        relative_dir = directory.relative_to(packs)
-        print(f'Testing directory {relative_dir}')
-        for file in files:
-            id = (relative_dir/file).with_suffix('').as_posix()
-            try:
-                content(id)
-            except Exception as e:
-                directory_errors += 1
-                logging.exception(e)
-        print(f'{directory_errors=}')
-        total_errors += directory_errors
-    print(f'{total_errors=}')
+
+    start = time.perf_counter()
+    errors = 0
+
+    with multiprocessing.Pool() as pool:
+        for directory, _, files in packs.walk():
+            relative_dir = directory.relative_to(packs)
+            print(f'Testing {relative_dir}')
+            errors += sum(pool.map(__try_load, ((relative_dir/file).with_suffix('').as_posix()
+                                              for file in files)))
+
+    print(f'Finished test in {time.perf_counter() - start:.2f}s with {errors} errors')
 
 
 if __name__ == '__main__':
