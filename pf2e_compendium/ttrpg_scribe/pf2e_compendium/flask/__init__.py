@@ -44,7 +44,7 @@ def list_content(pack: str):
 @blueprint.get('/view/<path:id>')
 def content(id: str):
     type, content = foundry_packs.content(id)
-    if isinstance(content, dict):
+    if isinstance(content, (dict, list)):
         return content
     return render_template(f'{type}.j2.html', **{
         type: content,
