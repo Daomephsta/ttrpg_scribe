@@ -229,12 +229,18 @@ def _read_simple_action(item):
 
 
 def _read_strike(item):
-    def damage(json) -> tuple[SimpleDice, str]:
-        damage_type = json['damageType']
+    def damage(json: dict[str, Any]) -> tuple[SimpleDice | int, str]:
+        damage_type: str = json['damageType']
         damage_category = json.get('category')
         if damage_category:
             damage_type = f'{damage_category} {damage_type}'
-        return SimpleDice.parse(json['damage']), damage_type
+        damage: str = json['damage']
+        if damage == '':
+            return 0, damage_type
+        elif damage.isnumeric():
+            return int(damage), damage_type
+        else:
+            return SimpleDice.parse(json['damage']), damage_type
     system = JsonPath('system')
     strike_type = 'melee'
     if 'weaponType' in system(item):

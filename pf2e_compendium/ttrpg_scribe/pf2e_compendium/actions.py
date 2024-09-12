@@ -72,7 +72,7 @@ class SimpleAction(Action):
 
 class Strike(Action):
     def __init__(self, name: str, weapon_type: str, bonus: int,
-                 damage: list[tuple[SimpleDice, str]], cost: int = 1,
+                 damage: list[tuple[SimpleDice | int, str]], cost: int = 1,
                  traits: list[str] = [], effects: list[str] = []):
         super().__init__(name, cost, traits)
         self.weapon_type = weapon_type
@@ -100,7 +100,7 @@ class Strike(Action):
         data.update(
             weapon_type=self.weapon_type,
             bonus=self.bonus,
-            damage=[(amount.to_json(), damage_type)
+            damage=[(amount, damage_type)
                     for amount, damage_type in self.damage],
             effects=self.effects
         )
