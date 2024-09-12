@@ -1,6 +1,6 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Callable, Mapping, TypedDict
+from typing import Any, Callable, Iterable, Mapping, TypedDict
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
@@ -55,18 +55,35 @@ class Spellcasting:
         )
 
 
+def zip_with(mappers: Iterable[Callable[[Any], Any] | None], data: Iterable[Any]) -> list[Any]:
+    return [mapper(data) if mapper is not None else data
+            for mapper, data in zip(mappers, data)]
+
+
 @dataclass
 class Skill:
     name: str
     mod: int
-    notes: list[str] = field(default_factory=list)
+    special: dict[str, int]
+
+    def __init__(self, name: str, mod: int, special: dict[str, int] | list[str] = []):
+        self.name = name
+        self.mod = mod
+        match special:
+            case dict():
+                self.special = special
+            case list():
+                self.special = {}
+                for e in special:
+                    [bonus, condition] = e.split(' ', maxsplit=1)
+                    self.special[condition] = int(bonus)
 
     @staticmethod
     def from_json(data: dict):
         return Skill(
             name=data['name'],
             mod=data['mod'],
-            notes=data['notes'],
+            special=data['special'],
         )
 
 

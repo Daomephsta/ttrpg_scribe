@@ -47,8 +47,13 @@
         {% set comma = joiner(',') %}
         {%- for skill in creature.skills %}
             {{- comma() }} {{ skill.name | title }} {{ '{:+d}'.format(skill.mod) }}
-            {%- if skill.notes %}
-            ({{ skill.notes | join(', ') }})
+            {%- if skill.special %}
+            {% set comma = joiner(', ') %}
+            (
+            {%- for condition, bonus in skill.special.items() -%}
+            {{- comma() -}}{{ '%+d' % bonus }} {{ condition }}
+            {%- endfor -%}
+            )
             {%- endif -%}
         {%- endfor %}
     </p>

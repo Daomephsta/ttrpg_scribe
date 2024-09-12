@@ -40,8 +40,8 @@ def _read_creature(json: Json) -> PF2Creature:
               for sense in system.perception.senses(json)]
 
     def read_skill(name: str, info: Json) -> Skill:
-        notes = [f'{note['base']:+d} {note['label']}' for note in info.get('special', [])]
-        return Skill(name, info['base'], notes)
+        special: dict[str, int] = {note['label']: note['base'] for note in info.get('special', [])}
+        return Skill(name, info['base'], special)
 
     skills: list[Skill] = [read_skill(name, info)
                            for name, info in system.skills(json, _or={}).items()]
