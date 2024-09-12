@@ -1,7 +1,8 @@
 import itertools
 from typing import Callable
-from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
+
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
+from ttrpg_scribe.pf2e_compendium.creature import PF2Creature, Sense
 
 
 def compose(*templates: PF2Creature.Template) -> PF2Creature.Template:
@@ -58,3 +59,11 @@ def rename(full: str, *other_names: tuple[str, str]) -> PF2Creature.Template:
         # Change the name after, so name replacement in other text works
         creature.name = full
     return template
+
+
+def darkvision(creature: PF2Creature):
+    for i in range(len(creature.senses)):
+        if creature.senses[i].name == 'low-light-vision':
+            creature.senses[i] = Sense('darkvision')
+            return
+    creature.senses.append(Sense('darkvision'))
