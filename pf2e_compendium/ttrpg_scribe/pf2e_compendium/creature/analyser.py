@@ -13,9 +13,9 @@ class Report:
     name: str
     perception: str
     skills: list[tuple[str, str]]
-    attributes: list[tuple[str, str]]
+    attributes: dict[str, str]
     ac: str
-    saves: list[tuple[str, str]]
+    saves: dict[str, str]
     hp: str
 
     @dataclass
@@ -43,11 +43,11 @@ def analyse(creature: PF2Creature):
         PERCEPTION.classify(creature.level, creature.perception),
         [(skill.name, SKILLS.classify(creature.level, skill.mod))
          for skill in creature.skills],
-        [(ability, ATTRIBUTE_MODIFIERS.classify(creature.level, value))
-         for ability, value in creature.abilities.items()],
+        {ability: ATTRIBUTE_MODIFIERS.classify(creature.level, value)
+         for ability, value in creature.abilities.items()},
         ARMOR_CLASS.classify(creature.level, creature.ac),
-        [(save, SAVING_THROWS.classify(creature.level, value))
-         for save, value in creature.saves.items()],
+        {save: SAVING_THROWS.classify(creature.level, value)
+         for save, value in creature.saves.items()},
         HIT_POINTS.classify(creature.level, creature.max_hp),
         [analyse_strike(action) for action in creature.actions if isinstance(action, Strike)]
     )

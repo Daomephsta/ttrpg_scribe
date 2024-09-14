@@ -19,8 +19,8 @@
         <li>
             <b>Attributes</b>
             <ul>
-            {% for ability, value in report.attributes %}
-                <li><b>{{ ability | upper }}</b> {{ value }}</li>
+            {% for ability in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
+                <li><b>{{ ability | upper }}</b> {{ report.attributes[ability] }}</li>
             {% endfor %}
             </ul>
         </li>
@@ -30,8 +30,8 @@
         <li>
             <b>Saves</b>
             <ul>
-            {% for save, value in report.saves %}
-                <li><b>{{ save | title }}</b> {{ value }}</li>
+            {% for save in ['fortitude', 'reflex', 'will'] %}
+                <li><b>{{ save | title }}</b> {{ report.saves[save] }}</li>
             {% endfor %}
             </ul>
         </li>
