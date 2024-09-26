@@ -41,13 +41,31 @@
         <li>
             <b>Strikes</b>
             <ul>
-            {% for strike in report.strikes %}
+            {% for attack in report.attacks %}
                 <li>
-                    <b>{{ strike.name }}</b>
+                    <b>{{ attack.name }}</b>
                     <ul>
-                        <li><b>Attack Bonus</b> {{ strike.bonus }}</li>
-                        {% if strike.damage %}
-                        <li><b>Damage</b> {{ strike.damage }}</li>
+                        <li><b>Attack Bonus</b> {{ attack.bonus }}</li>
+                        {% if attack.damage %}
+                        <li><b>Damage</b> {{ attack.damage }}</li>
+                        {% endif %}
+                    </ul>
+                </li>
+            {% endfor %}
+            </ul>
+        </li>
+        <li>
+            <b>Abilities</b>
+            <ul>
+            {% for ability in report.active_abilities %}
+                <li>
+                    <b>{{ ability.name }}</b>
+                    <ul>
+                        {% if ability.dc %}
+                        <li><b>DC</b> {{ ability.dc }}</li>
+                        {% endif %}
+                        {% if ability.damage %}
+                        <li><b>Damage</b> {{ ability.damage }}</li>
                         {% endif %}
                     </ul>
                 </li>
