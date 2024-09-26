@@ -55,7 +55,9 @@ def enrich(text: str) -> str:
                     case ([check_type, 'basic'], {'dc': dc}) |\
                          ([], {'basic': True, 'dc': dc, 'type': check_type}):
                         return f'DC {dc} basic {check_type.title()}'
-                    case [check_type], {'against': _} | {'defense': _} | {}:
+                    case [check_type], {'against': _} | {'defense': _}:
+                        return check_type.title()
+                    case [check_type], {**keyed_args} if not keyed_args:
                         return check_type.title()
                     case ([check_type], {'dc': dc}) |\
                          ([], {'dc': dc, 'type': check_type}):
