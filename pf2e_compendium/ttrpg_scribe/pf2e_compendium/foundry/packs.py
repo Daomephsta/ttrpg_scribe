@@ -27,7 +27,7 @@ def creature(id: str):
 def _read_creature(json: Json) -> PF2Creature:
     ALIGNMENTS = {'good', 'neutral', 'evil', 'lawful', 'chaotic'}
 
-    SIZES = {'sm': 'small', 'med': 'medium'}
+    SIZES = {'sm': 'small', 'med': 'medium', 'lg': 'large', 'grg': 'gargantuan'}
 
     system = JsonPath('system')
     attributes = system.attributes
