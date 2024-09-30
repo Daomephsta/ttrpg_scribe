@@ -27,7 +27,7 @@
 <span class="action">{{ action.cost | action }}</span>
 {% for malus in action.attack_maluses() %}
     {% if not loop.first %}
-        {% if 'reload' in action.traits %}
+        {% if action.traits.get('reload', '-1') | int > 0 %}
         / reload <span class="action">{{ action.traits['reload'] }}</span> /
         {% else %}
         /
