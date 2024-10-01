@@ -36,5 +36,12 @@
             "jinja": true,
             "justMyCode": false
         },
+        {
+            "name": "Test Foundry Data Parser",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ttrpg_scribe.pf2e_compendium.foundry.packs",
+            "justMyCode": false
+        },
     ]
 }
