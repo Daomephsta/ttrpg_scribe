@@ -51,13 +51,14 @@ def enrich(text: str) -> str:
                     case unknown:
                         raise ValueError(f'Unknown @Template enricher args {raw_args} {unknown}')
             case 'Check':
+                def only_ignored_keys(keyed_args: dict[str, str]):
+                    ignored = {'against', 'defense', 'name', 'overrideTraits', 'traits'}
+                    return len(set(keyed_args.keys()) - ignored) == 0
                 match parse_args(raw_args):
                     case ([check_type, 'basic'], {'dc': dc}) |\
                          ([], {'basic': True, 'dc': dc, 'type': check_type}):
                         return f'DC {dc} basic {check_type.title()}'
-                    case [check_type], {'against': _} | {'defense': _}:
-                        return check_type.title()
-                    case [check_type], {**keyed_args} if not keyed_args:
+                    case [check_type], {**keyed_args} if only_ignored_keys(keyed_args):
                         return check_type.title()
                     case ([check_type], {'dc': dc}) |\
                          ([], {'dc': dc, 'type': check_type}):
