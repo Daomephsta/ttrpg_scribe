@@ -5,17 +5,26 @@ from ttrpg_scribe.pf2e_compendium.foundry import i18n
 
 def _damage_roll(positional_args: list[str], keyed_args: dict[str, str]) -> str:
     buf = []
-    assert len(positional_args) == 1, f'Unexpected positional args {positional_args}'
+    match positional_args:
+        case [damage]:
+            short_label = False
+        case [damage, 'shortLabel']:
+            short_label = True
+        case _:
+            raise ValueError(f'Unexpected positional args {positional_args}')
     unknown_keys = keyed_args.keys() - {'traits', 'name'}
     assert len(unknown_keys) == 0, f'Unknown keys {unknown_keys} in keyed args {keyed_args}'
-    for part in re.split(r',(?![A-z])', positional_args[0]):
+    for part in re.split(r',(?![A-z])', damage):
         amountEnd = part.rfind('[')
         amount = part[:amountEnd].strip('()')
         damage_types = part[amountEnd:].strip('[]').split(',')
         if '[splash]' in amount:
             amount = amount.removesuffix('[splash]')
             damage_types.append('splash')
-        buf.append(f'{amount} {" ".join(damage_types)}')
+        if short_label:
+            buf.append(amount)
+        else:
+            buf.append(f'{amount} {" ".join(damage_types)}')
     return ' plus '.join(buf)
 
 
@@ -52,7 +61,8 @@ def enrich(text: str) -> str:
                         raise ValueError(f'Unknown @Template enricher args {raw_args} {unknown}')
             case 'Check':
                 def only_ignored_keys(keyed_args: dict[str, str]):
-                    ignored = {'against', 'defense', 'name', 'overrideTraits', 'traits'}
+                    ignored = {'against', 'defense', 'rollerRole', 'name', 'overrideTraits',
+                               'traits'}
                     return len(set(keyed_args.keys()) - ignored) == 0
                 match parse_args(raw_args):
                     case ([check_type, 'basic'], {'dc': dc}) |\
