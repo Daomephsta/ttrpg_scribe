@@ -8,8 +8,8 @@ from ttrpg_scribe.core.dice import SimpleDice
 class Action:
     traits: dict[str, Any]
 
-    def __init__(self, name: str, cost: str | int = 1, traits: list[str] | dict[str, Any] = [],
-                 trigger=''):
+    def __init__(self, name: str, cost: str | int, traits: list[str] | dict[str, Any],
+                 trigger: str):
         self.name = name
         self.cost = cost
         self.trigger = trigger
@@ -60,8 +60,9 @@ class Action:
 
 
 class SimpleAction(Action):
-    def __init__(self, name: str, desc: str = '', cost: str | int = 1, traits: list[str] = []):
-        super().__init__(name, cost, traits)
+    def __init__(self, name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
+                 trigger=''):
+        super().__init__(name, cost, traits, trigger)
         self.desc = desc
 
     @classmethod
