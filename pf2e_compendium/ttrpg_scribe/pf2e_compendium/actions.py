@@ -8,9 +8,11 @@ from ttrpg_scribe.core.dice import SimpleDice
 class Action:
     traits: dict[str, Any]
 
-    def __init__(self, name: str, cost: str | int = 1, traits: list[str] | dict[str, Any] = []):
+    def __init__(self, name: str, cost: str | int = 1, traits: list[str] | dict[str, Any] = [],
+                 trigger=''):
         self.name = name
         self.cost = cost
+        self.trigger = trigger
 
         def parse_trait(trait: str) -> tuple[str, Any]:
             trait = trait.lower().replace(' ', '-')
@@ -33,13 +35,15 @@ class Action:
             name=self.name,
             cost=self.cost,
             traits=self.traits,
+            trigger=self.trigger
         )
 
     @staticmethod
     def from_json(data: dict):
         def from_json_as(kind: type[Action]):
             return kind.from_json_with(
-                partial(kind, name=data['name'], cost=data['cost'], traits=data['traits']),
+                partial(kind, name=data['name'], cost=data['cost'], traits=data['traits'],
+                        trigger=data['trigger']),
                 data
             )
         match data.pop('kind'):
@@ -72,9 +76,9 @@ class SimpleAction(Action):
 
 class Strike(Action):
     def __init__(self, name: str, weapon_type: str, bonus: int,
-                 damage: list[tuple[SimpleDice | int, str]], cost: int = 1,
-                 traits: list[str] = [], effects: list[str] = []):
-        super().__init__(name, cost, traits)
+                 damage: list[tuple[SimpleDice | int, str]], cost: str | int = 1,
+                 traits: list[str] = [], trigger='', effects: list[str] = []):
+        super().__init__(name, cost, traits, trigger)
         self.weapon_type = weapon_type
         self.bonus = bonus
         self.damage = list(damage)

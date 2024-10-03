@@ -18,6 +18,9 @@
 <b>{{ action.name }}</b>
 <span class="action">{{ action.cost | action }}</span>
 {{ fmt_traits(action.traits) }}
+{% if action.trigger %}
+    <b>Trigger</b> {{ action.trigger }}
+{% endif %}
 {{ action.desc | safe }}
 {% endmacro %}
 
@@ -42,6 +45,9 @@
     {% for amount, kind in action.damage %}
         {{ damage_sep() }} {{ amount }} {{ kind }}
     {% endfor %}
+{% endif %}
+{% if action.trigger %}
+    <b>Trigger</b> {{ action.trigger }}
 {% endif %}
 {% if action.effects %}
     <b>Effect</b>
