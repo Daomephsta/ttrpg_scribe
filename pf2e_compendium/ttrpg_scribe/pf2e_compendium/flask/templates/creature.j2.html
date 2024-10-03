@@ -70,7 +70,7 @@
     <!-- Abilities -->
     <p>
     {%- for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
-        <b>{{ key.title() }}</b> {{ '+%d' % creature.abilities[key] }}{% if not loop.last %}, {% endif %}
+        <b>{{ key.title() }}</b> {{ '%+d' % creature.abilities[key] }}{% if not loop.last %}, {% endif %}
     {%- endfor %}
     </p>
     <!-- Interactions -->
@@ -84,7 +84,7 @@
         <b>AC</b> {{ creature.ac }};
         <!-- Saves -->
     {% for save in ['fortitude', 'reflex', 'will'] %}
-        <b>{{ save.title() }}</b> {{ '+%d' % creature.saves[save] }}{% if not loop.last %}, {% endif %}
+        <b>{{ save.title() }}</b> {{ '%+d' % creature.saves[save] }}{% if not loop.last %}, {% endif %}
     {%- endfor %}
     </p>
     <p>
