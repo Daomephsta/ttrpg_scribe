@@ -167,11 +167,6 @@ onload = (_) =>  {
     setRound(getRound())
 };
 
-document.addEventListener('keyup', (event) =>
-{
-    if (event.key == 'n')
-        nextTurn();
-})
 // Require confirmation when closing Initiative Tracker
 window.addEventListener('beforeunload', (event) =>
 {
