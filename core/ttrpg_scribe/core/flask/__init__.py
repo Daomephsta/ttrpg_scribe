@@ -71,3 +71,12 @@ def ordinal(n: int):
             return f'{n}rd'
         case _:
             return f'{n}th'
+
+
+@_blueprint.app_template_filter()
+def format_as(value: Any, spec: str):
+    match value:
+        case tuple():
+            return spec.format(*value)
+        case _:
+            return spec.format(value)

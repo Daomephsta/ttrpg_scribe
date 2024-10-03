@@ -25,6 +25,6 @@
 </section>
 {% endmacro %}
 
-{% macro random_encounter(size, creature) -%}
+{% macro random_encounter(size, creature) %}
 <button data-size="{{ size }}"  data-creature="{{ creature | tojson | forceescape }}" data-party="{{ config.PARTY | tojson | forceescape }}"  onclick="launchRandomEncounter(event)">Launch</button> |
 {% endmacro %}

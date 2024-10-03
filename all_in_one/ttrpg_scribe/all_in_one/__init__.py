@@ -20,6 +20,10 @@ def make_app(project_dir: str | Path, config: Path | None = None):
     app = ttrpg_scribe.notes.create_app(config or Path('config.py'), project_dir)
     ttrpg_scribe.encounter.flask.extension.extend(app, '/encounter_extension')
     ttrpg_scribe.npc.flask_app.extension.extend(app, '/npc_extension')
+    app.jinja_options.update(
+        lstrip_blocks=True,
+        trim_blocks=True
+    )
     app.config['TOOLS'] = [
         ('/encounter', 'Launch Encounter', {'method': 'post'}),
         ('/encounter/party/configure', 'Configure Party', {}),

@@ -27,12 +27,12 @@
     </style>
 {% endblock head %}
 {% block main %}
-    {%- for parent in subtree.parents | reverse -%}
+    {% for parent in subtree.parents | reverse %}
         <h1 style="display: inline;">
             <a href="/index/{{ parent }}">{{ parent.name if parent.name else 'index' }}</a>
             /
         </h1>
-    {%- endfor -%}
+    {% endfor %}
     <h1 style="display: inline;">{{ subtree.name if subtree.name else 'index' }}</h1>
     <h2>Pages</h2>
     <ul class="index" style="padding-left: 0;">

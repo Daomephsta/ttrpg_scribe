@@ -23,19 +23,18 @@
     <!-- Traits -->
     <p>
         <span class="trait size">{{ creature.size }}</span>
-    {%- for trait in creature.traits %}
+    {% for trait in creature.traits %}
         <span class="trait">{{ trait }}</span>
-    {%- endfor %}
+    {% endfor %}
     </p>
     <p>
         <b>Perception</b> {{ '{:+d}'.format(creature.perception) }};
-        {% set comma = joiner(', ') %}
-        {% for sense in creature.senses -%}
-            {{ comma() }}
-            {{- sense.name }}
-            {{- ' (%s)' % sense.acuity if sense.acuity }}
-            {{- ' %d feet' % sense.range if sense.range }}
-        {%- endfor -%}
+        {% for sense in creature.senses %}
+            {{ sense.name -}}
+            {{ ' (%s)' % sense.acuity if sense.acuity -}}
+            {{ ' %d feet' % sense.range if sense.range -}}
+            {{ ', ' if not loop.last }}
+        {% endfor %}
     </p>
     <!-- Languages -->
     {% if creature.languages %}
@@ -44,100 +43,94 @@
     <!-- Skills -->
     <p>
         <b>Skills</b>
-        {% set comma = joiner(',') %}
-        {%- for skill in creature.skills %}
-            {{- comma() }} {{ skill.name | title }} {{ '{:+d}'.format(skill.mod) }}
-            {%- if skill.special %}
-            {% set comma = joiner(', ') %}
-            (
+        {% for skill in creature.skills %}
+            {{ skill.name | title }} {{ '{:+d}'.format(skill.mod) -}}
+            {% if skill.special %} (
             {%- for condition, bonus in skill.special.items() -%}
-            {{- comma() -}}{{ '%+d' % bonus }} {{ condition }}
+                {{ '%+d' % bonus }} {{ condition -}}
+                {{ ', ' if not loop.last }}
             {%- endfor -%}
             )
             {%- endif -%}
-        {%- endfor %}
+            {{ ', ' if not loop.last }}
+        {% endfor %}
     </p>
     <!-- Inventory -->
     {% if creature.inventory %}
     <p>
         <b>Items</b>
-        {% set comma = joiner(',') %}
-        {% for name, quantity in creature.inventory.items() -%}
-        {{ comma() }} {{ name | plural(quantity, inclusive=quantity > 1) -}}
+        {% for name, quantity in creature.inventory.items() %}
+            {{ name | plural(quantity, inclusive=quantity > 1) }}
+            {{- ', ' if not loop.last }}
         {% endfor %}
     </p>
     {% endif %}
     <!-- Abilities -->
     <p>
-    {%- for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
-        <b>{{ key.title() }}</b> {{ '%+d' % creature.abilities[key] }}{% if not loop.last %}, {% endif %}
-    {%- endfor %}
+    {% for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
+        <b>{{ key.title() }}</b> {{ '%+d' % creature.abilities[key] }}
+        {{- ', ' if not loop.last }}
+    {% endfor %}
     </p>
     <!-- Interactions -->
     <ul class="field_list">
-    {%- for name, desc in creature.interactions %}
+    {% for name, desc in creature.interactions %}
         <li><b>{{ name }}</b> {{ desc | safe }}</li>
-    {%- endfor %}
+    {% endfor %}
     </ul>
     <hr>
     <p>
         <b>AC</b> {{ creature.ac }};
         <!-- Saves -->
     {% for save in ['fortitude', 'reflex', 'will'] %}
-        <b>{{ save.title() }}</b> {{ '%+d' % creature.saves[save] }}{% if not loop.last %}, {% endif %}
-    {%- endfor %}
+        <b>{{ save.title() }}</b> {{ '%+d' % creature.saves[save] }}
+        {{- ', ' if not loop.last }}
+    {% endfor %}
     </p>
     <p>
         <b>HP</b> {{ creature.max_hp }}
-        {%- if creature.immunities -%}
-            ; <b>Immunities</b> {{ creature.immunities | join(', ')}}
-        {%- endif %}
-        {%- if creature.resistances -%}
-        ; <b>Resistances</b>
-        {%- for key, value in creature.resistances.items() %}
-            {{ key }} {{ value }}{% if not loop.last %}, {% endif %}
-        {%- endfor %}
-        {%- endif %}
-        {%- if creature.weaknesses -%}
-        ; <b>Weaknesses</b>
-        {%- for key, value in creature.weaknesses.items() %}
-            {{ key }} {{ value }}{% if not loop.last %}, {% endif %}
-        {%- endfor %}
-        {%- endif %}
+        {%- if creature.immunities %};
+            <b>Immunities</b> {{ creature.immunities | join(', ') }}
+        {%- endif -%}
+        {%- if creature.resistances %};
+            <b>Resistances</b> {{ creature.resistances.items() | map('format_as', '{} {}') | join(', ') }}
+        {%- endif -%}
+        {%- if creature.weaknesses %};
+            <b>Weaknesses</b> {{ creature.weaknesses.items() | map('format_as', '{} {}') | join(', ') }}
+        {% endif %}
     </p>
     <!-- Defenses -->
     <ul class="field_list">
-    {%- for defense in creature.defenses %}
+    {% for defense in creature.defenses %}
         <li>{{ simple_action(defense) }}</li>
-    {%- endfor %}
+    {% endfor %}
     </ul>
     <hr>
     <!-- Speeds -->
     <p>
         <b>Speed</b>
-        {%- for kind, value in creature.speeds.items() %}
-            {%- if kind != 'walk' %}
+        {% for kind, value in creature.speeds.items() %}
+            {% if kind != 'walk' %}
             {{ kind }} {{ value }} ft
             {%- else %}
             {{ value }} ft
-            {%- endif %}
-            {%- if not loop.last %}, {% endif %}
-        {%- endfor %}
+            {%- endif -%}
+            {{- ', ' if not loop.last }}
+        {% endfor %}
     </p>
     <!-- Actions -->
     <ul class="field_list">
-        {%- for data in creature.actions %}
+        {% for data in creature.actions %}
         <li>{{ action(data) }}</li>
-        {%- endfor %}
+        {% endfor %}
     </ul>
     <!-- Spellcasting -->
     {% for spellcasting in creature.spellcasting %}
-        <p>
+    <p>
         <b>{{ spellcasting.name }}</b> {{ creature.name }} can cast these spells
         (spell DC {{ spellcasting.dc }}, spell attack {{ '%+d' % spellcasting.attack }}).
-        {% set semicolon = joiner('; ') %}
         <ul style="list-style: none; margin-top: 0;">
-        {%- for level, spells in spellcasting.iter_spells() -%}
+        {% for level, spells in spellcasting.iter_spells() %}
             <li>
                 <b>
                 {% if level > 0 %}
@@ -149,17 +142,16 @@
                 {% if level in spellcasting.slots %}
                 ({{ spellcasting.slots[level] }} slots)
                 {% endif %}
-                {% set comma = joiner(', ') %}
-                {%- for name, quantity in spells -%}
-                    {{ comma() }}
-                    {%- if quantity > 1 -%}
+                {% for name, quantity in spells %}
+                    {% if quantity > 1 %}
                     <i>{{ name }}</i> (x{{ quantity }})
                     {%- else -%}
                     <i>{{ name }}</i>
                     {%- endif -%}
-                {%- endfor -%}
+                    {{- ', ' if not loop.last }}
+                {% endfor %}
             </li>
-        {%- endfor -%}
+        {% endfor %}
         </ul>
     </p>
     {% endfor %}
@@ -178,9 +170,11 @@
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='actions_font.css') }}">
 </head>
-<body>{{stat_block(creature, collapsible=False)}}</body>
-<footer>
-    <a href="{{ request.base_url }}.json">View JSON</a>
-    <a href="{{ request.base_url | replace('view', 'analyse') }}">Analyse</a>
-</footer>
+<body>
+    {{ stat_block(creature, collapsible=False) }}
+    <footer>
+        <a href="{{ request.base_url }}.json">View JSON</a>
+        <a href="{{ request.base_url | replace('view', 'analyse') }}">Analyse</a>
+    </footer>
+</body>
 {% endif %}

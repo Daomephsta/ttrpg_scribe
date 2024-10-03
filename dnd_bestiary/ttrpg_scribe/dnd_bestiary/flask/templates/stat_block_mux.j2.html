@@ -1,7 +1,7 @@
 {% import 'creature.j2.html' as creature %}
 
 {% macro stat_block(stats, collapsible=False) %}
-{%- if stats.kind() == 'DndCreature' %}
+{% if stats.kind() == 'DndCreature' %}
 {{ creature.stat_block(stats, collapsible) }}
-{%- endif %}
+{% endif %}
 {% endmacro %}

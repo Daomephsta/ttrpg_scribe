@@ -1,20 +1,24 @@
-{%-macro fmt_traits(traits) %}
-{%- set trait_sep = joiner(', ') -%}
-{% if traits -%}({% endif %}
+{%macro fmt_traits(traits) %}
+{% if traits %}
+(
 {%- for trait, value in traits.items() -%}
-    {{ trait_sep() }}{{ trait | replace('-', ' ') }}
-    {%- if trait in ['reach', 'thrown', 'range-increment'] %}
-        {{ value }} ft
-    {%- elif trait == 'versatile' %}
-        {{ value | upper }}
-    {%- elif value %}
-        {{ value }}
+    {% set trait = trait | replace('-', ' ') %}
+    {%- if trait in ['reach', 'thrown', 'range-increment'] -%}
+        {{ trait }} {{ value }} ft
+    {%- elif trait == 'versatile' -%}
+        {{ trait }} {{ value | upper }}
+    {%- elif value -%}
+        {{ trait }} {{ value }}
+    {%- else -%}
+        {{ trait }}
     {%- endif -%}
+    {{- ', ' if not loop.last }}
 {%- endfor %}
-{% if traits -%}){% endif %}
+)
+{% endif %}
 {% endmacro %}
 
-{%-macro simple_action(action) %}
+{%macro simple_action(action) %}
 <b>{{ action.name }}</b>
 <span class="action">{{ action.cost | action }}</span>
 {{ fmt_traits(action.traits) }}
@@ -24,7 +28,7 @@
 {{ action.desc | safe }}
 {% endmacro %}
 
-{%- macro strike_action(action) -%}
+{% macro strike_action(action) %}
 <b>{{ action.weapon_type | title }}</b>
 {{ action.name }}
 <span class="action">{{ action.cost | action }}</span>
@@ -40,11 +44,7 @@
 {% endfor %}
 {{ fmt_traits(action.traits) }}
 {% if action.damage %}
-    <b>Damage</b>
-    {%- set damage_sep = joiner('plus') -%}
-    {% for amount, kind in action.damage %}
-        {{ damage_sep() }} {{ amount }} {{ kind }}
-    {% endfor %}
+    <b>Damage</b> {{ action.damage | map('format_as', '{} {}') | join(' plus ')}}
 {% endif %}
 {% if action.trigger %}
     <b>Trigger</b> {{ action.trigger }}
@@ -58,9 +58,9 @@
 {% endmacro %}
 
 {% macro action(data) %}
-    {%- if data.kind() == 'SimpleAction' %}
+    {% if data.kind() == 'SimpleAction' %}
     {{ simple_action(data) }}
-    {%- elif data.kind() == 'Strike' %}
+    {% elif data.kind() == 'Strike' %}
     {{ strike_action(data) }}
-    {%- endif %}
+    {% endif %}
 {% endmacro %}
