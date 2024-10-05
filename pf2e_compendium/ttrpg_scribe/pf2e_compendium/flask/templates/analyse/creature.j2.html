@@ -39,33 +39,20 @@
         <li><b>HP</b> {{ report.hp }} </li>
 
         <li>
-            <b>Strikes</b>
+            <b>Actions</b>
             <ul>
-            {% for attack in report.attacks %}
+            {% for action in report.actions %}
                 <li>
-                    <b>{{ attack.name }}</b>
+                    <b>{{ action.name }}</b>
                     <ul>
-                        <li><b>Attack Bonus</b> {{ attack.bonus }}</li>
-                        {% if attack.damage %}
-                        <li><b>Damage</b> {{ attack.damage }}</li>
+                        {% if action.bonus %}
+                        <li><b>Attack Bonus</b> {{ action.bonus }}</li>
                         {% endif %}
-                    </ul>
-                </li>
-            {% endfor %}
-            </ul>
-        </li>
-        <li>
-            <b>Abilities</b>
-            <ul>
-            {% for ability in report.active_abilities %}
-                <li>
-                    <b>{{ ability.name }}</b>
-                    <ul>
-                        {% if ability.dc %}
-                        <li><b>DC</b> {{ ability.dc }}</li>
+                        {% if action.dc %}
+                        <li><b>DC</b> {{ action.dc }}</li>
                         {% endif %}
-                        {% if ability.damage %}
-                        <li><b>Damage</b> {{ ability.damage }}</li>
+                        {% if action.damage %}
+                        <li><b>Damage</b> {{ action.damage }}</li>
                         {% endif %}
                     </ul>
                 </li>

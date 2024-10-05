@@ -20,22 +20,17 @@ class Report:
     hp: str
 
     @dataclass
-    class Attack:
-        name: str
-        bonus: str
-        damage: str
-    attacks: list[Attack]
-
-    @dataclass
     class Action:
         name: str
-        dc: str
-        damage: str
-    active_abilities: list[Action]
+        bonus: str = ''
+        dc: str = ''
+        damage: str = ''
+
+    actions: list[Action]
 
 
 def analyse(creature: PF2Creature):
-    def analyse_strike(strike: Strike) -> Report.Attack:
+    def analyse_strike(strike: Strike) -> Report.Action:
         bonus_bracket = STRIKE_ATTACK_BONUS.classify(creature.level, strike.bonus)
         if strike.damage:
             average_damage = sum(
@@ -43,19 +38,18 @@ def analyse(creature: PF2Creature):
                 for amount, _ in strike.damage
             )
             damage_bracket = STRIKE_DAMAGE.classify(creature.level, average_damage)
-            return Report.Attack(strike.name, bonus_bracket, damage_bracket)
-        return Report.Attack(strike.name, bonus_bracket, '')
+            return Report.Action(strike.name, bonus=bonus_bracket, damage=damage_bracket)
+        return Report.Action(strike.name, bonus=bonus_bracket)
 
-    attacks = []
     actions = []
     for action in creature.actions:
         match action:
             case Strike():
-                attacks.append(analyse_strike(action))
+                actions.append(analyse_strike(action))
             case SimpleAction():
                 dc = re.search(r'DC (\d+)', action.desc)
                 dc = SPELL_DC.classify(creature.level, int(dc[1])) if dc else ''
-                actions.append(Report.Action(action.name, dc, ''))
+                actions.append(Report.Action(action.name, dc=dc))
 
     return Report(
         creature.name,
@@ -68,6 +62,5 @@ def analyse(creature: PF2Creature):
         {save: SAVING_THROWS.classify(creature.level, value)
          for save, value in creature.saves.items()},
         HIT_POINTS.classify(creature.level, creature.max_hp),
-        attacks,
         actions
     )
