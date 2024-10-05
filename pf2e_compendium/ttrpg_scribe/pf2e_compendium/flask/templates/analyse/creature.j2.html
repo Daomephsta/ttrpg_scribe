@@ -11,7 +11,7 @@
             <b>Skills</b>
             <ul>
             {% for skill, value in report.skills %}
-                <li>{{ skill }} {{ value }}</li>
+                <li>{{ skill | title }} {{ value }}</li>
             {% endfor %}
             </ul>
         </li>
