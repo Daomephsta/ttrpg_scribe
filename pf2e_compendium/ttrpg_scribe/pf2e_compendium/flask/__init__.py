@@ -127,7 +127,7 @@ class Pf2eSystem(System):
             elif delta >= 4:
                 return 160
             return Pf2eSystem._CREATURE_XP_BY_DELTA[delta]
-        total = sum(count * xp(creature) for count, creature in enemies)
+        total = sum(max(0, count) * xp(creature) for count, creature in enemies)
 
         reward = math.ceil(total * 4 // len(party) / 10) * 10  # round up to nearest 10
         extra_players = len(party) - 4

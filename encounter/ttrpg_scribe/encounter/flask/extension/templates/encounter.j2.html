@@ -3,10 +3,10 @@
     <link rel="stylesheet" href="{{ url_for('encounter_extension.static', filename='encounter.css') }}">
     <ul>
         {% for count, participant in enemies %}
-            <li>{{ count }} {{ participant.name | plural(count) }}</li>
+            <li>{{ (0, count) | max }} {{ participant.name | plural(count) }}</li>
         {% endfor %}
         {% for count, participant in allies %}
-            <li>{{ count }} {{ participant.name | plural(count) }}</li>
+            <li>{{ (0, count) | max }} {{ participant.name | plural(count) }}</li>
         {% endfor %}
         {% if show_xp %}
             <li><hr/></li>
