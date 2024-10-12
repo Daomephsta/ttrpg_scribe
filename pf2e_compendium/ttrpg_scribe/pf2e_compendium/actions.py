@@ -95,8 +95,10 @@ class Strike(Action):
         return curried_constructor(
             weapon_type=data['weapon_type'],
             bonus=data['bonus'],
-            damage=[(SimpleDice.from_json(amount), damage_type)
-                    for amount, damage_type in data['damage']],
+            damage=[
+                (amount if isinstance(amount, int) else SimpleDice.from_json(amount), damage_type)
+                for amount, damage_type in data['damage']
+            ],
             effects=data['effects']
         )
 
