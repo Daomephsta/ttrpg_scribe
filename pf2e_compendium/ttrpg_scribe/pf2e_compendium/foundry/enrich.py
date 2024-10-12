@@ -80,12 +80,27 @@ def enrich(text: str) -> str:
         raise ValueError(f'Unknown enricher {name} with args {raw_args}')
 
     def inline_enrichers(result: re.Match) -> str:
-        amount, tag, display = result.groups()
+        def parse_args(args: str) -> tuple[list[str], dict[str, str]]:
+            positional = []
+            keyed = {}
+            for arg in args.split(' '):
+                match arg.split('=', maxsplit=1):
+                    case [key, value]:
+                        keyed[key] = value
+                    case [positional_arg]:
+                        positional.append(positional_arg)
+            return positional, keyed
+
+        name, raw_args, display = result.groups()
         if display:
             return display
-        if tag:
-            return f'{amount} {tag}'
-        return amount
+        match name, parse_args(raw_args):
+            case 'br' | 'r', ([amount], {**keyed_args}) if not keyed_args:
+                return amount
+            case 'br' | 'r', ([amount, tag], {**keyed_args}) if not keyed_args:
+                return f'{amount} {tag}'
+            case _ as name, _:
+                raise ValueError(f'Unknown enricher /{name} with args {raw_args}')
 
     if '<hr />\n' in text:
         text = text.replace('<hr />\n', '<div class="details">')
@@ -94,6 +109,6 @@ def enrich(text: str) -> str:
     for pattern in [r'@(Damage)\[((?:[^[\]]*|\[[^[\]]*\])*)\](?:{([^}]+)})?',
                     r'@(\w+)\[([^\]]+)\](?:{([^}]+)})?']:
         text = re.sub(pattern, at_enrichers, text)
-    text = re.sub(r'\[\[\/b?r ([0-9]+d[0-9]+)(?:\[\w+\])?(?: #([\w ]+))?\]\](?:\{([\w ]+?)\})?',
+    text = re.sub(r'\[\[\/(?P<name>\w+) (?P<args>[^]]+)\]\](?:\{(?P<display>[\w ]+?)\})?',
                   inline_enrichers, text)
     return text
