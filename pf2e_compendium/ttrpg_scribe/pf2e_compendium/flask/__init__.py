@@ -9,9 +9,10 @@ from werkzeug.exceptions import BadRequest
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.encounter.flask
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, System
+from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
-from ttrpg_scribe.pf2e_compendium import foundry
+from ttrpg_scribe.pf2e_compendium.creature import templates
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -41,11 +42,23 @@ def list_content(pack: str):
                  if not path.name.startswith('_')))
 
 
+def _apply_adjustments(content):
+    if not isinstance(content, PF2Creature):
+        return
+    for adjustment in flask.request.args.getlist('adjustment'):
+        match adjustment:
+            case 'elite':
+                content.apply(templates.elite)
+            case 'weak':
+                content.apply(templates.weak)
+
+
 @blueprint.get('/view/<path:id>')
 def content(id: str):
     type, content = foundry_packs.content(id)
     if isinstance(content, (dict, list)):
         return content
+    _apply_adjustments(content)
     return render_template(f'{type}.j2.html', **{
         type: content,
         'render': True,
@@ -57,6 +70,7 @@ def analyse(id: str):
     type, content = foundry_packs.content(id)
     match type, content:
         case 'creature', PF2Creature():
+            _apply_adjustments(content)
             report = creature_analyser.analyse(content)
         case _:
             raise BadRequest(f'No analyser for content type {type}')

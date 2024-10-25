@@ -171,10 +171,15 @@
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='actions_font.css') }}">
 </head>
 <body>
+    <header>
+        <a href="{{ url_for('.content', id=request.view_args.id, adjustment='weak') }}">Weak</a>
+        <a href="{{ url_for('.content', id=request.view_args.id, adjustment=None) }}">Normal</a>
+        <a href="{{ url_for('.content', id=request.view_args.id, adjustment='elite') }}">Elite</a>
+    </header>
     {{ stat_block(creature, collapsible=False) }}
     <footer>
-        <a href="{{ request.base_url }}.json">View JSON</a>
-        <a href="{{ request.base_url | replace('view', 'analyse') }}">Analyse</a>
+        <a href="{{ url_for('.raw_content', id=request.view_args) }}">View JSON</a>
+        <a href="{{ url_for('.analyse', id=request.view_args.id, **request.args) }}">Analyse</a>
     </footer>
 </body>
 {% endif %}
