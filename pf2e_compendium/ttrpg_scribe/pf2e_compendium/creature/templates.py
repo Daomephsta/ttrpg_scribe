@@ -1,7 +1,8 @@
 import itertools
+import re
 from typing import Callable
 
-from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
+from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature, Sense
 
 
@@ -67,3 +68,70 @@ def darkvision(creature: PF2Creature):
             creature.senses[i] = Sense('darkvision')
             return
     creature.senses.append(Sense('darkvision'))
+
+
+def adjust_all_dcs(delta: int):
+    def template(creature: PF2Creature):
+        creature.ac += delta
+        creature.apply(map_all_text(lambda s: re.sub(
+            r'([AD]C) (\d+)',
+            lambda match: f'{match[1]} {int(match[2]) + delta}', s)
+        ))
+    return template
+
+
+def elite(creature: PF2Creature):
+    starting_level = creature.level
+    creature.level += 1 if creature.level > 0 else 2
+    # Increase AC and DCs
+    creature.apply(adjust_all_dcs(2))
+    # Increase attack bonus & damage
+    for action in creature.actions:
+        match action:
+            case Strike():
+                action.bonus += 2
+                # Only boost the main/first damage type
+                amount, damage_type = action.damage[0]
+                action.damage[0] = amount + 2, damage_type
+
+    for save in creature.saves:
+        creature.saves[save] += 2
+    creature.perception += 2
+    for skill in creature.skills:
+        skill.mod += 2
+    if starting_level <= 1:
+        creature.max_hp += 10
+    elif 2 <= starting_level <= 4:
+        creature.max_hp += 15
+    elif 5 <= starting_level <= 19:
+        creature.max_hp += 20
+    else:
+        creature.max_hp += 30
+
+
+def weak(creature: PF2Creature):
+    starting_level = creature.level
+    creature.level -= 1 if creature.level != 1 else 2
+    # Decrease AC and DCs
+    creature.apply(adjust_all_dcs(-2))
+    # Decrease attack bonus & damage
+    for action in creature.actions:
+        match action:
+            case Strike():
+                action.bonus -= 2
+                # Only reduce the main/first damage type
+                amount, damage_type = action.damage[0]
+                action.damage[0] = amount - 2, damage_type
+    for save in creature.saves:
+        creature.saves[save] -= 2
+    creature.perception -= 2
+    for skill in creature.skills:
+        skill.mod -= 2
+    if starting_level <= 2:
+        creature.max_hp -= 10
+    elif 3 <= starting_level <= 5:
+        creature.max_hp -= 15
+    elif 6 <= starting_level <= 20:
+        creature.max_hp -= 20
+    else:
+        creature.max_hp -= 30
