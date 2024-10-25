@@ -81,6 +81,7 @@ def adjust_all_dcs(delta: int):
 
 
 def elite(creature: PF2Creature):
+    creature.name = f'Elite {creature.name}'
     starting_level = creature.level
     creature.level += 1 if creature.level > 0 else 2
     # Increase AC and DCs
@@ -110,6 +111,7 @@ def elite(creature: PF2Creature):
 
 
 def weak(creature: PF2Creature):
+    creature.name = f'Weak {creature.name}'
     starting_level = creature.level
     creature.level -= 1 if creature.level != 1 else 2
     # Decrease AC and DCs
