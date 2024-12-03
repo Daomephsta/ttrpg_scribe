@@ -14,7 +14,7 @@ ttrpg_scribe_pf2e_compendium = { path = "../pf2e_compendium", develop = true }
 ttrpg_scribe_notes = { path = "../notes", develop = true }
 ttrpg_scribe_encounter = { path = "../encounter", develop = true }
 ttrpg_scribe_npc = { path = "../npc", develop = true }
-waitress = "^2.1.2"
+waitress = "^3"
 # Runtime only dependencies
 matplotlib = {version = "^3.7.2", optional = true}
 pandas = {version = "^2.0.3", optional = true}
