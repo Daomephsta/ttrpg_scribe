@@ -38,11 +38,11 @@
     <ul class="index" style="padding-left: 0;">
     {% for _, content in content_tree recursive %}
         {% if content.is_file() %}
-        <li><a href="/notes/{{ content.relative_path }}">{{ content.title }}</a></li>
+        <li><a href="/notes/{{ content.url }}">{{ content.title }}</a></li>
         {% elif content.children %}
         <li>
             <input type="checkbox" class="collapser name" data-name="{{ content.title | replace('_', ' ') }}">
-            <a href="/index/{{ content.relative_path }}">&#x2935;</a>
+            <a href="/index/{{ content.url }}">&#x2935;</a>
             <ul class="collapsible index">{{ loop(content) }}</ul>
         </li>
         {% endif  %}

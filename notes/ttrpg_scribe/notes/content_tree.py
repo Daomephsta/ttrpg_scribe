@@ -8,7 +8,7 @@ from ttrpg_scribe.notes import paths
 
 @dataclass
 class Content:
-    relative_path: str
+    url: str
     title: str
 
     class Type(Enum):
@@ -17,13 +17,14 @@ class Content:
     type: Type
     children: dict[str, 'Content']
 
-    def __init__(self, absolute_path: Path, title: str) -> None:
-        relative_path = absolute_path.relative_to(paths.pages())
-        match relative_path.suffixes:
+    def __init__(self, namespace: paths.Namespace, absolute_path: Path, title: str) -> None:
+        self.namespace = namespace
+        url = namespace.id/absolute_path.relative_to(namespace.pages())
+        match url.suffixes:
             case ['.j2', '.md'] | ['.j2', '.html'] as suffixes:
-                name = relative_path.name.removesuffix(''.join(suffixes))
-                relative_path = relative_path.with_name(name).with_suffix('.html')
-        self.relative_path = relative_path.as_posix()
+                name = url.name.removesuffix(''.join(suffixes))
+                url = url.with_name(name).with_suffix('.html')
+        self.url = url.as_posix()
         self.title = title
         self.type = Content.Type.File if absolute_path.is_file()\
             else Content.Type.Directory
@@ -38,7 +39,7 @@ class Content:
         return path.name.removesuffix(f'.{'.'.join(path.suffixes)}')
 
     def add_child(self, path: Path) -> 'Content':
-        child = Content(path, self.__find_title(path))
+        child = Content(self.namespace, path, self.__find_title(path))
         self.children[path.name] = child
         return child
 
@@ -49,7 +50,7 @@ class Content:
         return iter(self.children.items())
 
 
-def walk(path: Path) -> Content:
+def walk(path: str) -> Content:
     def walk_subtree(dir: Path, subtree: Content):
         for path in sorted(dir.iterdir(), key=lambda path: path.name):
             if path.name in ['assets', '__pycache__'] or path.suffix == '.py':
@@ -58,4 +59,10 @@ def walk(path: Path) -> Content:
             if path.is_dir():
                 walk_subtree(path, child)
         return subtree
-    return walk_subtree(path, Content(path, ''))
+    root_path = paths.CAMPAIGN.get(path)
+    root = walk_subtree(root_path, Content(paths.CAMPAIGN, root_path, ''))
+    if paths.SETTING is not None:
+        setting_path = paths.SETTING.get(path)
+        root.children['setting'] = walk_subtree(
+            setting_path, Content(paths.SETTING, setting_path, 'setting'))
+    return root

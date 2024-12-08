@@ -1,8 +1,9 @@
 import os
+import subprocess
+import types
 from functools import cached_property
 from http import HTTPStatus
 from pathlib import Path
-import subprocess
 
 import flask
 from jinja2 import FileSystemLoader, TemplateNotFound
@@ -13,8 +14,8 @@ import ttrpg_scribe.core.flask
 import ttrpg_scribe.dnd_bestiary.apis
 import ttrpg_scribe.dnd_bestiary.flask
 from ttrpg_scribe.core import markdown, script_loader
-from ttrpg_scribe.notes import content_tree, data_script, paths, run_script_shim
-import types
+from ttrpg_scribe.notes import (content_tree, data_script, paths,
+                                run_script_shim)
 
 
 class Notes(flask.Flask):
@@ -46,7 +47,11 @@ class Notes(flask.Flask):
     def jinja_loader(self) -> FileSystemLoader | None:  # type: ignore
         super_loader = super().jinja_loader
         assert super_loader
-        return FileSystemLoader([*super_loader.searchpath, paths.pages(), paths.templates()])
+        return FileSystemLoader([
+            *super_loader.searchpath,
+            *paths.all_pages(),
+            *paths.all_templates()
+        ])
 
 
 def create_app(config: Path, project_dir: str | Path | None = None):
@@ -58,18 +63,20 @@ def create_app(config: Path, project_dir: str | Path | None = None):
     @app.get('/index/<path:subtree>')
     def index(subtree: str = ''):
         return flask.render_template('index.j2.html',
-            content_tree=content_tree.walk(paths.pages()/subtree), subtree=Path(subtree))
+            content_tree=content_tree.walk(f'pages/{subtree}'),
+            subtree=Path(subtree))
 
-    @app.get('/notes/<path:page>.html')
-    def serve_html(page: str):
-        if (paths.pages()/page).exists():
-            return flask.send_from_directory(paths.pages(), page)
+    @app.get('/notes/<namespace_id>/<path:page>.html')
+    def serve_html(namespace_id: str, page: str):
+        namespace = paths.for_namespace(namespace_id)
+        if (namespace.pages(page).exists()):
+            return flask.send_from_directory(namespace.pages(), page)
         templates = [f'{page}.j2.{ext}' for ext in ['html', 'md']]
         try:
             selected = app.jinja_env.select_template(templates)
             assert selected.name is not None
         except TemplateNotFound as e:
-            tried = ', '.join(str(paths.pages()/template)
+            tried = ', '.join(str(namespace.pages(template))
                               for template in templates)
             # Can be an error with other templates
             if e.templates == templates:
@@ -80,23 +87,24 @@ def create_app(config: Path, project_dir: str | Path | None = None):
 
         def dump(folder: str, extension: str):
             if os.getenv(f'ttrpg_scribe_DUMP_{extension.upper()}') == '1':
-                dump = paths.build()/f'{folder}/{page}.{extension}'
+                dump = namespace.build(f'{folder}/{page}.{extension}')
                 dump.parent.mkdir(parents=True, exist_ok=True)
                 dump.write_text(rendered)
 
         rendered = flask.render_template(selected,
-            script=data_script.bind(selected.name))
+            script=data_script.bind(namespace, selected.name))
         if selected.name.endswith('.md'):
             dump('markdown', 'md')
             rendered = markdown.render(rendered)
         return rendered
 
-    @app.get('/assets/<path:asset>')
-    def assets(asset: str):
+    @app.get('/assets/<namespace_id>/<path:asset>')
+    def assets(namespace_id: str, asset: str):
+        namespace = paths.for_namespace(namespace_id)
         try:
-            return flask.send_from_directory(paths.assets(), asset)
+            return flask.send_from_directory(namespace.assets(), asset)
         except NotFound:
-            raise NotFound(f'{asset} not found in {paths.assets()}')
+            raise NotFound(f'{asset} not found in {namespace.assets()}')
 
     @app.get('/scripts')
     def list_scripts():

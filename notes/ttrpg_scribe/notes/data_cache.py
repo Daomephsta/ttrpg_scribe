@@ -1,14 +1,15 @@
-import dill
 from functools import cache
 from pathlib import Path
 from typing import Any, Self
+
+import dill
 
 from ttrpg_scribe.notes import paths
 
 
 @cache
 def FILE_TIMES():
-    return paths.build()/'file_times.cache'
+    return paths.CAMPAIGN.build('file_times.cache')
 
 
 _file_times: dict[Path, float] = {}
@@ -61,5 +62,5 @@ class DataCache:
 
 
 def for_file(name: str, *dependencies: Path) -> DataCache:
-    cache = paths.build()/f'{name}.data'
+    cache = paths.CAMPAIGN.build(f'{name}.data')
     return DataCache(cache, set(dependencies))
