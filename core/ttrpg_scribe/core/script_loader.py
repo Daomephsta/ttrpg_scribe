@@ -26,10 +26,26 @@ def load(module_name: str, path: Path, execute=False):
 class ScriptFinder(MetaPathFinder):
     locations: set[str] = set()
 
+    def __try_resolve(self, fullname: str, path: Path):
+        package = path/'__init__.py'
+        if package.exists():
+            return spec_from_file_location(fullname, package)
+        module = path.with_suffix('.py')
+        if module.exists():
+            return spec_from_file_location(fullname, module)
+        return None
+
     def find_spec(self, fullname: str, path: Sequence[str] | None,
                   target: ModuleType | None = None) -> ModuleSpec | None:
-        if fullname in self.locations:
-            return spec_from_file_location(fullname, paths.project_dir/fullname/'__init__.py')
+        for location in self.locations:
+            fragment = fullname.replace('.', '/')
+            if fullname.startswith(location):
+                spec = self.__try_resolve(fullname, paths.project_dir/fragment)
+                if spec is not None:
+                    return spec
+                spec = self.__try_resolve(fullname, paths.project_dir/'setting'/fragment)
+                if spec is not None:
+                    return spec
         return None
 
 

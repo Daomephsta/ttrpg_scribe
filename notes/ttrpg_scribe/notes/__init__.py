@@ -14,6 +14,7 @@ import ttrpg_scribe.dnd_bestiary.apis
 import ttrpg_scribe.dnd_bestiary.flask
 from ttrpg_scribe.core import markdown, script_loader
 from ttrpg_scribe.notes import content_tree, data_script, paths, run_script_shim
+import types
 
 
 class Notes(flask.Flask):
@@ -26,7 +27,20 @@ class Notes(flask.Flask):
             lstrip_blocks=True)
         paths.init(Path(self.instance_path))
         script_loader.add_library_folder('scripts')
-        self.config.from_pyfile(config)
+
+        def exec_pyfile(path: Path, locals):
+            module = types.ModuleType('config')
+            module.__file__ = path.as_posix()
+            with path.open('rb') as file:
+                exec(compile(file.read(), path, 'exec'),
+                     module.__dict__, locals)
+
+        config_obj = {}
+        setting_config = project_dir/'setting/config.py'
+        if setting_config.exists():
+            exec_pyfile(setting_config, config_obj)
+        exec_pyfile(config, config_obj)
+        self.config.from_mapping(config_obj)
 
     @cached_property
     def jinja_loader(self) -> FileSystemLoader | None:  # type: ignore
