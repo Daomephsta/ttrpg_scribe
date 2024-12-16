@@ -17,7 +17,7 @@ def make_app(project_dir: str | Path, config: Path | None = None):
     import ttrpg_scribe.npc.flask_app.extension
 
     project_dir = Path(project_dir)
-    app = ttrpg_scribe.notes.create_app(config or Path('config.py'), project_dir)
+    app = ttrpg_scribe.notes.create_app(config or project_dir/'config.py', project_dir)
     ttrpg_scribe.encounter.flask.extension.extend(app, '/encounter_extension')
     ttrpg_scribe.npc.flask_app.extension.extend(app, '/npc_extension')
     app.jinja_options.update(
