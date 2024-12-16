@@ -6,7 +6,7 @@ from ttrpg_scribe.notes import data_cache, paths
 
 def bind(namespace: paths.Namespace, template: str) -> dict[str, Any]:
     def _bind_data(name, script) -> dict[str, Any]:
-        with data_cache.for_file(namespace, name, script) as (cache, valid):
+        with data_cache.for_file(name, script) as (cache, valid):
             if valid:
                 return cache.data
             module = script_loader.load(name, script, execute=True)
