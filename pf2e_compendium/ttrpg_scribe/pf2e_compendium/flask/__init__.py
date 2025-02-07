@@ -8,7 +8,7 @@ from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.encounter.flask
-from ttrpg_scribe.encounter.flask import InitiativeParticipant, System
+from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
@@ -116,11 +116,17 @@ def create_app():
     return app
 
 
-class Pf2eSystem(System):
-    compendium_blueprint = blueprint
+class Pf2ePlugin(SystemPlugin):
     _CREATURE_XP_BY_DELTA = {-4: 10, -3: 15, -2: 20, -1: 30, 0: 40, 1: 60, 2: 80, 3: 120}
+    compendium_blueprint = blueprint
 
-    def read_participant(self, json) -> InitiativeParticipant:
+    @classmethod
+    def configure(cls, main_app: Flask):
+        super().configure(main_app)
+        main_app.config['TOOLS'].insert(-1, ('/compendium', 'Compendium', {}))
+
+    @classmethod
+    def read_participant(cls, json) -> InitiativeParticipant:
         match json['kind']:
             case 'PF2Creature':
                 return PF2Creature.from_json(json)
@@ -129,7 +135,8 @@ class Pf2eSystem(System):
             case unknown:
                 raise ValueError(f'Unknown participant kind {unknown}')
 
-    def encounter_xp(self, enemies: list[tuple[int, PF2Creature]],
+    @classmethod
+    def encounter_xp(cls, enemies: list[tuple[int, PF2Creature]],
                      allies: list[tuple[int, PF2Creature]],
                      party: dict[str, dict[str, Any]]) -> str:
         party_level: int = flask.current_app.config['PARTY_LEVEL']
@@ -140,7 +147,7 @@ class Pf2eSystem(System):
                 return 0
             elif delta >= 4:
                 return 160
-            return Pf2eSystem._CREATURE_XP_BY_DELTA[delta]
+            return Pf2ePlugin._CREATURE_XP_BY_DELTA[delta]
         total = sum(max(0, count) * xp(creature) for count, creature in enemies)
 
         reward = math.ceil(total * 4 // len(party) / 10) * 10  # round up to nearest 10

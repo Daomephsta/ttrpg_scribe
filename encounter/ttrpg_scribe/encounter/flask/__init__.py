@@ -6,8 +6,23 @@ from pathlib import Path
 from typing import Any
 
 import flask
+from flask import Config, Flask
 
 import ttrpg_scribe.core.flask
+import ttrpg_scribe.encounter.flask.extension
+from ttrpg_scribe.core.plugin import Plugin
+
+
+class EncounterPlugin(Plugin):
+    @classmethod
+    def create_app(cls, instance_path: Path, config: Config) -> Flask:
+        if 'SYSTEM' not in config:
+            raise ValueError('EncounterPlugin requires an active system plugin')
+        return create_app(instance_path, config['SYSTEM'], config)
+
+    @classmethod
+    def configure(cls, main_app: Flask):
+        ttrpg_scribe.encounter.flask.extension.extend(main_app, '/encounter_extension')
 
 
 class InitiativeParticipant(ABC):
@@ -31,17 +46,26 @@ class InitiativeParticipant(ABC):
     def default_hp(self) -> int: ...
 
 
-class System:
+class SystemPlugin(Plugin):
     compendium_blueprint: flask.Blueprint
 
-    def read_participant(self, json) -> InitiativeParticipant:
+    @classmethod
+    def configure(cls, main_app: Flask):
+        if 'SYSTEM' in main_app.config:
+            raise ValueError(f'Another system plugin {main_app.config['SYSTEM']} is active')
+        main_app.config['SYSTEM'] = main_app.jinja_env.globals['system'] = cls
+        main_app.register_blueprint(cls.compendium_blueprint)
+
+    @classmethod
+    def read_participant(cls, json) -> InitiativeParticipant:
         raise NotImplementedError()
 
-    def encounter_xp(self, enemies, allies, party) -> str:
+    @classmethod
+    def encounter_xp(cls, enemies, allies, party) -> str:
         raise NotImplementedError()
 
 
-def create_app(instance_path: str | Path, system: System, config: flask.Config):
+def create_app(instance_path: str | Path, system: SystemPlugin, config: flask.Config):
     app = flask.Flask('ttrpg_scribe.encounter.flask',
         instance_path=Path(instance_path).absolute().as_posix(),
         instance_relative_config=True)

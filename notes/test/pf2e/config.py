@@ -2,7 +2,7 @@ from ttrpg_scribe.npc import namelists
 from ttrpg_scribe.npc.entity import FormattedNamer
 from ttrpg_scribe.npc.race import Race
 
-SYSTEM = 'pf2e'
+PLUGINS = ['pf2e', 'encounter', 'npc']
 
 halfling = Race('Halfling', ['Gutsy', 'Hillock', 'Jinxed', 'Nomadic',
                              'Observant', 'Twilight', 'Wildwood'])

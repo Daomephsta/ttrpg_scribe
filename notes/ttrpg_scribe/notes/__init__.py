@@ -42,6 +42,8 @@ class Notes(flask.Flask):
             exec_pyfile(setting_config, config_obj)
         exec_pyfile(config, config_obj)
         self.config.from_mapping(config_obj)
+        if 'TOOLS' not in self.config:
+            self.config['TOOLS'] = []
 
     @cached_property
     def jinja_loader(self) -> FileSystemLoader | None:  # type: ignore
@@ -56,6 +58,8 @@ class Notes(flask.Flask):
 
 def create_app(config: Path, project_dir: str | Path | None = None):
     app = Notes(Path(project_dir) if project_dir else Path.cwd(), config)
+    tools: list[tuple[str, str, dict]] = app.config['TOOLS']
+    tools.append(('/clean', 'Clean _build', {'method': 'post'}))
     ttrpg_scribe.core.flask.extend(app)
 
     @app.get('/')

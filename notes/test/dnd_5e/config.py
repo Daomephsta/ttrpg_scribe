@@ -2,7 +2,7 @@ from ttrpg_scribe.npc import namelists
 from ttrpg_scribe.npc.entity import FormattedNamer
 from ttrpg_scribe.npc.race import phb
 
-SYSTEM = 'dnd_5e'
+PLUGINS = ['dnd_5e', 'encounter', 'npc']
 
 REGIONS = {
     'Default': {

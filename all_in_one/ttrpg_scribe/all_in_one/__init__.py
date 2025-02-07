@@ -2,6 +2,8 @@ import logging
 import sys
 from pathlib import Path
 
+from ttrpg_scribe.core.plugin import Plugin
+
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
@@ -10,42 +12,36 @@ def make_app(project_dir: str | Path, config: Path | None = None):
 
     from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
+    import ttrpg_scribe.dnd_bestiary.flask
     import ttrpg_scribe.encounter.flask
-    import ttrpg_scribe.encounter.flask.extension
     import ttrpg_scribe.notes
     import ttrpg_scribe.npc.flask_app
-    import ttrpg_scribe.npc.flask_app.extension
+    import ttrpg_scribe.pf2e_compendium.flask
 
     project_dir = Path(project_dir)
     app = ttrpg_scribe.notes.create_app(config or project_dir/'config.py', project_dir)
-    ttrpg_scribe.encounter.flask.extension.extend(app, '/encounter_extension')
-    ttrpg_scribe.npc.flask_app.extension.extend(app, '/npc_extension')
     app.jinja_options.update(
         lstrip_blocks=True,
         trim_blocks=True
     )
-    app.config['TOOLS'] = [
-        ('/encounter', 'Launch Encounter', {'method': 'post'}),
-        ('/encounter/party/configure', 'Configure Party', {}),
-        ('/npc/gui', 'NPC Generator', {}),
-        ('/clean', 'Clean _build', {'method': 'post'}),
-    ]
-    match app.config.get('SYSTEM'):
-        case 'dnd_5e':
-            from ttrpg_scribe.dnd_bestiary.flask import Dnd5eSystem
-            system = Dnd5eSystem()
-        case 'pf2e':
-            from ttrpg_scribe.pf2e_compendium.flask import Pf2eSystem
-            system = Pf2eSystem()
-            app.config['TOOLS'].insert(-1, ('/compendium', 'Compendium', {}))
-        case _ as system:
-            raise ValueError(f'Unknown game system {system}')
-    app.jinja_env.globals['system'] = system
-    app.register_blueprint(system.compendium_blueprint)
-    app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
-        '/encounter': ttrpg_scribe.encounter.flask.create_app(project_dir, system, app.config),
-        '/npc': ttrpg_scribe.npc.flask_app.create_app(project_dir, app.config)
-    })
+
+    PLUGIN_FACTORIES: dict[str, type[Plugin]] = {
+        'dnd_5e': ttrpg_scribe.dnd_bestiary.flask.Dnd5ePlugin,
+        'pf2e': ttrpg_scribe.pf2e_compendium.flask.Pf2ePlugin,
+        'encounter': ttrpg_scribe.encounter.flask.EncounterPlugin,
+        'npc': ttrpg_scribe.npc.flask_app.NpcPlugin,
+    }
+    active_plugins: list[tuple[str, type[Plugin]]] = [(id, PLUGIN_FACTORIES[id])
+                                                      for id in app.config['PLUGINS']]
+
+    plugin_apps = {}
+    for _, plugin in active_plugins:
+        plugin.configure(app)
+    for id, plugin in active_plugins:
+        plugin_app = plugin.create_app(project_dir, app.config)
+        if plugin_app is not None:
+            plugin_apps[f'/{id}'] = plugin_app
+    app.wsgi_app = DispatcherMiddleware(app.wsgi_app, plugin_apps)
 
     @app.post('/clean', endpoint='clean')
     def clean_endpoint():

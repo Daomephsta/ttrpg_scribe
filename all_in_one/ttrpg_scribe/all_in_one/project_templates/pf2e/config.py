@@ -3,7 +3,7 @@ from ttrpg_scribe.npc.entity import FormattedNamer
 from ttrpg_scribe.npc.race.pf2e import (DWARF, ELF, GNOME, GOBLIN, HALF_ELF,
                                         HALF_ORC, HALFLING, HUMAN)
 
-SYSTEM = 'pf2e'
+PLUGINS = ['pf2e', 'encounter', 'npc']
 
 REGIONS = {
     'Default': {
