@@ -8,7 +8,7 @@ from markdown.extensions.toc import TocExtension
 from markupsafe import Markup
 
 MD_HEADER = re.compile('^# (.+)$', flags=re.MULTILINE)
-__renderer = Markdown(extensions=['attr_list', 'md_in_html', 'tables',
+__renderer = Markdown(extensions=['attr_list', 'md_in_html', 'smarty', 'tables',
     # Empty string marker disables the search to speed up processing
     TocExtension(marker='')],
     output_format='html')
