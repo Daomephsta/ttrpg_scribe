@@ -98,15 +98,17 @@ def search():
 
 @blueprint.app_template_filter()
 def action(kind: int | str):
+    glyph: str | int = '?'
     match kind:
         case 0:
-            return ''
+            glyph = ''
         case int(i):
-            return str(i)
+            glyph = i
         case 're' | 'reaction':
-            return 'r'
+            glyph = 'r'
         case 'free':
-            return 'f'
+            glyph = 'f'
+    return f'<span class="action">{glyph}</span>'
 
 
 def create_app():

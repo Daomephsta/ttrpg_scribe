@@ -20,7 +20,7 @@
 
 {%macro simple_action(action) %}
 <b>{{ action.name }}</b>
-<span class="action">{{ action.cost | action }}</span>
+{{ action.cost | action }}
 {{ fmt_traits(action.traits) }}
 {% if action.trigger %}
     <b>Trigger</b> {{ action.trigger }}
@@ -31,11 +31,11 @@
 {% macro strike_action(action) %}
 <b>{{ action.weapon_type | title }}</b>
 {{ action.name }}
-<span class="action">{{ action.cost | action }}</span>
+{{ action.cost | action }}
 {% for malus in action.attack_maluses() %}
     {% if not loop.first %}
         {% if action.traits.get('reload', '-1') | int > 0 %}
-        / reload <span class="action">{{ action.traits['reload'] }}</span> /
+        / reload {{ action.traits['reload'] | action }} /
         {% else %}
         /
         {% endif %}
