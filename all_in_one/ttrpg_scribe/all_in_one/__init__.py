@@ -2,8 +2,6 @@ import logging
 import sys
 from pathlib import Path
 
-from ttrpg_scribe.core.plugin import Plugin
-
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
@@ -13,10 +11,11 @@ def make_app(project_dir: str | Path, config: Path | None = None):
     from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
     import ttrpg_scribe.dnd_bestiary.flask
-    import ttrpg_scribe.encounter.flask
+    import ttrpg_scribe.encounter.flask.plugin
     import ttrpg_scribe.notes
-    import ttrpg_scribe.npc.flask_app
+    import ttrpg_scribe.npc.flask_app.plugin
     import ttrpg_scribe.pf2e_compendium.flask
+    from ttrpg_scribe.core.plugin import Plugin
 
     project_dir = Path(project_dir)
     app = ttrpg_scribe.notes.create_app(config or project_dir/'config.py', project_dir)
@@ -28,8 +27,8 @@ def make_app(project_dir: str | Path, config: Path | None = None):
     PLUGIN_FACTORIES: dict[str, type[Plugin]] = {
         'dnd_5e': ttrpg_scribe.dnd_bestiary.flask.Dnd5ePlugin,
         'pf2e': ttrpg_scribe.pf2e_compendium.flask.Pf2ePlugin,
-        'encounter': ttrpg_scribe.encounter.flask.EncounterPlugin,
-        'npc': ttrpg_scribe.npc.flask_app.NpcPlugin,
+        'encounter': ttrpg_scribe.encounter.flask.plugin.EncounterPlugin,
+        'npc': ttrpg_scribe.npc.flask_app.plugin.NpcPlugin,
     }
     active_plugins: list[tuple[str, type[Plugin]]] = [(id, PLUGIN_FACTORIES[id])
                                                       for id in app.config['PLUGINS']]

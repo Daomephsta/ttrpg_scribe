@@ -1,26 +1,15 @@
 from pathlib import Path
 
 import flask
-from flask import Config, Flask
+from flask import Flask
 from flask_session import Session
 from werkzeug.exceptions import Forbidden, NotFound
 
 import ttrpg_scribe.core.flask
-import ttrpg_scribe.npc.flask_app.extension
-from ttrpg_scribe.core.plugin import Plugin
+import ttrpg_scribe.npc.flask_app.plugin
 from ttrpg_scribe.notes import paths
 from ttrpg_scribe.npc.entity import (Entity, EntityBuilder, EntityGenerator,
                                      Features)
-
-
-class NpcPlugin(Plugin):
-    @classmethod
-    def create_app(cls, instance_path: Path, config: Config) -> Flask:
-        return create_app(instance_path, config)
-
-    @classmethod
-    def configure(cls, main_app: Flask):
-        ttrpg_scribe.npc.flask_app.extension.extend(main_app, '/npc_extension')
 
 
 def create_app(instance_path: str | Path, config: flask.Config):

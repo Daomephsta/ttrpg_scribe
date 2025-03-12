@@ -6,23 +6,11 @@ from pathlib import Path
 from typing import Any
 
 import flask
-from flask import Config, Flask
+from flask import Flask
 
 import ttrpg_scribe.core.flask
-import ttrpg_scribe.encounter.flask.extension
+import ttrpg_scribe.encounter.flask.plugin
 from ttrpg_scribe.core.plugin import Plugin
-
-
-class EncounterPlugin(Plugin):
-    @classmethod
-    def create_app(cls, instance_path: Path, config: Config) -> Flask:
-        if 'SYSTEM' not in config:
-            raise ValueError('EncounterPlugin requires an active system plugin')
-        return create_app(instance_path, config['SYSTEM'], config)
-
-    @classmethod
-    def configure(cls, main_app: Flask):
-        ttrpg_scribe.encounter.flask.extension.extend(main_app, '/encounter_extension')
 
 
 class InitiativeParticipant(ABC):
