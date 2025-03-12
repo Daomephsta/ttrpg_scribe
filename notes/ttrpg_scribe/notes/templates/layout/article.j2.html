@@ -8,7 +8,7 @@
     <ul>
         <li><a href="/index">Site Index</a></li>
     {% for element in toc recursive %}
-        <li><a href="#{{ element.id }}">{{ element.name }}</a></li>
+        <li><a href="#{{ element.id }}">{{ element.name | safe }}</a></li>
         {% if element.children %}
         <ul>{{ loop(element.children) }}</ul>
         {% endif  %}
