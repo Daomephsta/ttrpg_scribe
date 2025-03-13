@@ -4,7 +4,7 @@
         local("Pathfinder2eActions"),
         url("Pathfinder2eActions.ttf");
 }
-.action {
+.action-symbol {
     font-family: "Pathfinder2eActions";
     font-size: 1.375em;
 }

@@ -108,7 +108,9 @@ def action(kind: int | str):
             glyph = 'r'
         case 'free':
             glyph = 'f'
-    return f'<span class="action">{glyph}</span>'
+        case _:
+            glyph = '?'
+    return f'<span class="action-symbol">{glyph}</span>'
 
 
 def create_app():
