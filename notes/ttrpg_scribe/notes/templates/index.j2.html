@@ -41,7 +41,7 @@
         <li><a href="/notes/{{ content.url }}">{{ content.title }}</a></li>
         {% elif content.children %}
         <li>
-            <input type="checkbox" class="collapser name" data-name="{{ content.title | replace('_', ' ') }}">
+            <input type="checkbox" class="collapser name" data-name="{{ content.title }}">
             <a href="/index/{{ content.url }}">&#x2935;</a>
             <ul class="collapsible index">{{ loop(content) }}</ul>
         </li>

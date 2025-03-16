@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum, auto
+from functools import reduce
 from pathlib import Path
+import re
 
 from ttrpg_scribe.core import markdown
 from ttrpg_scribe.notes import paths
@@ -36,7 +38,9 @@ class Content:
                 title = markdown.find_title(file.read())
                 if title:
                     return title
-        return path.name.removesuffix(f'.{'.'.join(path.suffixes)}')
+        title = reduce(str.removesuffix, path.suffixes, path.name)
+        title = re.sub('[_-]', ' ', title)
+        return title
 
     def add_child(self, path: Path) -> 'Content':
         child = Content(self.namespace, path, self.__find_title(path))
