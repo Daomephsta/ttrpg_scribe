@@ -7,6 +7,7 @@ import sys
 
 from ttrpg_scribe.core import markdown
 from ttrpg_scribe.notes import paths
+import yaml
 
 
 @dataclass
