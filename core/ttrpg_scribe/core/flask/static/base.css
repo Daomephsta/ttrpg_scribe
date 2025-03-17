@@ -59,3 +59,16 @@ blockquote {
     margin: 10px 0;
     padding: 10px;
 }
+
+.admonition {
+    margin: 10px 0;
+    padding: 10px;
+}
+.admonition p {
+    margin: 0;
+}
+.admonition-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
