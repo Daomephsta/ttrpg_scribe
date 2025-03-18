@@ -1,6 +1,6 @@
 {% macro encounter(enemies, allies=[], show_xp=True) %}
 <section class="encounter">
-    <link rel="stylesheet" href="{{ url_for('encounter_extension.static', filename='encounter.css') }}">
+    <link rel="stylesheet" href="{{ url_for('encounter_plugin.static', filename='encounter.css') }}">
     <ul>
         {% for count, participant in enemies %}
             <li>{{ (0, count) | max }} {{ participant.name | plural(count) }}</li>
