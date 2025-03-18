@@ -4,6 +4,7 @@ from typing import Any
 
 import flask
 from flask import Blueprint, Flask, render_template, request
+from markupsafe import Markup
 from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
@@ -110,7 +111,7 @@ def action(kind: int | str):
             glyph = 'f'
         case _:
             glyph = '?'
-    return f'<span class="action-symbol">{glyph}</span>'
+    return Markup(f'<span class="action-symbol">{glyph}</span>')
 
 
 def create_app():
