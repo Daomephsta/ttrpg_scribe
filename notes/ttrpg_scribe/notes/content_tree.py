@@ -22,16 +22,21 @@ class Content:
     children: dict[str, 'Content']
 
     def __init__(self, namespace: paths.Namespace, absolute_path: Path, title: str) -> None:
+        def find_url():
+            url = absolute_path.relative_to(namespace.pages())
+            if self.is_file():
+                url = namespace.id/url
+            match url.suffixes:
+                case ['.j2', '.md'] | ['.j2', '.html'] as suffixes:
+                    name = reduce(str.removesuffix, suffixes, url.name)
+                    url = url.with_name(name).with_suffix('.html')
+            return url.as_posix()
+
         self.namespace = namespace
-        url = namespace.id/absolute_path.relative_to(namespace.pages())
-        match url.suffixes:
-            case ['.j2', '.md'] | ['.j2', '.html'] as suffixes:
-                name = url.name.removesuffix(''.join(suffixes))
-                url = url.with_name(name).with_suffix('.html')
-        self.url = url.as_posix()
-        self.title = title
         self.type = Content.Type.File if absolute_path.is_file()\
             else Content.Type.Directory
+        self.url = find_url()
+        self.title = title
         self.children = {}
 
     def __find_title(self, path: Path) -> str:
@@ -79,6 +84,9 @@ def walk(path: str) -> Content:
         return {}
 
     def walk_subtree(dir: Path, subtree: Content, index: dict | tuple[int, dict]):
+        if not dir.exists():
+            return subtree
+
         if isinstance(index, tuple):
             _, index = index
 
