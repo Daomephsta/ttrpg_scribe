@@ -80,27 +80,26 @@ def enrich(text: str) -> str:
         raise ValueError(f'Unknown enricher {name} with args {raw_args}')
 
     def inline_enrichers(result: re.Match) -> str:
-        def parse_args(args: str) -> tuple[list[str], dict[str, str]]:
+        def parse_args(args: str) -> tuple[list[str], dict[str, str], str]:
             positional = []
             keyed = {}
-            for arg in args.split(' '):
+            args, _, tag = args.partition('#')
+            for arg in args.strip().split(' '):
                 match arg.split('=', maxsplit=1):
                     case [key, value]:
                         keyed[key] = value
                     case [positional_arg]:
                         positional.append(positional_arg)
-            return positional, keyed
+            return positional, keyed, tag
 
         name, raw_args, display = result.groups()
         if display:
             return display
         match name, parse_args(raw_args):
-            case 'br' | 'r', ([amount], {**keyed_args}) if not keyed_args:
-                return amount
-            case 'br' | 'r', ([amount, tag], {**keyed_args}) if not keyed_args:
-                return f'{amount} {tag}'
-            case _ as name, _:
-                raise ValueError(f'Unknown enricher /{name} with args {raw_args}')
+            case 'br' | 'r', ([amount], {**keyed_args}, tag) if not keyed_args:
+                return f'{amount} {tag}' if tag else amount
+            case _ as name, args:
+                raise ValueError(f'Unknown enricher {result[0]} ({name=}, {args=})')
 
     if '<hr />\n' in text:
         text = text.replace('<hr />\n', '<div class="details">')
