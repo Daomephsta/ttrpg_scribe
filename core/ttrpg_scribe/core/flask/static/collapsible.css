@@ -13,7 +13,7 @@
 .collapser:checked::after {
     content: attr(data-name) ' \FF0D';
 }
-.collapser:checked ~ .collapsible {
+.collapser:checked + .collapsible {
     max-height: initial;
     overflow-y: initial;
 }
