@@ -207,7 +207,7 @@ def _read_hazard(json: Json) -> PF2Hazard:
         disable=enrich(details.disable(json)),
         ac=attributes.ac.value(json),
         saves={k: v['value'] for k, v in json['system']['saves'].items()},
-        hp=attributes.hp.value(json),
+        max_hp=attributes.hp.value(json),
         hardness=attributes.hardness(json),
         routine=enrich(details.routine(json) or ''),  # routine can be null
         actions=actions,

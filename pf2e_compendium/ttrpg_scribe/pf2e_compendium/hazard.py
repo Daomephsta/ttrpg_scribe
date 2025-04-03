@@ -15,7 +15,7 @@ class PF2Hazard(InitiativeParticipant):
     ac: int
     saves: dict[str, int]
     hardness: int
-    hp: int
+    max_hp: int
     routine: str
     actions: list[Action]
     reset: str
@@ -25,7 +25,7 @@ class PF2Hazard(InitiativeParticipant):
         return self.stealth
 
     def default_hp(self) -> int:
-        return self.hp
+        return self.max_hp
 
     def write_json(self, data: dict[str, Any]):
         data.update(
@@ -37,7 +37,7 @@ class PF2Hazard(InitiativeParticipant):
             ac=self.ac,
             saves=self.saves,
             hardness=self.hardness,
-            hp=self.hp,
+            max_hp=self.max_hp,
             routine=self.routine,
             actions=self.actions,
             reset=self.reset,
@@ -55,7 +55,7 @@ class PF2Hazard(InitiativeParticipant):
             ac=data['ac'],
             saves=data['saves'],
             hardness=data['hardness'],
-            hp=data['hp'],
+            max_hp=data['max_hp'],
             routine=data['routine'],
             actions=[Action.from_json(action) for action in data['actions']],
             reset=data['reset'],
