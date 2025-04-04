@@ -31,7 +31,8 @@ def creatures(*ids: str):
 def _read_creature(json: Json) -> PF2Creature:
     ALIGNMENTS = {'good', 'neutral', 'evil', 'lawful', 'chaotic'}
 
-    SIZES = {'sm': 'small', 'med': 'medium', 'lg': 'large', 'grg': 'gargantuan'}
+    SIZES = {'tiny': 'tiny', 'sm': 'small', 'med': 'medium',
+             'lg': 'large', 'huge': 'huge', 'grg': 'gargantuan'}
 
     system = JsonPath('system')
     attributes = system.attributes
@@ -144,7 +145,7 @@ def _read_creature(json: Json) -> PF2Creature:
         name=json['name'],
         level=system.details.level.value(json),
         rarity=system.traits.rarity(json),
-        size=SIZES.get(size, size),
+        size=SIZES[size],
         # Filter out legacy alignment traits
         traits=[t for t in system.traits.value(json) if t not in ALIGNMENTS],
         perception=system.perception.mod(json),
