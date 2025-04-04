@@ -164,7 +164,7 @@ def _read_creature(json: Json) -> PF2Creature:
         resistances={x['type']: x['value'] for x in attributes.resistances(json, _or=[])},
         weaknesses={x['type']: x['value'] for x in attributes.weaknesses(json, _or=[])},
         defenses=defenses,
-        speeds={'walk': attributes.speed.value(json),
+        speeds={'walk': attributes.speed.value(json) or 0,
               **{speed['type']: speed['value']
                 for speed in attributes.speed.otherSpeeds(json)}},
         actions=actions,
