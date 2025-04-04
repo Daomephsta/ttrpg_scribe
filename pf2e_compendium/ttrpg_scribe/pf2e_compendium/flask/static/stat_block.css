@@ -18,12 +18,18 @@
 .stat_block .field_list li p {
     display: inline;
 }
+.stat_block #traits-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
 .stat_block .trait {
     text-transform: uppercase;
     font-weight: bold;
     color: white;
     background-color: saddlebrown;
     padding: 5px;
+    display: inline-block;
 }
 .stat_block .trait.size {
     background-color: green;

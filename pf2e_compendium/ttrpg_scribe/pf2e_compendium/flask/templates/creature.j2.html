@@ -21,7 +21,7 @@
     </p>
     {% endif %}
     <!-- Traits -->
-    <p>
+    <div id="traits-container">
     {% if creature.rarity != 'common' %}
         <span class="trait {{ creature.rarity }}">{{ creature.rarity }}</span>
     {% endif %}
@@ -29,7 +29,7 @@
     {% for trait in creature.traits %}
         <span class="trait">{{ trait }}</span>
     {% endfor %}
-    </p>
+    </div>
     <p>
         <b>Perception</b> {{ '{:+d}'.format(creature.perception) }};
         {% for sense in creature.senses %}
