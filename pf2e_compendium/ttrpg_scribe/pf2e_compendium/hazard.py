@@ -107,7 +107,8 @@ def elite(hazard: PF2Hazard):
                 action.damage[0] = amount + 2, damage_type
 
     for save in hazard.saves:
-        hazard.saves[save] += 2
+        if hazard.saves[save]:  # Hazard saves can be None
+            hazard.saves[save] += 2
     hazard.stealth += 2
     if starting_level <= 1:
         hazard.max_hp += 10
@@ -134,7 +135,8 @@ def weak(hazard: PF2Hazard):
                 amount, damage_type = action.damage[0]
                 action.damage[0] = amount - 2, damage_type
     for save in hazard.saves:
-        hazard.saves[save] -= 2
+        if hazard.saves[save]:  # Hazard saves can be None
+            hazard.saves[save] -= 2
     hazard.stealth -= 2
     if starting_level <= 2:
         hazard.max_hp -= 10
