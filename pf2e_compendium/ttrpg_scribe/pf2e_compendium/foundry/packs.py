@@ -139,7 +139,7 @@ def _read_creature(json: Json) -> PF2Creature:
         except Exception as e:
             e.add_note(f'Item {i}: {item['name']}')
             raise
-    size = traits.size.value(json)
+    size: str = traits.size.value(json)
 
     return PF2Creature(
         name=json['name'],
