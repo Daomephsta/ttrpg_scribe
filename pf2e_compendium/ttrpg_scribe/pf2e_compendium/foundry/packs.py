@@ -24,6 +24,10 @@ def creature(id: str):
             raise
 
 
+def creatures(*ids: str):
+    return {__key_from_id(id): creature(id) for id in ids}
+
+
 def _read_creature(json: Json) -> PF2Creature:
     ALIGNMENTS = {'good', 'neutral', 'evil', 'lawful', 'chaotic'}
 
@@ -177,6 +181,10 @@ def hazard(id: str):
             raise
 
 
+def hazards(*ids: str):
+    return {__key_from_id(id): hazard(id) for id in ids}
+
+
 def _read_hazard(json: Json) -> PF2Hazard:
     system = JsonPath('system')
     attributes = system.attributes
@@ -290,6 +298,10 @@ def __try_load(id: str) -> int:
     except Exception as e:
         logging.exception(e)
         return 1
+
+
+def __key_from_id(id: str):
+    return id.rsplit('/', maxsplit=1)[-1].upper().replace('-', '_')
 
 
 def __test_read_all_content():
