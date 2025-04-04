@@ -22,6 +22,9 @@
     {% endif %}
     <!-- Traits -->
     <p>
+    {% if creature.rarity != 'common' %}
+        <span class="trait {{ creature.rarity }}">{{ creature.rarity }}</span>
+    {% endif %}
         <span class="trait size">{{ creature.size }}</span>
     {% for trait in creature.traits %}
         <span class="trait">{{ trait }}</span>

@@ -35,11 +35,6 @@ def _read_creature(json: Json) -> PF2Creature:
 
     system = JsonPath('system')
     attributes = system.attributes
-    traits = system.traits
-
-    simple_traits: list[str] = traits.value(json)
-    # Filter out legacy alignment traits
-    simple_traits = [t for t in simple_traits if t not in ALIGNMENTS]
 
     senses = [Sense(sense['type'], sense.get('range'), sense.get('acuity'))
               for sense in system.perception.senses(json)]
@@ -143,13 +138,15 @@ def _read_creature(json: Json) -> PF2Creature:
         except Exception as e:
             e.add_note(f'Item {i}: {item['name']}')
             raise
-    size: str = traits.size.value(json)
+    size: str = system.traits.size.value(json)
 
     return PF2Creature(
         name=json['name'],
         level=system.details.level.value(json),
+        rarity=system.traits.rarity(json),
         size=SIZES.get(size, size),
-        traits=simple_traits,
+        # Filter out legacy alignment traits
+        traits=[t for t in system.traits.value(json) if t not in ALIGNMENTS],
         perception=system.perception.mod(json),
         languages=system.details.languages.value(json),
         senses=senses,

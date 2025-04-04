@@ -107,6 +107,7 @@ class PF2Creature(InitiativeParticipant):
     name: str
     level: int
     size: str
+    rarity: str
     traits: list[str]
     perception: int
     languages: list[str]
@@ -157,6 +158,7 @@ class PF2Creature(InitiativeParticipant):
             type='creature',
             name=self.name,
             level=self.level,
+            rarity=self.rarity,
             size=self.size,
             traits=self.traits,
             perception=self.perception,
@@ -183,6 +185,7 @@ class PF2Creature(InitiativeParticipant):
         return PF2Creature(
             name=data['name'],
             level=data['level'],
+            rarity=data['rarity'],
             size=data['size'],
             traits=data['traits'],
             perception=data['perception'],
@@ -221,9 +224,10 @@ class PF2Creature(InitiativeParticipant):
 
     @staticmethod
     def from_brackets(
-            name: str, level: int, size: str, traits: list[str], perception: StatisticBracket,
-            skills: _Skills, inventory: dict[str, int], abilities: Abilities, ac: StatisticBracket,
-            saves:  Saves, hp: StatisticBracket, speeds: dict[str, int],
+            name: str, level: int, rarity: str, size: str, traits: list[str],
+            perception: StatisticBracket, skills: _Skills, inventory: dict[str, int],
+            abilities: Abilities, ac: StatisticBracket, saves:  Saves, hp: StatisticBracket,
+            speeds: dict[str, int],
             actions: Callable[[_Lookup], list[Any | list[Action]] | list[Action]]):
 
         def lookup(table: Table, bracket: StatisticBracket):
@@ -239,6 +243,7 @@ class PF2Creature(InitiativeParticipant):
         return PF2Creature(
             name=name,
             level=level,
+            rarity=rarity,
             size=size,
             traits=traits,
             perception=lookup(PERCEPTION, perception),
