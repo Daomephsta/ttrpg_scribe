@@ -34,6 +34,9 @@
 .notes {
     width: 95%;
 }
+.ally .name {
+    background-image: linear-gradient(90deg, lightgreen, transparent)
+}
 .dead {
     color: whitesmoke;
 }
