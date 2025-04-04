@@ -1,7 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
@@ -25,7 +25,7 @@ def creature(id: str):
 
 
 def creatures(*ids: str):
-    return {__key_from_id(id): creature(id) for id in ids}
+    return map_ids(creature, *ids)
 
 
 def _read_creature(json: Json) -> PF2Creature:
@@ -182,7 +182,7 @@ def hazard(id: str):
 
 
 def hazards(*ids: str):
-    return {__key_from_id(id): hazard(id) for id in ids}
+    return map_ids(hazard, *ids)
 
 
 def _read_hazard(json: Json) -> PF2Hazard:
@@ -291,6 +291,18 @@ def content(id: str):
             raise
 
 
+def keyed(*values: tuple[Callable[[str], Any], str | list[str]]) -> dict[str, Any]:
+    def key(id: str):
+        return id.rsplit('/', maxsplit=1)[-1].upper().replace('-', '_')
+    return {key(id): factory(id)
+            for factory, ids in values
+            for id in ([ids] if isinstance(ids, str) else ids)}
+
+
+def map_ids[T](factory: Callable[[str], T], *ids: str) -> dict[str, T]:
+    return keyed(*((factory, id) for id in ids))
+
+
 def __try_load(id: str) -> int:
     try:
         content(id)
@@ -298,10 +310,6 @@ def __try_load(id: str) -> int:
     except Exception as e:
         logging.exception(e)
         return 1
-
-
-def __key_from_id(id: str):
-    return id.rsplit('/', maxsplit=1)[-1].upper().replace('-', '_')
 
 
 def __test_read_all_content():
