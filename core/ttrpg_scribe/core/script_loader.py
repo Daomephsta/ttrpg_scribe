@@ -1,4 +1,5 @@
 import importlib.util
+import itertools
 import sys
 from importlib.abc import MetaPathFinder
 from importlib.machinery import ModuleSpec
@@ -26,13 +27,18 @@ def load(module_name: str, path: Path, execute=False):
 class ScriptFinder(MetaPathFinder):
     locations: set[str] = set()
 
-    def __try_resolve(self, fullname: str, path: Path):
-        package = path/'__init__.py'
-        if package.exists():
-            return spec_from_file_location(fullname, package)
-        module = path.with_suffix('.py')
-        if module.exists():
-            return spec_from_file_location(fullname, module)
+    def __try_resolve(self, fullname: str, fragment: str) -> ModuleSpec | None:
+        candidates: list[Path] = [delta(paths.project_dir/base)
+                      for base, delta in itertools.product(
+            [fragment, f'setting/{fragment}'],
+            [lambda p: p/'__init__.py', lambda p: p.with_suffix('.py')]
+        )]
+        for path in candidates:
+            if path.exists():
+                return spec_from_file_location(fullname, path)
+        tried = '\n\t'.join(p.as_posix() for p in candidates)
+        print(f'Could not resolve \'{fullname}\' at any of:\n\t{tried}',
+              file=sys.stderr)
         return None
 
     def find_spec(self, fullname: str, path: Sequence[str] | None,
@@ -40,10 +46,7 @@ class ScriptFinder(MetaPathFinder):
         for location in self.locations:
             fragment = fullname.replace('.', '/')
             if fullname.startswith(location):
-                spec = self.__try_resolve(fullname, paths.project_dir/fragment)
-                if spec is not None:
-                    return spec
-                spec = self.__try_resolve(fullname, paths.project_dir/'setting'/fragment)
+                spec = self.__try_resolve(fullname, fragment)
                 if spec is not None:
                     return spec
         return None
