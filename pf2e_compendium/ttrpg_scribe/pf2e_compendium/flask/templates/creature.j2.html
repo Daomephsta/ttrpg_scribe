@@ -178,7 +178,7 @@
     </header>
     {{ stat_block(creature, collapsible=False) }}
     <footer>
-        <a href="{{ url_for('.raw_content', id=request.view_args) }}">View JSON</a>
+        <a href="{{ url_for('.raw_content', id=request.view_args.id) }}">View JSON</a>
         <a href="{{ url_for('.analyse', id=request.view_args.id, **request.args) }}">Analyse</a>
     </footer>
 </body>
