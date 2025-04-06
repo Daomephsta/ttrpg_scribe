@@ -111,3 +111,8 @@ def enrich(text: str) -> str:
     text = re.sub(r'\[\[\/(?P<name>\w+) (?P<args>[^]]+)\]\](?:\{(?P<display>[\w ]+?)\})?',
                   inline_enrichers, text)
     return text
+
+
+if __name__ == '__main__':
+    import sys
+    print(enrich(sys.argv[1]))
