@@ -6,7 +6,7 @@ from pathlib import Path
 import platformdirs
 
 
-VERSION = '6.4.1'
+VERSION = '6.11.1'
 _pf2e_dir = (platformdirs.user_data_path('ttrpg_scribe') /
                 'pf2e_compendium/data/foundryvtt/pf2e').absolute()
 
