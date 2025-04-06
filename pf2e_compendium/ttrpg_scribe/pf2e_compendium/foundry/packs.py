@@ -301,25 +301,41 @@ def map_ids[T](factory: Callable[[str], T], *ids: str) -> dict[str, T]:
     return keyed(*((factory, id) for id in ids))
 
 
+# Must be top level for multiprocessing to pickle successfully
 def __try_load(id: str) -> int:
     try:
         content(id)
         return 0
     except Exception as e:
-        logging.exception(e)
+        logging.getLogger('short').exception(
+            e, exc_info=False,
+            extra={'content_id': id, 'notes': '\n\t'.join(e.__notes__)})
+        logging.getLogger('full').exception(e, extra={'content_id': id})
         return 1
 
 
 def __test_read_all_content():
     import multiprocessing
+    from pathlib import Path
     import time
 
-    packs = foundry.pf2e_dir()/'packs'
-    logging.basicConfig(filename='__test_read_all_content.log', filemode='w')
+    (logs := Path('logs')).mkdir(exist_ok=True)
+    short_log = logging.getLogger('short')
+    handler = logging.FileHandler(f'{logs}/{__test_read_all_content.__name__}_short.log', mode='w')
+    handler.setFormatter(logging.Formatter(
+        '%(levelname)s: %(content_id)s: %(message)s\n\t%(notes)s'))
+    short_log.addHandler(handler)
+
+    full_log = logging.getLogger('full')
+    handler = logging.FileHandler(f'{logs}/{__test_read_all_content.__name__}_full.log', mode='w')
+    handler.setFormatter(logging.Formatter(
+        '%(levelname)s: %(content_id)s: %(message)s'))
+    full_log.addHandler(handler)
 
     start = time.perf_counter()
     errors = 0
 
+    packs = foundry.pf2e_dir()/'packs'
     with multiprocessing.Pool() as pool:
         for directory, _, files in packs.walk():
             relative_dir = directory.relative_to(packs)
