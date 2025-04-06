@@ -26,7 +26,8 @@ class SimpleDice(Rollable):
     @classmethod
     def parse(cls, value: str) -> Self:
         value = value.replace(' ', '')  # Remove all spaces
-        result = re.match(r'(?P<count>\d+)d(?P<size>\d+)(?P<mod>[+-]\d+)?', value)
+        result = re.match(r'(?P<count>\d+)d(?P<size>\d+)(?P<mod>[+-]\d+)?', value,
+                          flags=re.IGNORECASE)
         if result is None:
             raise ValueError(f'Cannot parse {value}')
         groups = result.groupdict()
