@@ -93,7 +93,7 @@ class Args:
     def __str__(self):
         args = ', '.join(k if self.__is_positional(k, v) else f'{k}={v}'
                          for k, v in self.keyed.items())
-        return f'Args(raw={self.raw}|{args})'
+        return f'Args({args})'
 
 
 def consume_options(args: Args):
@@ -112,7 +112,7 @@ def consume_options(args: Args):
 
 
 def consume_traits(args: Args):
-    # Foundry why
+    # TODO: Look into these more
     NOT_REALLY_TRAITS = {
         'area-damage', 'cold-iron', 'compulsion', 'controlling', 'custom', 'damaging-effect',
         'interact', 'keyboard', 'manipulate', 'poison:xulgath-bile', 'skill', 'slashing', 'spell',
