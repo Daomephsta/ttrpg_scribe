@@ -49,7 +49,7 @@ function nextTurn()
 function updateDeadStatus(damageInput)
 {
     let row = damageInput.closest('tr')
-    if (damageInput.valueAsNumber >= damageInput.max)
+    if (damageInput.max > 0 && damageInput.valueAsNumber >= damageInput.max)
         row.classList.add('dead')
     else
         row.classList.remove('dead')

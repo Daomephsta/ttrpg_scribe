@@ -28,6 +28,10 @@
 .damage {
     border: none;
 }
+/* Hide damage counter for combatants without HP */
+.damage[max="0"] {
+    display: none;
+}
 .initiative {
     appearance: textfield;
 }
