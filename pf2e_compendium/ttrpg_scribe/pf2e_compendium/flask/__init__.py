@@ -31,11 +31,13 @@ _EXCLUDED_PACKS = {
 
 @blueprint.get('/')
 def list_packs():
-    return render_template('pack_list.j2.html', packs=[
-        pack.name for pack in (foundry.pf2e_dir()/'packs').iterdir()])
+    packs_dir = foundry.pf2e_dir()/'packs'
+    packs = (d.relative_to(packs_dir).as_posix()
+                for d, _, _ in packs_dir.walk() if not d == packs_dir)
+    return render_template('pack_list.j2.html', packs=packs)
 
 
-@blueprint.get('/pack/<string:pack>')
+@blueprint.get('/pack/<path:pack>')
 def list_content(pack: str):
     path = foundry.pf2e_dir()/'packs'/pack
     return render_template('content_list.j2.html', pack=pack,
