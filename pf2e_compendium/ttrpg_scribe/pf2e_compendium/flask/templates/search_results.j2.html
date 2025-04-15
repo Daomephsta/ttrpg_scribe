@@ -7,9 +7,9 @@
         <input type="submit" value="Search">
     </form>
     <ul>
-    {% for content in content | sort %}
-        <li><a href="/compendium/view/{{ content }}">
-        {{ content }}</a></li>
+    {% for content in content | sort(attribute='_id') %}
+        <li><a href="/compendium/view/{{ content.doc_type}}/{{ content._id }}">
+        {{ content.name }}</a></li>
     {% endfor %}
     </ul>
 </html>

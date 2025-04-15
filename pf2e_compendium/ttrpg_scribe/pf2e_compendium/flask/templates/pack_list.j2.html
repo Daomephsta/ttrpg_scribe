@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
-    <head><title>Compendium Packs</title></head>
+    <head><title>{{ type | title }} Packs</title></head>
     <span>
-    <h1>Compendium Packs</h1>
+    <h1>{{ type | title }} Packs</h1>
     <form action="/compendium/search">
         <input type="text" name="query">
+        <input type="hidden" name="doc-type" value="{{ type }}">
         <input type="submit" value="Search">
     </form>
     </span>
     <ul>
     {% for pack in packs | sort %}
-        <li><a href="/compendium/pack/{{ pack }}">{{ pack }}</a></li>
+        <li><a href="/compendium/list/{{ type }}/{{ pack }}">{{ pack }}</a></li>
     {% endfor %}
     </ul>
 </html>

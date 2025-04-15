@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
-    <head><title>{{ pack }}</title></head>
-    <h1>{{ pack }}</h1>
+    <head><title>{{ subpath }}</title></head>
+    <h1>{{ (pack, subpath) | join('/') }}</h1>
     <ul>
-    {% for content in content | sort %}
-        <li><a href="/compendium/view/{{ pack }}/{{ content }}">
-        {{ content }}</a></li>
+    {% for path in subpaths | sort %}
+        <li><a href="/compendium/list/{{ type }}/{{ pack }}/{{ path }}">{{ path }}</a></li>
+    {% endfor %}
+    {% for id, name in content | sort %}
+        <li><a href="/compendium/view/{{ type }}/{{ id }}">{{ name }}</a></li>
     {% endfor %}
     </ul>
 </html>

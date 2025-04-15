@@ -1,5 +1,5 @@
-import json
 import math
+import re
 from typing import Any
 
 import flask
@@ -8,7 +8,6 @@ from markupsafe import Markup
 from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
-import ttrpg_scribe.encounter.flask
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
@@ -22,27 +21,62 @@ blueprint = Blueprint('pf2e_compendium', __name__,
     template_folder='templates',
     url_prefix='/compendium')
 
-_EXCLUDED_PACKS = {
-    'bestiary-ability-glossary-srd',
-    'bestiary-effects',
-    'bestiary-family-ability-glossary'
-}
-
 
 @blueprint.get('/')
-def list_packs():
-    packs_dir = foundry.pf2e_dir()/'packs'
-    packs = (d.relative_to(packs_dir).as_posix()
-                for d, _, _ in packs_dir.walk() if not d == packs_dir)
-    return render_template('pack_list.j2.html', packs=packs)
+@blueprint.get('/list')
+def list_collections():
+    return render_template('collection_list.j2.html', types=foundry.get_collections())
 
 
-@blueprint.get('/pack/<path:pack>')
-def list_content(pack: str):
-    path = foundry.pf2e_dir()/'packs'/pack
-    return render_template('content_list.j2.html', pack=pack,
-        content=(path.stem for path in path.glob('*.json')
-                 if not path.name.startswith('_')))
+@blueprint.get('/list/<doc_type>')
+def list_packs(doc_type: str):
+    packs = foundry.db[doc_type].distinct('path.pack')
+    return render_template('pack_list.j2.html', type=doc_type, packs=packs)
+
+
+@blueprint.get('/list/<doc_type>/<pack>')
+@blueprint.get('/list/<doc_type>/<pack>/<path:subpath>')
+def list_content(doc_type: str, pack: str, subpath: str = ''):
+    pack_content = foundry.db[doc_type].find(
+        {'path': {'pack': pack, 'subpath': subpath}}, {'name': True})
+    if subpath == '':
+        subpaths = foundry.db[doc_type].distinct('path.subpath',
+                                                 {'path.pack': pack, 'path.subpath': {'$ne': ''}})
+    else:
+        subpaths = []
+    return render_template(
+        'content_list.j2.html', type=doc_type, pack=pack, subpath=subpath,
+        content=[(content['_id'], content['name']) for content in pack_content], subpaths=subpaths
+    )
+
+
+@blueprint.get('/view/<doc_type>/<path:id>')
+def content(doc_type: str, id: str):
+    type, content = foundry_packs.read(doc_type, id)
+    if isinstance(content, (dict, list)):
+        return content
+    _apply_adjustments(content)
+    return render_template(f'{type}.j2.html', **{
+        type: content,
+        'render': True,
+    })
+
+
+@blueprint.get('/view/<doc_type>/<path:id>.json')
+def raw_content(doc_type: str, id: str):
+    return foundry.get_document(doc_type, id) or f'{id} does not exist in {doc_type}'
+
+
+@blueprint.get('/analyse/<doc_type>/<path:id>')
+def analyse(doc_type: str, id: str):
+    type, content = foundry_packs.read(doc_type, id)
+    match type, content:
+        case 'creature', PF2Creature():
+            _apply_adjustments(content)
+            report = creature_analyser.analyse(content)
+        case _:
+            raise BadRequest(f'No analyser for content type {type}')
+    return render_template(f'analyse/{type}.j2.html', report=report)
 
 
 def _apply_adjustments(content):
@@ -56,46 +90,18 @@ def _apply_adjustments(content):
                 content.apply(templates.weak)
 
 
-@blueprint.get('/view/<path:id>')
-def content(id: str):
-    type, content = foundry_packs.content(id)
-    if isinstance(content, (dict, list)):
-        return content
-    _apply_adjustments(content)
-    return render_template(f'{type}.j2.html', **{
-        type: content,
-        'render': True,
-    })
-
-
-@blueprint.get('/analyse/<path:id>')
-def analyse(id: str):
-    type, content = foundry_packs.content(id)
-    match type, content:
-        case 'creature', PF2Creature():
-            _apply_adjustments(content)
-            report = creature_analyser.analyse(content)
-        case _:
-            raise BadRequest(f'No analyser for content type {type}')
-    return render_template(f'analyse/{type}.j2.html', report=report)
-
-
-@blueprint.get('/view/<path:id>.json')
-def raw_content(id: str):
-    with foundry.open_pf2e_file(f'packs/{id}.json') as file:
-        return json.load(file)
-
-
 @blueprint.get('/search')
 def search():
     query = request.args.get('query', '')
+    doc_types = request.args.getlist('doc-type')
+    if len(doc_types) == 0:
+        doc_types = foundry.get_collections()
 
     def results():
-        packs_dir = foundry.pf2e_dir()/'packs'
-        for pack in (foundry.pf2e_dir()/'packs').iterdir():
-            for path in pack.iterdir():
-                if query in path.stem:
-                    yield path.relative_to(packs_dir).with_suffix('')
+        pattern = re.compile(query)
+        for doc_type in doc_types:
+            yield from foundry.db[doc_type].find({'path.stem': pattern},
+                                                 {'name': True, 'doc_type': doc_type})
     return render_template('search_results.j2.html', content=results())
 
 

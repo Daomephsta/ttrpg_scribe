@@ -175,14 +175,14 @@
 </head>
 <body>
     <header>
-        <a href="{{ url_for('.content', id=request.view_args.id, adjustment='weak') }}">Weak</a>
-        <a href="{{ url_for('.content', id=request.view_args.id, adjustment=None) }}">Normal</a>
-        <a href="{{ url_for('.content', id=request.view_args.id, adjustment='elite') }}">Elite</a>
+    {% for adjustment, text in [('weak', 'Weak'), (None, 'Normal'), ('elite', 'Elite')] %}
+        <a href="{{ url_for('.content', adjustment=adjustment, **request.view_args) }}">{{ text }}</a>
+    {% endfor %}
     </header>
     {{ stat_block(creature, collapsible=False) }}
     <footer>
-        <a href="{{ url_for('.raw_content', id=request.view_args.id) }}">View JSON</a>
-        <a href="{{ url_for('.analyse', id=request.view_args.id, **request.args) }}">Analyse</a>
+        <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a>
+        <a href="{{ url_for('.analyse', doc_type=request.view_args.doc_type, id=request.view_args.id, **request.args) }}">Analyse</a>
     </footer>
 </body>
 {% endif %}

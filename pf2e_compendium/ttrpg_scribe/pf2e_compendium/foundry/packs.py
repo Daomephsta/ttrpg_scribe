@@ -1,4 +1,3 @@
-import json
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -16,12 +15,13 @@ type Json = dict[str, Any]
 
 
 def creature(id: str):
-    with foundry.open_pf2e_file(f'packs/{id}.json') as file:
-        try:
-            return _read_creature(json.load(file))
-        except Exception as e:
-            e.add_note(f'Reading creature {id}')
-            raise
+    try:
+        doc = foundry.get_document('npc', id)
+        assert doc is not None
+        return _read_creature(doc)
+    except Exception as e:
+        e.add_note(f'Reading creature {id}')
+        raise
 
 
 def creatures(*ids: str):
@@ -171,12 +171,13 @@ def _read_creature(json: Json) -> PF2Creature:
 
 
 def hazard(id: str):
-    with foundry.open_pf2e_file(f'packs/{id}.json') as file:
-        try:
-            return _read_hazard(json.load(file))
-        except Exception as e:
-            e.add_note(f'Reading hazard {id}')
-            raise
+    try:
+        doc = foundry.get_document('npc', id)
+        assert doc is not None
+        return _read_hazard(doc)
+    except Exception as e:
+        e.add_note(f'Reading hazard {id}')
+        raise
 
 
 def hazards(*ids: str):
@@ -270,23 +271,27 @@ def _read_strike(item):
     )
 
 
-def content(id: str):
-    with foundry.open_pf2e_file(f'packs/{id}.json') as file:
-        data: Json = json.load(file)
-        if 'type' not in data:
-            return ('json', data)
-        type: str = data['type']
-        try:
-            match type:
-                case 'npc':
-                    return ('creature', _read_creature(data))
-                case 'hazard':
-                    return (type, _read_hazard(data))
-                case _:
-                    return (type, data)
-        except Exception as e:
-            e.add_note(f'Reading {type} {id}')
-            raise
+def read(doc_type: str, id: str):
+    data = foundry.get_document(doc_type, id)
+    assert data is not None
+    return _read(data)
+
+
+def _read(data: dict[str, Any]):
+    if 'type' not in data:
+        return ('json', data)
+    type: str = data['type']
+    try:
+        match type:
+            case 'npc':
+                return ('creature', _read_creature(data))
+            case 'hazard':
+                return (type, _read_hazard(data))
+            case _:
+                return (type, data)
+    except Exception as e:
+        e.add_note(f'Reading {type} {data['_id']}')
+        raise
 
 
 def keyed(*values: tuple[Callable[[str], Any], str | list[str]]) -> dict[str, Any]:
@@ -301,23 +306,9 @@ def map_ids[T](factory: Callable[[str], T], *ids: str) -> dict[str, T]:
     return keyed(*((factory, id) for id in ids))
 
 
-# Must be top level for multiprocessing to pickle successfully
-def __try_load(id: str) -> int:
-    try:
-        content(id)
-        return 0
-    except Exception as e:
-        logging.getLogger('short').exception(
-            e, exc_info=False,
-            extra={'content_id': id, 'notes': '\n\t'.join(e.__notes__)})
-        logging.getLogger('full').exception(e, extra={'content_id': id})
-        return 1
-
-
 def __test_read_all_content():
-    import multiprocessing
-    from pathlib import Path
     import time
+    from pathlib import Path
 
     (logs := Path('logs')).mkdir(exist_ok=True)
     short_log = logging.getLogger('short')
@@ -334,15 +325,17 @@ def __test_read_all_content():
 
     start = time.perf_counter()
     errors = 0
-
-    packs = foundry.pf2e_dir()/'packs'
-    with multiprocessing.Pool() as pool:
-        for directory, _, files in packs.walk():
-            relative_dir = directory.relative_to(packs)
-            print(f'Testing {relative_dir}')
-            errors += sum(pool.map(__try_load, ((relative_dir/file).with_suffix('').as_posix()
-                                              for file in files)))
-
+    for name in foundry.get_collections():
+        for document in foundry.db[name].find():
+            try:
+                _read(document)
+                return 0
+            except Exception as e:
+                logging.getLogger('short').exception(
+                    e, exc_info=False,
+                    extra={'content_id': id, 'notes': '\n\t'.join(e.__notes__)})
+                logging.getLogger('full').exception(e, extra={'content_id': id})
+                return 1
     print(f'Finished test in {time.perf_counter() - start:.2f}s with {errors} errors')
 
 
