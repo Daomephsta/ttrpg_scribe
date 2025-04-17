@@ -8,6 +8,7 @@ from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
+from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
 from ttrpg_scribe.pf2e_compendium.creature import templates
@@ -90,7 +91,7 @@ def search():
     query = request.args.get('query', '')
     doc_types = request.args.getlist('doc-type')
     return render_template('search_results.j2.html',
-                           content=mongo.search_by_path(query, doc_types))
+                           content=mongo.search_by_name(query, doc_types))
 
 
 @blueprint.app_template_filter()
@@ -125,6 +126,7 @@ class Pf2ePlugin(SystemPlugin):
     def configure(cls, main_app: Flask):
         super().configure(main_app)
         main_app.config['TOOLS'].insert(-1, ('/compendium', 'Compendium', {}))
+        foundry.check_for_updates()
 
     @classmethod
     def read_participant(cls, json) -> InitiativeParticipant:

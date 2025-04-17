@@ -7,7 +7,7 @@ from typing import Any, overload
 
 import pymongo
 import pymongo.database
-from pymongo import MongoClient
+from pymongo import IndexModel, MongoClient
 
 from pf2e_compendium.ttrpg_scribe.pf2e_compendium import foundry
 
@@ -54,16 +54,17 @@ def get_collection_content(name: str):
     return db[name].find()
 
 
-def search_by_path(query: str, doc_types: list[str] = []):
-    pattern = re.compile(query)
+def search_by_name(query: str, doc_types: list[str] = []):
+    pattern = re.compile(query, re.IGNORECASE)
     if len(doc_types) == 0:
         doc_types = get_collection_names()
     for doc_type in doc_types:
-        yield from db[doc_type].find({'path.stem': pattern}, {'name': True, 'doc_type': doc_type})
+        yield from db[doc_type].find({'name': pattern}, {'name': True, 'doc_type': doc_type})
 
 
 def update():
     packs_dir = foundry.pf2e_dir/'packs'
+    print(f'Updating MongoDB from {packs_dir.as_posix()}')
 
     def build_ops_batch():
         TYPE_TO_COLL: dict[str, str] = {t: 'equipment' for t in
@@ -93,8 +94,11 @@ def update():
     print(f'Inserted: {result.inserted_count} Upserted: {result.upserted_count} '
           f'Modified: {result.modified_count} Deleted: {result.deleted_count}')
     for name in db.list_collection_names():
-        db[name].create_index('foundry_id')
-        db[name].create_index('path')
+        db[name].create_indexes([
+            IndexModel('foundry_id'),
+            IndexModel('path'),
+            IndexModel('name'),
+        ])
 
 
 def start_mongo_server():
@@ -110,17 +114,19 @@ def start_mongo_server():
         '--bind_ip', _IP,
         '--port', str(_PORT)
     ], env={'GLIBC_TUNABLES': 'glibc.pthread.rseq=0'})
+    print(f'Starting MongoDB at {_IP}:{_PORT}')
 
     def stop():
         print('Stopping mongo server')
         server.terminate()
     atexit.register(stop)
-    global client, db
     client = MongoClient(_IP, _PORT)
-    db = client.pf2e
+    return MongoClient(_IP, _PORT), client.pf2e
 
 
-start_mongo_server()
+client, db = start_mongo_server()
 
 if __name__ == '__main__':
+    print('Dropping and reconstructing database')
+    client.drop_database('pf2e')
     update()
