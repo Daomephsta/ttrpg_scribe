@@ -96,7 +96,8 @@ def update():
     for name in db.list_collection_names():
         db[name].create_indexes([
             IndexModel('foundry_id'),
-            IndexModel('path'),
+            IndexModel('path.pack'),
+            IndexModel('path.subpath'),
             IndexModel('name'),
         ])
 
