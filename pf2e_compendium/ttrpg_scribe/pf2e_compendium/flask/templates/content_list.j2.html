@@ -1,13 +1,13 @@
-<!DOCTYPE html>
-<html>
-    <head><title>{{ subpath }}</title></head>
-    <h1>{{ (pack, subpath) | join('/') }}</h1>
-    <ul>
-    {% for path in subpaths | sort %}
-        <li><a href="/compendium/list/{{ type }}/{{ pack }}/{{ path }}">{{ path }}</a></li>
-    {% endfor %}
-    {% for content in contents | sort(attribute='name') %}
-        <li><a href="/compendium/view/{{ type }}/{{ content._id }}">{{ content.name }}</a></li>
-    {% endfor %}
-    </ul>
-</html>
+{% extends 'list.j2.html' %}
+{% set title = subpath if subpath else pack %}
+{% set heading = (pack, subpath) | join('/') if subpath else pack %}
+{% block content %}
+<ul>
+{% for path in subpaths | sort %}
+    <li><a href="/compendium/list/{{ type }}/{{ pack }}/{{ path }}">{{ path }}</a></li>
+{% endfor %}
+{% for content in contents | sort(attribute='name') %}
+    <li><a href="/compendium/view/{{ type }}/{{ content._id }}">{{ content.name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

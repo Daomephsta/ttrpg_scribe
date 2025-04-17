@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    {% block meta %}
+        {% if title %}
+            <title>{{ title }}</title>
+        {% endif %}
+    {% endblock %}
+    </head>
+    {% block heading %}
+    <span>
+    {% if title or heading %}
+        <h1>{{ heading | default(title) }}</h1>
+    {% endif %}
+        <form action="/compendium/search">
+            <input type="text" name="query">
+            {% if type %}
+            <input type="hidden" name="doc-type" value="{{ type }}">
+            {% endif %}
+            <input type="submit" value="Search">
+        </form>
+    </span>
+    {% endblock %}
+    {% block content %}
+    {% endblock %}
+</html>

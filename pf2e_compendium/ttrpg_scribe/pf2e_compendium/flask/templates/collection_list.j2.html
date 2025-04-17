@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html>
-    <head><title>Compendium Collections</title></head>
-    <span>
-    <h1>Compendium Collections</h1>
-    <form action="/compendium/search">
-        <input type="text" name="query">
-        <input type="submit" value="Search">
-    </form>
-    </span>
-    <ul>
-    {% for type in types | sort %}
-        <li><a href="/compendium/list/{{ type }}">{{ type }}</a></li>
-    {% endfor %}
-    </ul>
-</html>
+{% extends 'list.j2.html' %}
+{% set title = 'Compendium Collections' %}
+{% block content %}
+<ul>
+{% for type in types | sort %}
+    <li><a href="/compendium/list/{{ type }}">{{ type }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}
