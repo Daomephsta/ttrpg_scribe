@@ -9,7 +9,7 @@ _translations = {}
 
 
 def _initialise():
-    with foundry.open_pf2e_file('static/lang/en.json') as file:
+    with (foundry.pf2e_dir/'static/lang/en.json').open(encoding='utf8') as file:
         def visit(obj: Json, path: list[str]):
             for k, v in obj.items():
                 match v:

@@ -6,8 +6,8 @@
     {% for path in subpaths | sort %}
         <li><a href="/compendium/list/{{ type }}/{{ pack }}/{{ path }}">{{ path }}</a></li>
     {% endfor %}
-    {% for id, name in content | sort %}
-        <li><a href="/compendium/view/{{ type }}/{{ id }}">{{ name }}</a></li>
+    {% for content in contents | sort(attribute='name') %}
+        <li><a href="/compendium/view/{{ type }}/{{ content._id }}">{{ content.name }}</a></li>
     {% endfor %}
     </ul>
 </html>

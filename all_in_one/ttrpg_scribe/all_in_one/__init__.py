@@ -121,7 +121,7 @@ def pf2e_foundry(args):
     from ttrpg_scribe.pf2e_compendium import foundry
     match args.foundry_command:
         case 'dir':
-            print(foundry.pf2e_dir().as_posix())
+            print(foundry.pf2e_dir.as_posix())
 
 
 def main():

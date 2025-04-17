@@ -4,10 +4,10 @@ from typing import Any, Callable
 
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
-from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
+from ttrpg_scribe.pf2e_compendium.foundry import mongo
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -16,9 +16,7 @@ type Json = dict[str, Any]
 
 def creature(id: str):
     try:
-        doc = foundry.get_document('npc', id)
-        assert doc is not None
-        return _read_creature(doc)
+        return _read_creature(mongo.get_document('npc', id))
     except Exception as e:
         e.add_note(f'Reading creature {id}')
         raise
@@ -172,8 +170,7 @@ def _read_creature(json: Json) -> PF2Creature:
 
 def hazard(id: str):
     try:
-        doc = foundry.get_document('npc', id)
-        assert doc is not None
+        doc = mongo.get_document('npc', id)
         return _read_hazard(doc)
     except Exception as e:
         e.add_note(f'Reading hazard {id}')
@@ -272,9 +269,7 @@ def _read_strike(item):
 
 
 def read(doc_type: str, id: str):
-    data = foundry.get_document(doc_type, id)
-    assert data is not None
-    return _read(data)
+    return _read(mongo.get_document(doc_type, id))
 
 
 def _read(data: dict[str, Any]):
@@ -325,8 +320,8 @@ def __test_read_all_content():
 
     start = time.perf_counter()
     errors = 0
-    for name in foundry.get_collections():
-        for document in foundry.db[name].find():
+    for name in mongo.get_collection_names():
+        for document in mongo.get_collection_content(name):
             try:
                 _read(document)
                 return 0

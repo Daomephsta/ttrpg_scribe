@@ -1,5 +1,4 @@
 import math
-import re
 from typing import Any
 
 import flask
@@ -9,10 +8,10 @@ from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
-from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
 from ttrpg_scribe.pf2e_compendium.creature import templates
+from ttrpg_scribe.pf2e_compendium.foundry import mongo
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -25,29 +24,25 @@ blueprint = Blueprint('pf2e_compendium', __name__,
 @blueprint.get('/')
 @blueprint.get('/list')
 def list_collections():
-    return render_template('collection_list.j2.html', types=foundry.get_collections())
+    return render_template('collection_list.j2.html', types=mongo.get_collection_names())
 
 
 @blueprint.get('/list/<doc_type>')
 def list_packs(doc_type: str):
-    packs = foundry.db[doc_type].distinct('path.pack')
-    return render_template('pack_list.j2.html', type=doc_type, packs=packs)
+    return render_template('pack_list.j2.html', type=doc_type,
+                           packs=mongo.get_pack_names(doc_type))
 
 
 @blueprint.get('/list/<doc_type>/<pack>')
 @blueprint.get('/list/<doc_type>/<pack>/<path:subpath>')
 def list_content(doc_type: str, pack: str, subpath: str = ''):
-    pack_content = foundry.db[doc_type].find(
-        {'path': {'pack': pack, 'subpath': subpath}}, {'name': True})
+    pack_content = mongo.get_pack_content(doc_type, pack, subpath)
     if subpath == '':
-        subpaths = foundry.db[doc_type].distinct('path.subpath',
-                                                 {'path.pack': pack, 'path.subpath': {'$ne': ''}})
+        subpaths = mongo.get_pack_subpaths(doc_type, pack)
     else:
         subpaths = []
-    return render_template(
-        'content_list.j2.html', type=doc_type, pack=pack, subpath=subpath,
-        content=[(content['_id'], content['name']) for content in pack_content], subpaths=subpaths
-    )
+    return render_template('content_list.j2.html', type=doc_type, pack=pack, subpath=subpath,
+                           contents=pack_content, subpaths=subpaths)
 
 
 @blueprint.get('/view/<doc_type>/<path:id>')
@@ -64,7 +59,7 @@ def content(doc_type: str, id: str):
 
 @blueprint.get('/view/<doc_type>/<path:id>.json')
 def raw_content(doc_type: str, id: str):
-    return foundry.get_document(doc_type, id) or f'{id} does not exist in {doc_type}'
+    return mongo.get_document(doc_type, id) or f'{id} does not exist in {doc_type}'
 
 
 @blueprint.get('/analyse/<doc_type>/<path:id>')
@@ -94,15 +89,8 @@ def _apply_adjustments(content):
 def search():
     query = request.args.get('query', '')
     doc_types = request.args.getlist('doc-type')
-    if len(doc_types) == 0:
-        doc_types = foundry.get_collections()
-
-    def results():
-        pattern = re.compile(query)
-        for doc_type in doc_types:
-            yield from foundry.db[doc_type].find({'path.stem': pattern},
-                                                 {'name': True, 'doc_type': doc_type})
-    return render_template('search_results.j2.html', content=results())
+    return render_template('search_results.j2.html',
+                           content=mongo.search_by_path(query, doc_types))
 
 
 @blueprint.app_template_filter()
