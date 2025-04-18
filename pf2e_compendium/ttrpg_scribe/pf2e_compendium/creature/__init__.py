@@ -11,17 +11,11 @@ from ttrpg_scribe.pf2e_compendium.creature.statistics import (
 
 @dataclass
 class Spellcasting:
-    kind: str
-    tradition: str
+    name: str
     dc: int
     attack: int
     spells: dict[int, list[str]] = field(default_factory=dict)
     slots: dict[int, int] = field(default_factory=dict)
-    name: str = ''
-
-    def __post_init__(self):
-        if not self.name:
-            self.name = f'{self.kind} {self.tradition} spells'.title()
 
     def iter_spells(self):
         for level, spells in self.spells.items():
@@ -33,25 +27,21 @@ class Spellcasting:
 
     def to_json(self) -> dict[str, Any]:
         return dict(
-            kind=self.kind,
-            tradition=self.tradition,
+            name=self.name,
             dc=self.dc,
             attack=self.attack,
             spells=self.spells,
             slots=self.slots,
-            name=self.name,
         )
 
     @staticmethod
     def from_json(data: dict):
         return Spellcasting(
-            kind=data['kind'],
-            tradition=data['tradition'],
+            name=data['name'],
             dc=data['dc'],
             attack=data['attack'],
             spells={int(level): spells for level, spells in data['spells'].items()},
             slots={int(level): slots for level, slots in data['slots'].items()},
-            name=data['name'],
         )
 
 
