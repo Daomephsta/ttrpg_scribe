@@ -9,7 +9,7 @@ import pymongo
 import pymongo.database
 from pymongo import IndexModel, MongoClient
 
-from pf2e_compendium.ttrpg_scribe.pf2e_compendium import foundry
+from ttrpg_scribe.pf2e_compendium import foundry
 
 _IP, _PORT = '127.0.0.1', 48165
 Document = dict[str, Any]
