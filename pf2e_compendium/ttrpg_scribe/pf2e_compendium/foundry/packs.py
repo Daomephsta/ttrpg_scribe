@@ -170,7 +170,7 @@ def _read_creature(json: Json) -> PF2Creature:
 
 def hazard(id: str):
     try:
-        doc = mongo.get_document('npc', id)
+        doc = mongo.get_document('hazard', id)
         return _read_hazard(doc)
     except Exception as e:
         e.add_note(f'Reading hazard {id}')
