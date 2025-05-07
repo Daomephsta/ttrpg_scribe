@@ -114,6 +114,11 @@ def action(kind: int | str):
     return Markup(f'<span class="action-symbol">{glyph}</span>')
 
 
+@blueprint.app_template_filter()
+def enrich(text: str):
+    return ttrpg_scribe.pf2e_compendium.foundry.enrich.enrich(text)
+
+
 def create_app():
     app = Flask('ttrpg_scribe.pf2e_compendium.flask')
     app.register_blueprint(blueprint)

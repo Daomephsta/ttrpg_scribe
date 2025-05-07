@@ -281,6 +281,8 @@ def read(data: dict[str, Any]):
                 return ('creature', _read_creature(data))
             case 'hazard':
                 return (type, _read_hazard(data))
+            case 'spell':
+                return (type, data)
             case _:
                 return (f'raw-{type}', data)
     except Exception as e:

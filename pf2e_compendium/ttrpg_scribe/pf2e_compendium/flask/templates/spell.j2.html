@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<head>
+    <title>{{ spell.name | title }}</title>
+    <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
+</head>
+<body>
+    <div class="stat_block pf2e_spell">
+        <p class="name">
+            <span>{{ spell.name }}</span>
+            {% set spell_type = 'cantrip' if 'cantrip' in spell.system.traits.value 
+               else 'focus' if 'focus' in spell.system.traits.value
+               else 'spell'
+            %}
+            <span style="float: right;">{{ spell_type }} {{ spell.system.level.value }}</span>
+        </p>
+        <div id="traits-container">
+        {% if spell.system.traits.rarity != 'common' %}
+            <span class="trait {{ spell.system.traits.rarity }}">{{ spell.system.traits.rarity }}</span>
+        {% endif %}
+        {% for trait in spell.system.traits.value %}
+            <span class="trait">{{ trait }}</span>
+        {% endfor %}
+        </div>
+        <ul class="field_list">
+            {% if spell.system.traits.traditions %}
+            <li><b>Traditions</b> {{ spell.system.traits.traditions | join(', ') }}</li>
+            {% endif %}
+            <li>
+                {% set semicolon = joiner('; ') %}
+                {{ semicolon() }}<b>Cast</b> {{ spell.system.time.value | action }}
+                {%- if spell.system.cost.value -%}
+                {{ semicolon() }}<b>Cost</b> {{ spell.system.cost.value }}
+                {%- endif -%}
+                {%- if spell.system.requirements -%}
+                {{ semicolon() }}<b>Requirements</b> {{ spell.system.requirements }}
+                {%- endif -%}
+            </li>
+            {%- if spell.system.range.value or spell.system.area or spell.system.target.value -%}
+            <li>
+                {% set semicolon = joiner('; ') %}
+                {%- if spell.system.range.value -%}
+                {{ semicolon() }}<b>Range</b> {{ spell.system.range.value }}
+                {%- endif -%}
+                {%- if spell.system.area -%}
+                {{ semicolon() }}<b>Area</b>
+                    {% if spell.system.area.details -%}
+                    {{ spell.system.area.details }}
+                    {%- else -%}
+                    {{ spell.system.area.value }}-foot {{ spell.system.area.type }}
+                    {%- endif -%}
+                {%- endif -%}
+                {%- if spell.system.target.value -%}
+                {{ semicolon() }}<b>Targets</b> {{ spell.system.target.value }}
+                {%- endif -%}
+            </li>
+            {%- endif -%}
+            {%- if spell.system.defense or spell.system.duration -%}
+            <li>
+                {% set semicolon = joiner('; ') %}
+                {%- if spell.system.defense -%}
+                    {{ semicolon() }}<b>Defense</b>
+                    {% if spell.system.defense.passive -%}
+                    {{ spell.system.area.passive.statistic }}
+                    {%- elif spell.system.defense.save -%}
+                        {%- if spell.system.defense.save.basic -%}
+                        basic {{ spell.system.defense.save.statistic | title }}
+                        {%- else -%}
+                        {{ spell.system.defense.save.statistic | title }}
+                        {%- endif -%}
+                    {%- endif -%}
+                {%- endif -%}
+                {%- if spell.system.duration.value or spell.system.duration.sustained -%}
+                {{ semicolon() }}<b>Duration</b>
+                    {% if spell.system.duration.sustained and spell.system.duration.value -%}
+                    sustained up to {{ spell.system.duration.value }}
+                    {%- elif spell.system.duration.sustained and not spell.system.duration.value -%}
+                    sustained
+                    {%- else -%}
+                    {{ spell.system.duration.value }}
+                    {%- endif -%}
+                {%- endif -%}
+            </li>
+            {%- endif -%}
+        </ul>
+        {% if spell.system.time.value not in ['reaction'] %}
+        <hr/>
+        {% endif %}
+        {{ spell.system.description.value | enrich | safe }}
+    </div>
+    <footer>
+        {# <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a> #}
+    </footer>
+</body>
