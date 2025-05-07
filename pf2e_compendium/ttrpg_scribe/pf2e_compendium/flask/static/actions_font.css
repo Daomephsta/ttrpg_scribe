@@ -6,5 +6,7 @@
 }
 .action-symbol {
     font-family: "Pathfinder2eActions";
-    font-size: 1.375em;
+    display: inline-block;
+    transform: scale(1.375);
+    vertical-align: top;
 }
