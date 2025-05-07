@@ -141,6 +141,11 @@ def consume_traits(args: Args):
 
 
 def _damage_roll(args: Args) -> str:
+    def strip_delimiters(s: str, prefix: str, suffix: str):
+        if s.startswith(prefix) and s.endswith(suffix):
+            return s[len(prefix):-len(suffix)]
+        return s
+
     buf = []
     args.ignore('immutable', 'name')
     consume_options(args)
@@ -148,8 +153,8 @@ def _damage_roll(args: Args) -> str:
     damage = args.consume_index(0)
     for part in re.split(r',(?![A-z])', damage):
         amountEnd = part.rfind('[')
-        amount = part[:amountEnd].strip('()')
-        damage_types = part[amountEnd:].strip('[]').split(',')
+        amount = strip_delimiters(part[:amountEnd], '(', ')')
+        damage_types = strip_delimiters(part[amountEnd:], '[', ']').split(',')
         if '[splash]' in amount:
             amount = amount.removesuffix('[splash]')
             damage_types.append('splash')
