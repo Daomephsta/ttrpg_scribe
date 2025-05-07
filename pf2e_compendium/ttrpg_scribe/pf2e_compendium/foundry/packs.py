@@ -273,7 +273,7 @@ def read_doc(doc_type: str, id: str):
 
 def read(data: dict[str, Any]):
     if 'type' not in data:
-        return ('json', data)
+        return ('raw', data)
     type: str = data['type']
     try:
         match type:
@@ -282,7 +282,7 @@ def read(data: dict[str, Any]):
             case 'hazard':
                 return (type, _read_hazard(data))
             case _:
-                return (type, data)
+                return (f'raw-{type}', data)
     except Exception as e:
         e.add_note(f'Reading {type} {data['_id']}')
         raise
@@ -322,7 +322,7 @@ def __test_read_all_content():
     for name in mongo.get_collection_names():
         for document in mongo.get_collection_content(name):
             try:
-                _read(document)
+                read(document)
                 return 0
             except Exception as e:
                 logging.getLogger('short').exception(

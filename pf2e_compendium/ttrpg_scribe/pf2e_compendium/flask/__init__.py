@@ -48,8 +48,11 @@ def list_content(doc_type: str, pack: str, subpath: str = ''):
 
 @blueprint.get('/view/<doc_type>/<path:id>')
 def content(doc_type: str, id: str):
-    type, content = foundry_packs.read(doc_type, id)
-    if isinstance(content, (dict, list)):
+    return _content(*foundry_packs.read_doc(doc_type, id))
+
+
+def _content(type: str, content):
+    if type.startswith('raw') and isinstance(content, dict | list):
         return content
     _apply_adjustments(content)
     return render_template(f'{type}.j2.html', **{
@@ -65,7 +68,7 @@ def raw_content(doc_type: str, id: str):
 
 @blueprint.get('/analyse/<doc_type>/<path:id>')
 def analyse(doc_type: str, id: str):
-    type, content = foundry_packs.read(doc_type, id)
+    type, content = foundry_packs.read_doc(doc_type, id)
     match type, content:
         case 'creature', PF2Creature():
             _apply_adjustments(content)
