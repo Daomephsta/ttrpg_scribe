@@ -47,10 +47,14 @@
     margin-top: 8px;
     margin-bottom: 8px;
 }
+.stat_block .view-spell {
+    display: inline-block;
+}
 .pf2e_creature .details {
     border-left: 2px solid gray;
     padding-left: 1em;
 }
+
 .stat_block_content {
     transition: height 0.2s;
     max-height: 0px;

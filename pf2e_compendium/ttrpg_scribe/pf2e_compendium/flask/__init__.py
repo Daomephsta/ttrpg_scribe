@@ -3,12 +3,14 @@ from typing import Any
 
 import flask
 from flask import Blueprint, Flask, render_template, request
+from flask import json
 from markupsafe import Markup
 from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
 from ttrpg_scribe.pf2e_compendium import foundry
+import ttrpg_scribe.pf2e_compendium.foundry.enrich
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
 from ttrpg_scribe.pf2e_compendium.creature import templates
@@ -44,6 +46,16 @@ def list_content(doc_type: str, pack: str, subpath: str = ''):
         subpaths = []
     return render_template('content_list.j2.html', type=doc_type, pack=pack, subpath=subpath,
                            contents=pack_content, subpaths=subpaths)
+
+
+@blueprint.post('/view')
+def view_payload():
+    if 'json' in flask.request.form:
+        payload = json.loads(flask.request.form['json'])
+    else:
+        payload = flask.request.json
+    assert isinstance(payload, dict)
+    return _content(*foundry_packs.read(payload))
 
 
 @blueprint.get('/view/<doc_type>/<path:id>')
@@ -89,6 +101,7 @@ def _apply_adjustments(content):
                 content.apply(templates.weak)
 
 
+@blueprint.post('/search')
 @blueprint.get('/search')
 def search():
     query = request.args.get('query', '')

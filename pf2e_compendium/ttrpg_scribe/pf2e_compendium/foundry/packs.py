@@ -56,6 +56,7 @@ def _read_creature(json: Json) -> PF2Creature:
         dc: int
         attack: int
         spells: dict[int, list[str]] = field(default_factory=dict)
+        spell_info: dict[str, Any] = field(default_factory=dict)
 
         def add_spell(self, item):
             level = system.level.value(item)
@@ -66,12 +67,11 @@ def _read_creature(json: Json) -> PF2Creature:
                 for i in range(len(spells)):
                     if spells[i] == item['_id']:
                         spells[i] = item['name']
-
-        def add_prepared(self, level: int, spell_ids: list[str]):
-            self.spells[level] = spell_ids
+            self.spell_info[item['name']] = item
 
         def build(self):
-            return Spellcasting(self.name, self.dc, self.attack, self.spells)
+            return Spellcasting(self.name, self.dc, self.attack, self.spells,
+                                spell_info=self.spell_info)
 
     spellcasting_lists: dict[str, SpellcastingBuilder] = {}
 

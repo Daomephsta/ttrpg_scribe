@@ -146,10 +146,19 @@
                 ({{ spellcasting.slots[level] }} slots)
                 {% endif %}
                 {% for name, quantity in spells %}
-                    {% if quantity > 1 %}
-                    <i>{{ name }}</i> (x{{ quantity }})
-                    {%- else -%}
                     <i>{{ name }}</i>
+                    {%- if name in spellcasting.spell_info %}
+                    <form method="POST" action="/compendium/view" target="popup" class="view-spell">
+                        <textarea name="json" hidden>{{ spellcasting.spell_info.get(name) | tojson }}</textarea>
+                        <input type="submit" value="&#x1F441;"/>
+                    </form>
+                    {%- else %}
+                    <form method="POST" action="{{ url_for('.search', **{'doc-type': 'spell', 'query': name}) }}" target="popup" class="view-spell">
+                        <input type="submit" value="&#x1F441;"/>
+                    </form>
+                    {%- endif -%}
+                    {%- if quantity > 1 %}
+                    (x{{ quantity }})
                     {%- endif -%}
                     {{- ', ' if not loop.last }}
                 {% endfor %}
@@ -172,6 +181,7 @@
     <title>{{ creature.name | title }}</title>
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='actions_font.css') }}">
+    <script src="{{ url_for('core.static', filename='popup.js') }}" defer></script>
 </head>
 <body>
     <header>

@@ -16,6 +16,7 @@ class Spellcasting:
     attack: int
     spells: dict[int, list[str]] = field(default_factory=dict)
     slots: dict[int, int] = field(default_factory=dict)
+    spell_info: dict[str, Any] = field(default_factory=dict)
 
     def iter_spells(self):
         for level, spells in self.spells.items():
@@ -32,6 +33,7 @@ class Spellcasting:
             attack=self.attack,
             spells=self.spells,
             slots=self.slots,
+            spell_info=self.spell_info
         )
 
     @staticmethod
@@ -42,6 +44,7 @@ class Spellcasting:
             attack=data['attack'],
             spells={int(level): spells for level, spells in data['spells'].items()},
             slots={int(level): slots for level, slots in data['slots'].items()},
+            spell_info=data['spell_info']
         )
 
 
