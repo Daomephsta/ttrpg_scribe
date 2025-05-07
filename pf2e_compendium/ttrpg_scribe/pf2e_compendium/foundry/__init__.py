@@ -11,12 +11,12 @@ pf2e_dir = (data_dir / 'foundryvtt/pf2e').absolute()
 
 def check_for_updates():
     if pf2e_dir.exists():
-        package_data = json.loads((pf2e_dir/'package.json').read_text())
-        if package_data['version'] == VERSION:
+        system_data = json.loads((pf2e_dir/'static/system.json').read_text())
+        if system_data['version'] == VERSION:
             print(f'PF2e system already compatible ({VERSION})')
             return
         else:
-            print(f'Replacing {package_data['version']} with {VERSION}')
+            print(f'Replacing {system_data['version']} with {VERSION}')
             shutil.rmtree(pf2e_dir)
             create = True
     else:
