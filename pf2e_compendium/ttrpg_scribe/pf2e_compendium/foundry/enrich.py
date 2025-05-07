@@ -204,7 +204,7 @@ def enrich(text: str) -> str:
                         case True, None:
                             return f'basic {check_type.title()}'
             case 'Damage':
-                with parse_args(raw_args, context='@Template') as args:
+                with parse_args(raw_args, context='@Damage') as args:
                     return _damage_roll(args)
             case unknown:
                 raise ValueError(f'Unknown enricher @{unknown}[{raw_args}]')
