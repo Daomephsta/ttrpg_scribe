@@ -267,11 +267,11 @@ def _read_strike(item):
     )
 
 
-def read(doc_type: str, id: str):
-    return _read(mongo.get_document(doc_type, id))
+def read_doc(doc_type: str, id: str):
+    return read(mongo.get_document(doc_type, id))
 
 
-def _read(data: dict[str, Any]):
+def read(data: dict[str, Any]):
     if 'type' not in data:
         return ('json', data)
     type: str = data['type']
