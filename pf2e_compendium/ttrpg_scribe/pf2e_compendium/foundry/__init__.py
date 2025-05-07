@@ -4,7 +4,7 @@ import subprocess
 
 import platformdirs
 
-VERSION = '6.11.1'
+VERSION = '6.12.1'
 data_dir = (platformdirs.user_data_path('ttrpg_scribe') / 'pf2e_compendium/data').absolute()
 pf2e_dir = (data_dir / 'foundryvtt/pf2e').absolute()
 

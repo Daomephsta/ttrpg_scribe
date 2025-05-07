@@ -98,9 +98,10 @@ class Args:
 
 def consume_options(args: Args):
     KNOWN = {
-        'area-damage', 'area-effect', 'crosstalk', 'damaging-effect', 'disable-bloodmoon',
-        'fall-damage', 'forced-movement', 'mid-air-collision', 'mind-if-i-borrow-that',
-        'natures-patient-healing', 'sweeping-spell', 'youre-next'
+        'area-damage', 'area-effect', 'bedside-manner', 'crosstalk', 'damaging-effect',
+        'disable-bloodmoon', 'fall-damage', 'forced-movement', 'mid-air-collision',
+        'mind-if-i-borrow-that', 'natures-patient-healing', 'nobles-ally', 'siege-weapon',
+        'spotlight-ready', 'sweeping-spell', 'youre-next'
     }
 
     def is_known(option: str):
