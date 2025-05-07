@@ -99,18 +99,26 @@ def search():
 
 @blueprint.app_template_filter()
 def action(kind: int | str):
-    glyph: str | int = '?'
+    glyph: str
     match kind:
         case 0:
             glyph = ''
         case int(i):
-            glyph = i
+            glyph = str(i)
         case 're' | 'reaction':
             glyph = 'r'
         case 'free':
             glyph = 'f'
-        case _:
-            glyph = '?'
+        case str():
+            if kind.isdigit():
+                return action(int(kind))
+            if ' to ' in kind:
+                left, sep, right = kind.partition(' to ')
+            elif ' or ' in kind:
+                left, sep, right = kind.partition(' or ')
+            else:
+                return kind
+            return Markup(f'<span>{action(left)}{sep}{action(right)}</span>')
     return Markup(f'<span class="action-symbol">{glyph}</span>')
 
 
