@@ -310,13 +310,13 @@ def __test_read_all_content():
     short_log = logging.getLogger('short')
     handler = logging.FileHandler(f'{logs}/{__test_read_all_content.__name__}_short.log', mode='w')
     handler.setFormatter(logging.Formatter(
-        '%(levelname)s: %(content_id)s: %(message)s\n\t%(notes)s'))
+        '%(levelname)s: %(message)s\n\t%(notes)s'))
     short_log.addHandler(handler)
 
     full_log = logging.getLogger('full')
     handler = logging.FileHandler(f'{logs}/{__test_read_all_content.__name__}_full.log', mode='w')
     handler.setFormatter(logging.Formatter(
-        '%(levelname)s: %(content_id)s: %(message)s'))
+        '%(levelname)s: %(message)s'))
     full_log.addHandler(handler)
 
     start = time.perf_counter()
@@ -328,8 +328,8 @@ def __test_read_all_content():
             except Exception as e:
                 logging.getLogger('short').exception(
                     e, exc_info=False,
-                    extra={'content_id': id, 'notes': '\n\t'.join(e.__notes__)})
-                logging.getLogger('full').exception(e, extra={'content_id': id})
+                    extra={'notes': '\n\t'.join(e.__notes__)})
+                logging.getLogger('full').exception(e)
                 errors += 1
     print(f'Finished test in {time.perf_counter() - start:.2f}s with {errors} errors')
 
