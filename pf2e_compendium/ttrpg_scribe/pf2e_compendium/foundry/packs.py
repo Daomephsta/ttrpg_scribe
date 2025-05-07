@@ -325,13 +325,12 @@ def __test_read_all_content():
         for document in mongo.get_collection_content(name):
             try:
                 read(document)
-                return 0
             except Exception as e:
                 logging.getLogger('short').exception(
                     e, exc_info=False,
                     extra={'content_id': id, 'notes': '\n\t'.join(e.__notes__)})
                 logging.getLogger('full').exception(e, extra={'content_id': id})
-                return 1
+                errors += 1
     print(f'Finished test in {time.perf_counter() - start:.2f}s with {errors} errors')
 
 
