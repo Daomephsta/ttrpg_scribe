@@ -61,7 +61,6 @@ def _read_creature(json: Json) -> PF2Creature:
             level = system.level.value(item)
             if level not in self.spells:
                 self.spells[level] = []
-            self.spells[level].append(item['_id'])
             # Replace ids with names
             for spells in self.spells.values():
                 for i in range(len(spells)):
