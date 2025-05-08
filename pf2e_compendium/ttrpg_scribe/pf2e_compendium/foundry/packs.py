@@ -322,7 +322,11 @@ def __test_read_all_content():
     start = time.perf_counter()
     errors = 0
     for name in mongo.get_collection_names():
-        for document in mongo.get_collection_content(name):
+        print(f'Testing collection {name}')
+        size = mongo.db[name].count_documents({})
+        for progress, document in enumerate(mongo.get_collection_content(name), start=1):
+            if progress % (size // 5) == 0 or progress == size:
+                print(f'\t{progress}/{size}')
             try:
                 read(document)
             except Exception as e:
