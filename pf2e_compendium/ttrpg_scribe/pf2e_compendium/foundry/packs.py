@@ -53,15 +53,22 @@ def _read_creature(json: Json) -> PF2Creature:
     class SpellcastingBuilder:
         name: str
         tradition: str
+        casting_type: str
         dc: int
         attack: int
         spells: dict[int, list[str]] = field(default_factory=dict)
+        slots: dict[int, int] = field(default_factory=dict)
         spell_info: dict[str, Any] = field(default_factory=dict)
 
         def add_spell(self, item):
-            level = system.level.value(item)
-            if level not in self.spells:
-                self.spells[level] = []
+            level: int = system.location.heightenedLevel(item, None) or system.level.value(item)
+            cantrip = 'cantrip' in system.traits.value(item)
+            sublist: int = level if not cantrip else 0
+            if sublist not in self.spells:
+                self.spells[sublist] = []
+            if self.casting_type in ['focus', 'innate', 'spontaneous']:
+                for _ in range(system.location.uses.max(item, _or=1)):
+                    self.spells[sublist].append(item['name'])
             # Replace ids with names
             for spells in self.spells.values():
                 for i in range(len(spells)):
@@ -71,7 +78,7 @@ def _read_creature(json: Json) -> PF2Creature:
 
         def build(self):
             return Spellcasting(self.name, self.dc, self.attack, self.spells,
-                                spell_info=self.spell_info)
+                                self.slots, self.spell_info)
 
     spellcasting_lists: dict[str, SpellcastingBuilder] = {}
 
@@ -100,29 +107,33 @@ def _read_creature(json: Json) -> PF2Creature:
                      'treasure' | 'shield' | 'backpack':
                     inventory[item['name']] = system.quantity(item)
                 case 'spellcastingEntry':
+                    casting_type = system.prepared.value(item)
+                    assert casting_type in ['prepared', 'innate', 'items',
+                                            'spontaneous', 'focus'], \
+                        f'Unknown casting type {casting_type}'
                     spellcasting_lists[item['_id']] = builder = SpellcastingBuilder(
-                        item['name'], system.tradition.value(item),
+                        item['name'], system.tradition.value(item), casting_type,
                         system.spelldc.dc(item), system.spelldc.value(item)
                     )
-                    casting_type = system.prepared.value(item)
                     for level, slot_data in system.slots(item).items():
                         level = int(level.removeprefix('slot'))
-                        if 'prepared' in slot_data:
-                            match casting_type:
-                                case 'innate':
-                                    builder.spells[level] = slot_data['prepared']
-                                case 'prepared':
-                                    builder.spells[level] = [spell['id'] for spell
-                                                     in slot_data['prepared']]
-                                case 'spontaneous':
-                                    pass
-                                case unknown:
-                                    raise ValueError(f'Unknown casting type {unknown}')
+                        match casting_type:
+                            case 'prepared':
+                                builder.spells[level] = [spell['id'] for spell
+                                                 in slot_data['prepared']]
+                            case 'innate' | 'spontaneous':
+                                builder.slots[level] = int(slot_data.get('max')
+                                                           or slot_data.get('value')
+                                                           or len(slot_data['prepared']))
+                            case 'focus' | 'item':
+                                pass  # Known, but no special handling needed here
+                            case unknown:
+                                raise ValueError(f'Unknown casting type {unknown}')
                 case 'spell':
                     if 'ritual' in system(item):
                         ritual_dc = system.spellcasting.rituals.dc(json, _or=0)
                         spellcasting_lists[location := 'ritual'] = SpellcastingBuilder(
-                            'Rituals', '', ritual_dc, 0)
+                            'Rituals', '', 'ritual', ritual_dc, 0)
                     else:
                         location = system.location.value(item, _or=None)
                     spellcasting_lists[location].add_spell(item)
