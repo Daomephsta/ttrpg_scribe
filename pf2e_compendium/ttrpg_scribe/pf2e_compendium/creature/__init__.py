@@ -19,12 +19,8 @@ class Spellcasting:
     spell_info: dict[str, Any] = field(default_factory=dict)
 
     def iter_spells(self):
-        for level, spells in self.spells.items():
-            def inner():
-                spell_castings = collections.Counter(spells)
-                for spell in spell_castings:
-                    yield (spell, spell_castings[spell])
-            yield (level, inner())
+        for level, spells in sorted(self.spells.items(), key=lambda t: t[0]):
+            yield (level, collections.Counter(spells).items())
 
     def to_json(self) -> dict[str, Any]:
         return dict(
