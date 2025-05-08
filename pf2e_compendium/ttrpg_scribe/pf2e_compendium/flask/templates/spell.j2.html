@@ -11,7 +11,12 @@
                else 'focus' if 'focus' in spell.system.traits.value
                else 'spell'
             %}
-            <span style="float: right;">{{ spell_type }} {{ spell.system.level.value }}</span>
+            {% if 'location' in spell.system and 'heightenedLevel' in spell.system.location %}
+                {% set level = spell.system.location.heightenedLevel %}
+            {% else %}
+                {% set level = spell.system.level.value %}
+            {% endif %}
+            <span style="float: right;">{{ spell_type }} {{ level }}</span>
         </p>
         <div id="traits-container">
         {% if spell.system.traits.rarity != 'common' %}
