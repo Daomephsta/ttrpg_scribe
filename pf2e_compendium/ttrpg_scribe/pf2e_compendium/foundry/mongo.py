@@ -35,7 +35,9 @@ def get_document(collection: str, path: str, optional=False) -> Document | None:
 
 
 def get_collection_names() -> list[str]:
-    return db.list_collection_names()
+    return db.list_collection_names(filter={
+        # Filter out system collections and views
+        'name': {'$regex': r'^(?!system\.)'}, 'type': 'collection'})
 
 
 def get_pack_names(doc_type: str) -> list[str]:
