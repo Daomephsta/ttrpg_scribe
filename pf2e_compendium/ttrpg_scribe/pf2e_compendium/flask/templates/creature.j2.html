@@ -142,9 +142,10 @@
                 Cantrips
                 {% endif %}
                 </b>
-                {% if level in spellcasting.slots %}
-                ({{ spellcasting.slots[level] }} slots)
-                {% endif %}
+                {% set slots = spells | length if spellcasting.casting_type == 'focus' else spellcasting.slots.get(level, 0) %}
+                {%- for _ in range(slots) -%}
+                <input type="checkbox" class="spell-slot"/>
+                {%- endfor -%}
                 {% for name, quantity in spells %}
                     <i>{{ name }}</i>
                     {%- if name in spellcasting.spell_info %}
@@ -157,8 +158,10 @@
                         <input type="submit" value="&#x1F441;"/>
                     </form>
                     {%- endif -%}
-                    {%- if quantity > 1 %}
-                    (x{{ quantity }})
+                    {%- if spellcasting.casting_type in ['innate', 'prepared'] -%}
+                        {%- for _ in range(quantity) -%}
+                        <input type="checkbox" class="spell-slot"/>
+                        {%- endfor -%}
                     {%- endif -%}
                     {{- ', ' if not loop.last }}
                 {% endfor %}

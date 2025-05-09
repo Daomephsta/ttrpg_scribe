@@ -12,6 +12,7 @@ from ttrpg_scribe.pf2e_compendium.creature.statistics import (
 @dataclass
 class Spellcasting:
     name: str
+    casting_type: str
     dc: int
     attack: int
     spells: dict[int, list[str]] = field(default_factory=dict)
@@ -25,6 +26,7 @@ class Spellcasting:
     def to_json(self) -> dict[str, Any]:
         return dict(
             name=self.name,
+            casting_type=self.casting_type,
             dc=self.dc,
             attack=self.attack,
             spells=self.spells,
@@ -36,6 +38,7 @@ class Spellcasting:
     def from_json(data: dict):
         return Spellcasting(
             name=data['name'],
+            casting_type=data['casting_type'],
             dc=data['dc'],
             attack=data['attack'],
             spells={int(level): spells for level, spells in data['spells'].items()},

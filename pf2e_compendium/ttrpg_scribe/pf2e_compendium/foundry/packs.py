@@ -77,7 +77,7 @@ def _read_creature(json: Json) -> PF2Creature:
             self.spell_info[item['name']] = item
 
         def build(self):
-            return Spellcasting(self.name, self.dc, self.attack, self.spells,
+            return Spellcasting(self.name, self.casting_type, self.dc, self.attack, self.spells,
                                 self.slots, self.spell_info)
 
     spellcasting_lists: dict[str, SpellcastingBuilder] = {}
