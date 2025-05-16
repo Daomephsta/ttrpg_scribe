@@ -121,11 +121,11 @@ def _read_creature(json: Json) -> PF2Creature:
                             case 'prepared':
                                 builder.spells[level] = [spell['id'] for spell
                                                  in slot_data['prepared']]
-                            case 'innate' | 'spontaneous':
+                            case 'spontaneous':
                                 builder.slots[level] = int(slot_data.get('max')
                                                            or slot_data.get('value')
                                                            or len(slot_data['prepared']))
-                            case 'focus' | 'item':
+                            case 'focus' | 'innate' | 'item':
                                 pass  # Known, but no special handling needed here
                             case unknown:
                                 raise ValueError(f'Unknown casting type {unknown}')
