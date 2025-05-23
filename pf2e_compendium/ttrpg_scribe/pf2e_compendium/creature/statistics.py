@@ -8,7 +8,7 @@ from typing import Self
 from ttrpg_scribe.core.dice import SimpleDice
 
 
-class TableCell[V](ABC):
+class TableCell[V, SelfT: 'TableCell'](ABC):
     @classmethod
     @abstractmethod
     def parse(cls, value: str) -> Self: ...
@@ -43,8 +43,8 @@ class TableCell[V](ABC):
 
     @classmethod
     @abstractmethod
-    def between_description(cls, lower: Self, lower_name: str,
-                            upper: Self, upper_name: str,
+    def between_description(cls: type[SelfT], lower: SelfT, lower_name: str,
+                            upper: SelfT, upper_name: str,
                             value: int) -> str: ...
 
     @abstractmethod
@@ -57,7 +57,7 @@ class TableCell[V](ABC):
     def __lt__(self, value: int) -> bool: ...
 
 
-class NumberCell(TableCell[int]):
+class NumberCell(TableCell[int, 'NumberCell']):
     def __init__(self, low: int, high: int | None = None) -> None:
         self.low = low
         self.high = high if high is not None else low
@@ -96,8 +96,8 @@ class NumberCell(TableCell[int]):
         return f'{name} - {self.low - value}'
 
     @classmethod
-    def between_description(cls, lower: Self, lower_name: str,
-                            upper: Self, upper_name: str,
+    def between_description(cls, lower: 'NumberCell', lower_name: str,
+                            upper: 'NumberCell', upper_name: str,
                             value: int) -> str:
         return cls._between_description0(
             lower.high, lower_name,
@@ -127,7 +127,7 @@ class NumberCell(TableCell[int]):
         return f'NumberCell({self.low} to {self.high})'
 
 
-class DiceCell(TableCell[SimpleDice]):
+class DiceCell(TableCell[SimpleDice, 'DiceCell']):
     def __init__(self, dice: SimpleDice):
         self.dice = dice
         self.average = math.floor(self.dice.average())
@@ -152,8 +152,8 @@ class DiceCell(TableCell[SimpleDice]):
         return f'{name} - {self.average - value}'
 
     @classmethod
-    def between_description(cls, lower: Self, lower_name: str,
-                            upper: Self, upper_name: str,
+    def between_description(cls, lower: 'DiceCell', lower_name: str,
+                            upper: 'DiceCell', upper_name: str,
                             value: int) -> str:
         return cls._between_description0(
             lower.average, lower_name,
