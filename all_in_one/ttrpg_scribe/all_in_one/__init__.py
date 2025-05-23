@@ -122,6 +122,11 @@ def pf2e_foundry(args):
     match args.foundry_command:
         case 'dir':
             print(foundry.pf2e_dir.as_posix())
+        case 'mongo':
+            from ttrpg_scribe.pf2e_compendium.foundry import mongo
+            mongo.start_mongo_server()
+            while True:  # Keep server alive until termination
+                pass
 
 
 def main():
@@ -147,7 +152,7 @@ def main():
     new_parser.set_defaults(subcommand=lambda args: new(args.project, args.system))
 
     foundry_parser = subcommands.add_parser('pf2e_foundry')
-    foundry_parser.add_argument('foundry_command', choices=['dir', 'update'])
+    foundry_parser.add_argument('foundry_command', choices=['dir', 'mongo'])
     foundry_parser.set_defaults(subcommand=pf2e_foundry)
 
     argcomplete.autocomplete(parser)
