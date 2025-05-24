@@ -7,7 +7,7 @@ from ttrpg_scribe.core.json_path import JsonPath
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
-from ttrpg_scribe.pf2e_compendium.foundry import mongo
+from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -16,7 +16,7 @@ type Json = dict[str, Any]
 
 def creature(id: str):
     try:
-        return _read_creature(mongo.get_document('npc', id))
+        return _read_creature(mongo_client.get_document('npc', id))
     except Exception as e:
         e.add_note(f'Reading creature {id}')
         raise
@@ -180,7 +180,7 @@ def _read_creature(json: Json) -> PF2Creature:
 
 def hazard(id: str):
     try:
-        doc = mongo.get_document('hazard', id)
+        doc = mongo_client.get_document('hazard', id)
         return _read_hazard(doc)
     except Exception as e:
         e.add_note(f'Reading hazard {id}')
@@ -279,7 +279,7 @@ def _read_strike(item):
 
 
 def read_doc(doc_type: str, id: str):
-    return read(mongo.get_document(doc_type, id))
+    return read(mongo_client.get_document(doc_type, id))
 
 
 def read(data: dict[str, Any]):
@@ -332,10 +332,10 @@ def __test_read_all_content():
 
     start = time.perf_counter()
     errors = 0
-    for name in mongo.get_collection_names():
+    for name in mongo_client.get_collection_names():
         print(f'Testing collection {name}')
-        size = mongo.db[name].count_documents({})
-        for progress, document in enumerate(mongo.get_collection_content(name), start=1):
+        size = mongo_client.db[name].count_documents({})
+        for progress, document in enumerate(mongo_client.get_collection_content(name), start=1):
             if progress % (size // 5) == 0 or progress == size:
                 print(f'\t{progress}/{size}')
             try:

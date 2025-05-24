@@ -23,11 +23,11 @@ def check_for_updates():
         create = True
 
     if create:
-        from ttrpg_scribe.pf2e_compendium.foundry import mongo
+        from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
         subprocess.run([
             'git', 'clone',
             '--depth', '1',
             '--branch', VERSION,
             'https://github.com/foundryvtt/pf2e',
             pf2e_dir.as_posix()])
-        mongo.update()
+        mongo_client.update()

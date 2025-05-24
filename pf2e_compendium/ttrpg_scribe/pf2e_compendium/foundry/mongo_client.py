@@ -1,8 +1,5 @@
-import atexit
 import json
 import re
-import shutil
-import subprocess
 from typing import Any, overload
 
 import pymongo
@@ -10,11 +7,11 @@ import pymongo.database
 from pymongo import IndexModel, MongoClient
 
 from ttrpg_scribe.pf2e_compendium import foundry
+from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 
-_IP, _PORT = '127.0.0.1', 48165
 Document = dict[str, Any]
-client: MongoClient[Document]
-db: pymongo.database.Database[Document]
+client: MongoClient[Document] = MongoClient(*mongo_server.start())
+db = client.pf2e
 
 
 @overload
@@ -103,31 +100,6 @@ def update():
             IndexModel('name'),
         ])
 
-
-def start_mongo_server():
-    (mongo_dir := foundry.data_dir/'mongod').mkdir(parents=True, exist_ok=True)
-    (db_data := mongo_dir/'data/db').mkdir(parents=True, exist_ok=True)
-    (logs := mongo_dir/'logs/').mkdir(parents=True, exist_ok=True)
-    mongod = shutil.which('mongod')
-    assert mongod, 'mongod is not installed'
-    server = subprocess.Popen([
-        mongod,
-        '--dbpath', db_data.as_posix(),
-        '--logpath', (logs/'mongo-log.json').as_posix(),
-        '--bind_ip', _IP,
-        '--port', str(_PORT)
-    ], env={'GLIBC_TUNABLES': 'glibc.pthread.rseq=0'})
-    print(f'Starting MongoDB at {_IP}:{_PORT}')
-
-    def stop():
-        print('Stopping mongo server')
-        server.terminate()
-    atexit.register(stop)
-    client = MongoClient(_IP, _PORT)
-    return MongoClient(_IP, _PORT), client.pf2e
-
-
-client, db = start_mongo_server()
 
 if __name__ == '__main__':
     print('Dropping and reconstructing database')

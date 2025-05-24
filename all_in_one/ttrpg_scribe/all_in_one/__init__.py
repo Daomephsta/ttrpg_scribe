@@ -123,8 +123,8 @@ def pf2e_foundry(args):
         case 'dir':
             print(foundry.pf2e_dir.as_posix())
         case 'mongo':
-            from ttrpg_scribe.pf2e_compendium.foundry import mongo
-            mongo.start_mongo_server()
+            from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
+            mongo_server.start()
             while True:  # Keep server alive until termination
                 pass
 
