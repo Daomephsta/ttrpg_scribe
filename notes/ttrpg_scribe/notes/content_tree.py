@@ -83,6 +83,17 @@ def walk(path: str) -> Content:
                 return transform_index(yaml.safe_load(file))
         return {}
 
+    def get_subindex(root_index: dict, root: Path, subpath: Path):
+        relative = subpath.relative_to(root)
+        subindex: dict | tuple[int, dict] = root_index
+        for part in relative.parts:
+            match subindex:
+                case dict():
+                    subindex = subindex.get(part, {})
+                case _, dict() as children:
+                    subindex = children.get(part, {})
+        return subindex
+
     def walk_subtree(dir: Path, subtree: Content, index: dict | tuple[int, dict]):
         if not dir.exists():
             return subtree
@@ -107,14 +118,18 @@ def walk(path: str) -> Content:
                 continue
             child = subtree.add_child(path)
             if path.is_dir():
-                walk_subtree(path, child, index.get(path.name, {}))
+                walk_subtree(path, child, index.get(path.stem, {}))
         return subtree
 
-    root_path = paths.CAMPAIGN.get(path)
-    root = walk_subtree(root_path, Content(paths.CAMPAIGN, root_path, ''), load_index(root_path))
+    campaign_path = paths.CAMPAIGN.get(path)
+    campaign_index = load_index(paths.CAMPAIGN.pages())
+    root = walk_subtree(
+        campaign_path, Content(paths.CAMPAIGN, campaign_path, ''),
+        get_subindex(campaign_index, paths.CAMPAIGN.pages(), campaign_path))
     if paths.SETTING is not None:
+        setting_index = load_index(paths.CAMPAIGN.pages())
         setting_path = paths.SETTING.get(path)
         root.children['setting'] = walk_subtree(
             setting_path, Content(paths.SETTING, setting_path, 'setting'),
-            load_index(setting_path))
+            get_subindex(setting_index, paths.SETTING.pages(), setting_path))
     return root
