@@ -1,8 +1,11 @@
 import atexit
+import logging
 import shutil
 import subprocess
 
 from ttrpg_scribe.pf2e_compendium import foundry
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def start():
@@ -20,10 +23,10 @@ def start():
         '--bind_ip', IP,
         '--port', str(PORT)
     ], env={'GLIBC_TUNABLES': 'glibc.pthread.rseq=0'})
-    print(f'Starting MongoDB at {IP}:{PORT}')
+    _LOGGER.info(f'Starting MongoDB at {IP}:{PORT}')
 
     def stop():
-        print('Stopping mongo server')
+        _LOGGER.info('Stopping mongo server')
         server.terminate()
     atexit.register(stop)
     return IP, PORT

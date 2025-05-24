@@ -1,7 +1,7 @@
 import logging
-import sys
 from pathlib import Path
 
+_LOGGER = logging.getLogger(__name__)
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
@@ -60,9 +60,8 @@ def check_structure(project_dir: Path) -> bool:
             issues.append(f'Neither {project_dir.absolute()}/config.py '
                           f'nor {project_dir.absolute()}/config exist')
     if issues:
-        print(f'{project_dir.absolute()} is not a valid ttrpg_scribe project:')
-        for issue in issues:
-            print(f'\t{issue}')
+        _LOGGER.error(f'{project_dir.absolute()} is not a valid ttrpg_scribe project:\n'
+                      f'{'\n'.join(f'\t{issue}' for issue in issues)}')
         return False
     return True
 
@@ -72,19 +71,21 @@ def start(args):
 
     if not check_structure(args.project):
         return
+
+    logging.basicConfig(level=logging.INFO,
+                        format='%(name)s @ %(levelname)s: %(message)s')
+
     config_dir: Path = args.project/'config'
     if config_dir.exists():
         if args.config:
             app = make_app(args.project, config_dir/f'{args.config}.py')
         else:
-            print('Multiconfig projects must specify --config', file=sys.stderr)
-            print(f'Available configs: {', '.join(path.stem for path in config_dir.glob('*.py'))}',
-                  file=sys.stderr)
+            configs = ', '.join(path.stem for path in config_dir.glob('*.py'))
+            _LOGGER.error('Multiconfig projects must specify --config\n'
+                          f'Available configs: {configs}')
             return
     else:
         app = make_app(args.project)
-    logging.basicConfig(level=logging.INFO,
-                        format='%(name)s @ %(levelname)s: %(message)s')
     host, port = '127.0.0.1', 48164
     if args.debug:
         app.jinja_env.auto_reload = True
@@ -118,10 +119,12 @@ def new(project_dir: Path, system: str):
 
 
 def pf2e_foundry(args):
+    import sys
+
     from ttrpg_scribe.pf2e_compendium import foundry
     match args.foundry_command:
         case 'dir':
-            print(foundry.pf2e_dir.as_posix())
+            sys.stdout.write(f'{foundry.pf2e_dir.as_posix()}\n')
         case 'mongo':
             from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
             mongo_server.start()

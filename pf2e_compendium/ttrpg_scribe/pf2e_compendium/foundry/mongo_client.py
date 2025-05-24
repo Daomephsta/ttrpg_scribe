@@ -1,9 +1,9 @@
 import json
+import logging
 import re
 from typing import Any, overload
 
 import pymongo
-import pymongo.database
 from pymongo import IndexModel, MongoClient
 
 from ttrpg_scribe.pf2e_compendium import foundry
@@ -12,6 +12,7 @@ from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 Document = dict[str, Any]
 client: MongoClient[Document] = MongoClient(*mongo_server.start())
 db = client.pf2e
+_LOGGER = logging.getLogger(__name__)
 
 
 @overload
@@ -63,7 +64,7 @@ def search_by_name(query: str, doc_types: list[str] = []):
 
 def update():
     packs_dir = foundry.pf2e_dir/'packs'
-    print(f'Updating MongoDB from {packs_dir.as_posix()}')
+    _LOGGER.info(f'Updating MongoDB from {packs_dir.as_posix()}')
 
     def build_ops_batch():
         TYPE_TO_COLL: dict[str, str] = {t: 'equipment' for t in
@@ -71,7 +72,7 @@ def update():
         IGNORED = {None, 'army', 'campaignFeature', 'character', 'familiar', 'script'}
         for directory, _, files in packs_dir.walk():
             relative_dir = directory.relative_to(packs_dir)
-            print(f'Gathering documents from {relative_dir}')
+            _LOGGER.info(f'Gathering documents from {relative_dir}')
 
             for filename in files:
                 doc_id = (relative_dir/filename).with_suffix('').as_posix()
@@ -88,9 +89,10 @@ def update():
                 yield pymongo.ReplaceOne({'_id': doc_id}, doc, upsert=True,
                                          namespace=f'pf2e.{collection}')
 
-    print('Submitting bulk write')
-    result = client.bulk_write(list(build_ops_batch()))
-    print(f'Inserted: {result.inserted_count} Upserted: {result.upserted_count} '
+    ops = list(build_ops_batch())
+    _LOGGER.info('Submitting bulk write')
+    result = client.bulk_write(ops)
+    _LOGGER.info(f'Inserted: {result.inserted_count} Upserted: {result.upserted_count} '
           f'Modified: {result.modified_count} Deleted: {result.deleted_count}')
     for name in db.list_collection_names():
         db[name].create_indexes([
@@ -102,6 +104,6 @@ def update():
 
 
 if __name__ == '__main__':
-    print('Dropping and reconstructing database')
+    _LOGGER.info('Dropping and reconstructing database')
     client.drop_database('pf2e')
     update()

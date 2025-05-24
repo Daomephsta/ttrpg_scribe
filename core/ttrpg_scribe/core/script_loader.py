@@ -1,5 +1,6 @@
 import importlib.util
 import itertools
+import logging
 import sys
 from importlib.abc import MetaPathFinder
 from importlib.machinery import ModuleSpec
@@ -9,6 +10,8 @@ from types import ModuleType
 from typing import Sequence
 
 from ttrpg_scribe.notes import paths
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def load(module_name: str, path: Path, execute=False):
@@ -37,8 +40,7 @@ class ScriptFinder(MetaPathFinder):
             if path.exists():
                 return spec_from_file_location(fullname, path)
         tried = '\n\t'.join(p.as_posix() for p in candidates)
-        print(f'Could not resolve \'{fullname}\' at any of:\n\t{tried}',
-              file=sys.stderr)
+        _LOGGER.error(f'Could not resolve \'{fullname}\' at any of:\n\t{tried}')
         return None
 
     def find_spec(self, fullname: str, path: Sequence[str] | None,

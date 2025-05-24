@@ -333,11 +333,11 @@ def __test_read_all_content():
     start = time.perf_counter()
     errors = 0
     for name in mongo_client.get_collection_names():
-        print(f'Testing collection {name}')
+        logging.info(f'Testing collection {name}')
         size = mongo_client.db[name].count_documents({})
         for progress, document in enumerate(mongo_client.get_collection_content(name), start=1):
             if progress % (size // 5) == 0 or progress == size:
-                print(f'\t{progress}/{size}')
+                logging.info(f'\t{progress}/{size}')
             try:
                 read(document)
             except Exception as e:
@@ -346,7 +346,7 @@ def __test_read_all_content():
                     extra={'notes': '\n\t'.join(e.__notes__)})
                 logging.getLogger('full').exception(e)
                 errors += 1
-    print(f'Finished test in {time.perf_counter() - start:.2f}s with {errors} errors')
+    logging.info(f'Finished test in {time.perf_counter() - start:.2f}s with {errors} errors')
 
 
 if __name__ == '__main__':

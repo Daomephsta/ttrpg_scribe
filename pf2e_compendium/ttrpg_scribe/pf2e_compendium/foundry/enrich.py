@@ -1,5 +1,5 @@
-from collections.abc import Set
 import re
+from collections.abc import Set
 from typing import overload
 
 from ttrpg_scribe.pf2e_compendium.foundry import i18n
@@ -263,5 +263,7 @@ def enrich(text: str) -> str:
 
 
 if __name__ == '__main__':
+    import logging
     import sys
-    print(enrich(sys.argv[1]))
+    _LOGGER = logging.getLogger(__name__)
+    _LOGGER.info(f'{enrich(sys.argv[1])}\n')

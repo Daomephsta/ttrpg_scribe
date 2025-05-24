@@ -1,4 +1,7 @@
+import logging
 from pathlib import Path
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Namespace:
@@ -50,7 +53,7 @@ def init(project_dir_in: Path):
         SETTING = add_namespace(setting_dir)
     else:
         SETTING = None
-    print('Set project dir', project_dir)
+    _LOGGER.info(f'Set project dir {project_dir}')
 
 
 def __all(subpath: str = '.'):
