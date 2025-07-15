@@ -179,12 +179,12 @@ class DiceCell(TableCell[SimpleDice, 'DiceCell']):
         return self.__str__()
 
 
-class Table[C: TableCell](ABC):
+class Table[E](ABC):
     brackets: list[str]
-    rows: list[list[C]]
-    cell_type: type[C]
+    rows: list[list[TableCell]]
+    cell_type: type[TableCell]
 
-    def __init__(self, cell_type: type[C], table: str):
+    def __init__(self, cell_type: type[TableCell[E, Any]], table: str):
         self.cell_type = cell_type
         header, *rows = table.splitlines()
         level, *self.brackets = re.split(r'\s+', header)
@@ -215,20 +215,20 @@ class Table[C: TableCell](ABC):
         cell_str = ', '.join(str(cell) for cell in row)
         raise ValueError(f'Cannot classify {value} for level {level} thresholds: {cell_str}')
 
-    def cell_for(self, level: int, bracket: str):
-        row = self.rows[level + 1]  # -1 is row 0
+    def lookup(self, level: int, bracket: str, rank: int = 1, adjustment: int = 0) -> E:
+        row: list[TableCell[E, Any]] = self.rows[level + 1]  # -1 is row 0
         try:
-            return row[self.brackets.index(bracket)]
+            return row[self.brackets.index(bracket)].value_for(rank, adjustment)
         except ValueError:
             raise ValueError(f'No {bracket} bracket exists in this table. '
                              f'Brackets: {self.brackets}')
 
 
+@dataclass
 class StatisticBracket:
-    def __init__(self, bracket: str, rank=1, adjustment=0) -> None:
-        self.bracket = bracket
-        self.rank = rank
-        self.adjustment = adjustment
+    bracket: str
+    rank: int = 1
+    adjustment: int = 0
 
     def __call__(self, rank: int):
         return StatisticBracket(self.bracket, rank, self.adjustment)
@@ -239,11 +239,8 @@ class StatisticBracket:
     def __sub__(self, penalty: int):
         return StatisticBracket(self.bracket, self.rank, self.adjustment - penalty)
 
-    def lookup[C: TableCell](self, table: Table[C], level: int):
-        return table.cell_for(level, self.bracket).value_for(self.rank, self.adjustment)
-
-    def attribute(self, level: int):
-        return self.lookup(ATTRIBUTE_MODIFIERS, level)
+    def lookup_in[E](self, table: Table[E], level: int):
+        return table.lookup(level, self.bracket, self.rank, self.adjustment)
 
 
 TERRIBLE = StatisticBracket('Terrible')
@@ -251,7 +248,6 @@ LOW = StatisticBracket('Low')
 MODERATE = StatisticBracket('Moderate')
 HIGH = StatisticBracket('High')
 EXTREME = StatisticBracket('Extreme')
-
 
 ATTRIBUTE_MODIFIERS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
 -1	—	+3	+2	+0
