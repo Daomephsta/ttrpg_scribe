@@ -126,6 +126,9 @@ class NumberCell(TableCell[int, 'NumberCell']):
             return f'NumberCell({self.low})'
         return f'NumberCell({self.low} to {self.high})'
 
+    def __repr__(self):
+        return self.__str__()
+
 
 class DiceCell(TableCell[SimpleDice, 'DiceCell']):
     def __init__(self, dice: SimpleDice):
@@ -171,6 +174,9 @@ class DiceCell(TableCell[SimpleDice, 'DiceCell']):
 
     def __str__(self) -> str:
         return f'DiceCell({self.dice})'
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class Table[C: TableCell](ABC):
