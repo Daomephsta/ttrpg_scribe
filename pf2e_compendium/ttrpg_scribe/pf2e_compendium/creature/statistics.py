@@ -1,9 +1,10 @@
+from dataclasses import dataclass
 import itertools
 import math
 import re
 import sys
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Any, Self
 
 from ttrpg_scribe.core.dice import SimpleDice
 
@@ -416,6 +417,34 @@ HIT_POINTS = Table(NumberCell, '''Level	High	Moderate	Low
 22	544 to 532	436 to 424	329 to 317
 23	581 to 569	466 to 454	351 to 339
 24	633 to 617	508 to 492	383 to 367''')
+
+RESISTANCES = WEAKNESSES = Table(NumberCell, '''Level	High	Moderate	Low
+-1	1	1	1
+0	3	2	1
+1	3	2	2
+2	5	3	2
+3	6	4	3
+4	7	5	4
+5	8	6	4
+6	9	7	5
+7	10	7	5
+8	11	8	6
+9	12	9	6
+10	13	10	7
+11	14	10	7
+12	15	11	8
+13	16	12	8
+14	17	13	9
+15	18	13	9
+16	19	14	9
+17	19	14	10
+18	20	15	10
+19	21	16	11
+20	22	16	11
+21	23	17	12
+22	24	18	12
+23	25	19	13
+24	26	19	13''')
 
 STRIKE_ATTACK_BONUS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
 -1	+10	+8	+6	+4
