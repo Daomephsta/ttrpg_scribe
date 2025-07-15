@@ -1,12 +1,12 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Mapping, TypedDict
+from typing import Any, Callable, Iterable, Literal
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
-from ttrpg_scribe.pf2e_compendium.creature.statistics import (
-    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, SAVING_THROWS,
-    SKILLS, StatisticBracket, Table)
+from ttrpg_scribe.pf2e_compendium.creature import statistics
+from ttrpg_scribe.pf2e_compendium.creature.statistics import (StatisticBracket,
+                                                              Table)
 
 
 @dataclass
@@ -94,6 +94,10 @@ class Sense:
         )
 
 
+type Abilities[V] = dict[Literal['str', 'dex', 'con', 'int', 'wis', 'cha'], V]
+type Saves[V] = dict[Literal['fortitude', 'reflex', 'will'], V]
+
+
 @dataclass
 class PF2Creature(InitiativeParticipant):
     name: str
@@ -106,10 +110,10 @@ class PF2Creature(InitiativeParticipant):
     senses: list[Sense]
     skills: list[Skill]
     inventory: dict[str, int]
-    abilities: dict[str, int]
+    abilities: Abilities[int]
     interactions: list[tuple[str, str]]
     ac: int
-    saves: dict[str, int]
+    saves: Saves[int]
     max_hp: int
     immunities: list[str]
     resistances: dict[str, int]
@@ -199,18 +203,6 @@ class PF2Creature(InitiativeParticipant):
             spellcasting=[Spellcasting.from_json(e) for e in data.get('spellcasting', [])],
         )
 
-    class Abilities(TypedDict):
-        str: StatisticBracket
-        dex: StatisticBracket
-        con: StatisticBracket
-        int: StatisticBracket
-        wis: StatisticBracket
-        cha: StatisticBracket
-
-    class Saves(TypedDict):
-        fortitude: StatisticBracket
-        reflex: StatisticBracket
-        will: StatisticBracket
     type _Skills = Callable[[Callable[[StatisticBracket], int]], list[Skill]]
     type _Lookup = Callable[[Table, StatisticBracket], Any]
 
@@ -218,41 +210,33 @@ class PF2Creature(InitiativeParticipant):
     def from_brackets(
             name: str, level: int, rarity: str, size: str, traits: list[str],
             perception: StatisticBracket, skills: _Skills, inventory: dict[str, int],
-            abilities: Abilities, ac: StatisticBracket, saves:  Saves, hp: StatisticBracket,
-            speeds: dict[str, int],
+            abilities: Abilities[StatisticBracket], ac: StatisticBracket,
+            saves: Saves[StatisticBracket], hp: StatisticBracket, speeds: dict[str, int],
             actions: Callable[[_Lookup], list[Any | list[Action]] | list[Action]]):
 
-        def lookup(table: Table, bracket: StatisticBracket):
-            return bracket.lookup(table, level)
+        from pf2e_compendium.ttrpg_scribe.pf2e_compendium.creature.builder import (
+            CreatureBuilder, Statistic)
 
-        def convert_dict(table: Table, d: Mapping) -> dict[str, int]:
-            return {key: lookup(table, bracket) for key, bracket in d.items()}
+        def lookup(table: Table, bracket: StatisticBracket):
+            return Statistic(table, level, bracket)
 
         match actions(lookup):
             case [*_, [*actions0]]: pass
             case [*actions0]: pass
 
-        return PF2Creature(
-            name=name,
-            level=level,
-            rarity=rarity,
-            size=size,
-            traits=traits,
-            perception=lookup(PERCEPTION, perception),
-            languages=[],
-            senses=[],
-            skills=skills(lambda bracket: lookup(SKILLS, bracket)),
-            inventory=inventory,
-            abilities=convert_dict(ATTRIBUTE_MODIFIERS, abilities),
-            interactions=[],
-            ac=ac.lookup(ARMOR_CLASS, level),
-            saves=convert_dict(SAVING_THROWS, saves),
-            max_hp=hp.lookup(HIT_POINTS, level),
-            immunities=[],
-            resistances={},
-            weaknesses={},
-            defenses=[],
-            speeds=speeds,
-            actions=actions0,
-            spellcasting=[],
-        )
+        builder = CreatureBuilder(name, level)
+        builder.rarity = rarity
+        builder.size = size
+        builder.traits = traits
+        builder.perception = perception
+        builder.skills = skills(lambda bracket: bracket.lookup_in(statistics.SKILLS, level))
+        builder.inventory = inventory
+        for key, bracket in abilities.items():
+            builder.abilities[key].bracket = bracket
+        builder.ac = ac
+        for key, bracket in saves.items():
+            builder.saves[key].bracket = bracket
+        builder.max_hp = hp
+        builder.speeds = speeds
+        builder.actions = actions0
+        return builder.build()
