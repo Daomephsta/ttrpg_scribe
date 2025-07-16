@@ -1,9 +1,9 @@
-from dataclasses import dataclass
 import itertools
 import math
 import re
 import sys
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Self
 
 from ttrpg_scribe.core.dice import SimpleDice
@@ -180,6 +180,22 @@ class DiceCell(TableCell[SimpleDice, 'DiceCell']):
         return self.__str__()
 
 
+@dataclass
+class StatisticBracket:
+    name: str
+    rank: int = 1
+    adjustment: int = 0
+
+    def __call__(self, rank: int):
+        return StatisticBracket(self.name, rank, self.adjustment)
+
+    def __add__(self, bonus: int):
+        return StatisticBracket(self.name, self.rank, self.adjustment + bonus)
+
+    def __sub__(self, penalty: int):
+        return StatisticBracket(self.name, self.rank, self.adjustment - penalty)
+
+
 class Table[E](ABC):
     brackets: list[str]
     rows: list[list[TableCell]]
@@ -216,32 +232,17 @@ class Table[E](ABC):
         cell_str = ', '.join(str(cell) for cell in row)
         raise ValueError(f'Cannot classify {value} for level {level} thresholds: {cell_str}')
 
-    def lookup(self, level: int, bracket: str, rank: int = 1, adjustment: int = 0) -> E:
+    def lookup(self, level: int, bracket: StatisticBracket) -> E:
         row: list[TableCell[E, Any]] = self.rows[level + 1]  # -1 is row 0
         try:
-            return row[self.brackets.index(bracket)].value_for(rank, adjustment)
+            cell = row[self.brackets.index(bracket.name)]
+            return cell.value_for(bracket.rank, bracket.adjustment)
         except ValueError:
-            raise ValueError(f'No {bracket} bracket exists in this table. '
+            raise ValueError(f'No {bracket.name} bracket exists in this table. '
                              f'Brackets: {self.brackets}')
 
-
-@dataclass
-class StatisticBracket:
-    bracket: str
-    rank: int = 1
-    adjustment: int = 0
-
-    def __call__(self, rank: int):
-        return StatisticBracket(self.bracket, rank, self.adjustment)
-
-    def __add__(self, bonus: int):
-        return StatisticBracket(self.bracket, self.rank, self.adjustment + bonus)
-
-    def __sub__(self, penalty: int):
-        return StatisticBracket(self.bracket, self.rank, self.adjustment - penalty)
-
-    def lookup_in[E](self, table: Table[E], level: int):
-        return table.lookup(level, self.bracket, self.rank, self.adjustment)
+    def __getitem__(self, key: tuple[int, StatisticBracket]):
+        return self.lookup(*key)
 
 
 TERRIBLE = StatisticBracket('Terrible')
