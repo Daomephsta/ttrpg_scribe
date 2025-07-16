@@ -215,10 +215,10 @@ class PF2Creature(InitiativeParticipant):
             actions: Callable[[_Lookup], list[Any | list[Action]] | list[Action]]):
 
         from pf2e_compendium.ttrpg_scribe.pf2e_compendium.creature.builder import (
-            CreatureBuilder, Statistic)
+            CreatureBuilder, _Statistic)
 
         def lookup(table: Table, bracket: StatisticBracket):
-            return Statistic(table, level, bracket)
+            return _Statistic(table, level, bracket)
 
         match actions(lookup):
             case [*_, [*actions0]]: pass
@@ -229,7 +229,7 @@ class PF2Creature(InitiativeParticipant):
         builder.size = size
         builder.traits = traits
         builder.perception = perception
-        builder.skills = skills(lambda bracket: bracket.lookup_in(statistics.SKILLS, level))
+        builder.skills = skills(lambda bracket: statistics.SKILLS[level, bracket])
         builder.inventory = inventory
         for key, bracket in abilities.items():
             builder.abilities[key].bracket = bracket
