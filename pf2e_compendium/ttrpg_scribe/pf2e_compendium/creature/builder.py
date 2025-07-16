@@ -15,13 +15,26 @@ type BracketOrValue[T] = StatisticBracket | T
 class _Statistic[E]:
     table: Table[E]
     level: int
-    bracket: StatisticBracket
+    bracket: StatisticBracket | None = None
     override: E | None = None
+
+    def __init__(self, table: Table[E], level: int, value: BracketOrValue[E]):
+        self.table = table
+        self.level = level
+        match value:
+            case StatisticBracket():
+                self.bracket = value
+                self.override = None
+            case _:
+                self.bracket = None
+                self.override = value
 
     def resolve(self) -> E:
         if self.override is not None:
             return self.override
-        return self.table[self.level, self.bracket]
+        if self.bracket is not None:
+            return self.table[self.level, self.bracket]
+        raise RuntimeError('Illegal state: bracket and override are both None')
 
     def update(self, value: BracketOrValue[E]):
         match value:
@@ -160,12 +173,22 @@ class CreatureBuilder:
 
     def update(self, **kwargs: Unpack['CreatureBuilder._UpdateArgs']):
         def update_dict[K, V](statistics: dict[K, '_Statistic[V]'],
-                              values: dict[K, BracketOrValue[V]]):
-            for key in values:
-                statistics[key].update(values[key])
+                              values: dict[K, BracketOrValue[V]], factory=None):
+            for key, value in values.items():
+                if key in statistics:
+                    statistics[key].update(value)
+                elif factory is not None:
+                    statistics[key] = factory(value)
+
+        def _statistic_factory[E](table: Table[E]):
+            return lambda v: _Statistic(table, self.level, v)
 
         update_dict(self.abilities, kwargs.pop('abilities', {}))
         update_dict(self.saves, kwargs.pop('saves', {}))
+        update_dict(self.resistances, kwargs.pop('resistances', {}),
+                    _statistic_factory(RESISTANCES))
+        update_dict(self.weaknesses, kwargs.pop('weaknesses', {}),
+                    _statistic_factory(WEAKNESSES))
         for field, value in kwargs.items():
             current = getattr(self, field)
             if isinstance(current, _Statistic):
