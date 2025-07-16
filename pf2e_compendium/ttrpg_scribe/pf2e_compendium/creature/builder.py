@@ -37,40 +37,16 @@ class CreatureBuilder:
     size: str
     rarity: str
     traits: list[str]
-
-    @property
-    def perception(self) -> StatisticBracket:
-        return self._perception.bracket
-
-    @perception.setter
-    def perception(self, bracket: StatisticBracket):
-        self._perception.bracket = bracket
-
+    perception: _Statistic[int]
     languages: list[str]
     senses: list[Sense]
     skills: list[Skill]
     inventory: dict[str, int]
     abilities: Abilities[_Statistic[int]]
     interactions: list[tuple[str, str]]
-
-    @property
-    def ac(self) -> StatisticBracket:
-        return self._ac.bracket
-
-    @ac.setter
-    def ac(self, bracket: StatisticBracket):
-        self._ac.bracket = bracket
-
+    ac: _Statistic[int]
     saves: Saves[_Statistic[int]]
-
-    @property
-    def max_hp(self) -> StatisticBracket:
-        return self._max_hp.bracket
-
-    @max_hp.setter
-    def max_hp(self, bracket: StatisticBracket):
-        self._max_hp.bracket = bracket
-
+    max_hp: _Statistic[int]
     immunities: list[str]
     resistances: dict[str, _Statistic[int]]
     weaknesses: dict[str, _Statistic[int]]
@@ -90,7 +66,7 @@ class CreatureBuilder:
         self.rarity = 'common'
         self.size = 'medium'
         self.traits = []
-        self._perception = _Statistic(PERCEPTION, level, MODERATE)
+        self.perception = _Statistic(PERCEPTION, level, MODERATE)
         self.languages = []
         self.senses = []
         self.skills = []
@@ -104,13 +80,13 @@ class CreatureBuilder:
             'cha': _Statistic(ATTRIBUTE_MODIFIERS, level, MODERATE)
         }
         self.interactions = []
-        self._ac = _Statistic(ARMOR_CLASS, level, MODERATE)
+        self.ac = _Statistic(ARMOR_CLASS, level, MODERATE)
         self.saves = {
             'fortitude': _Statistic(SAVING_THROWS, level, MODERATE),
             'reflex': _Statistic(SAVING_THROWS, level, MODERATE),
             'will': _Statistic(SAVING_THROWS, level, MODERATE)
         }
-        self._max_hp = _Statistic(HIT_POINTS, level, MODERATE)
+        self.max_hp = _Statistic(HIT_POINTS, level, MODERATE)
         self.immunities = []
         self.resistances = {}
         self.weaknesses = {}
@@ -205,16 +181,16 @@ class CreatureBuilder:
             rarity=self.rarity,
             size=self.size,
             traits=self.traits,
-            perception=self._perception.resolve(),
+            perception=self.perception.resolve(),
             languages=self.languages,
             senses=self.senses,
             skills=self.skills,
             inventory=self.inventory,
             abilities={k: v.resolve() for k, v in self.abilities.items()},
             interactions=self.interactions,
-            ac=self._ac.resolve(),
+            ac=self.ac.resolve(),
             saves={k: v.resolve() for k, v in self.saves.items()},
-            max_hp=self._max_hp.resolve(),
+            max_hp=self.max_hp.resolve(),
             immunities=self.immunities,
             resistances={k: v.resolve() for k, v in self.resistances.items()},
             weaknesses={k: v.resolve() for k, v in self.weaknesses.items()},
