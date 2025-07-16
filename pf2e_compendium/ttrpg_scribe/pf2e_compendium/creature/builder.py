@@ -79,7 +79,9 @@ class CreatureBuilder:
     actions: list[Action]
     spellcasting: list[Spellcasting]
 
-    def __init__(self, name: str, level: int):
+    type Template = Callable[[Self], Any]
+
+    def __init__(self, name: str, level: int, init_template: Template):
         from ttrpg_scribe.pf2e_compendium.creature.statistics import (
             ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, MODERATE, PERCEPTION,
             SAVING_THROWS)
@@ -116,6 +118,7 @@ class CreatureBuilder:
         self.speeds = {'walk': 25}
         self.actions = []
         self.spellcasting = []
+        self.apply(init_template)
 
     def terrible[E](self, table: Table[E]) -> E:
         return table[self.level, statistics.TERRIBLE]
@@ -132,7 +135,7 @@ class CreatureBuilder:
     def extreme[E](self, table: Table[E]) -> E:
         return table[self.level, statistics.EXTREME]
 
-    def apply(self, template: Callable[[Self], Any]):
+    def apply(self, template: Template):
         template(self)
         return self
 
