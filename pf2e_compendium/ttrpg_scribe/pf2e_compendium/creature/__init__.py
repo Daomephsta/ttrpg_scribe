@@ -214,29 +214,27 @@ class PF2Creature(InitiativeParticipant):
             saves: Saves[StatisticBracket], hp: StatisticBracket, speeds: dict[str, int],
             actions: Callable[[_Lookup], list[Any | list[Action]] | list[Action]]):
 
-        from pf2e_compendium.ttrpg_scribe.pf2e_compendium.creature.builder import (
-            CreatureBuilder, _Statistic)
+        from pf2e_compendium.ttrpg_scribe.pf2e_compendium.creature.builder import \
+            CreatureBuilder
 
         def lookup(table: Table, bracket: StatisticBracket):
-            return _Statistic(table, level, bracket)
+            return table.lookup(level, bracket)
 
         match actions(lookup):
             case [*_, [*actions0]]: pass
             case [*actions0]: pass
 
-        builder = CreatureBuilder(name, level)
-        builder.rarity = rarity
-        builder.size = size
-        builder.traits = traits
-        builder.perception = perception
-        builder.skills = skills(lambda bracket: statistics.SKILLS[level, bracket])
-        builder.inventory = inventory
-        for key, bracket in abilities.items():
-            builder.abilities[key].bracket = bracket
-        builder.ac = ac
-        for key, bracket in saves.items():
-            builder.saves[key].bracket = bracket
-        builder.max_hp = hp
-        builder.speeds = speeds
-        builder.actions = actions0
-        return builder.build()
+        return CreatureBuilder(name, level, lambda b: b.update(
+            rarity=rarity,
+            size=size,
+            traits=traits,
+            perception=perception,
+            skills=skills(lambda bracket: statistics.SKILLS[level, bracket]),
+            inventory=inventory,
+            abilities=dict(abilities.items()),
+            ac=ac,
+            saves=dict(saves.items()),
+            max_hp=hp,
+            speeds=speeds,
+            actions=actions0,
+        )).build()
