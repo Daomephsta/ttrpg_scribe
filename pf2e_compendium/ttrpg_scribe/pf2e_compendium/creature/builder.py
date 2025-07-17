@@ -9,8 +9,6 @@ from ttrpg_scribe.pf2e_compendium.creature.statistics import (
     ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, MODERATE, PERCEPTION,
     RESISTANCES, SAVING_THROWS, WEAKNESSES, StatisticBracket, Table)
 
-type BracketOrValue[T] = StatisticBracket | T
-
 
 @dataclass
 class _Statistic[E]:
@@ -19,7 +17,7 @@ class _Statistic[E]:
     bracket: StatisticBracket | None = None
     override: E | None = None
 
-    def __init__(self, table: Table[E], level: int, value: BracketOrValue[E]):
+    def __init__(self, table: Table[E], level: int, value: StatisticBracket | E):
         self.table = table
         self.level = level
         match value:
@@ -37,7 +35,7 @@ class _Statistic[E]:
             return self.table[self.level, self.bracket]
         raise RuntimeError('Illegal state: bracket and override are both None')
 
-    def update(self, value: BracketOrValue[E]):
+    def update(self, value: StatisticBracket | E):
         match value:
             case StatisticBracket():
                 self.bracket = value
@@ -156,19 +154,19 @@ class CreatureBuilder:
         size: str
         rarity: str
         traits: list[str]
-        perception: BracketOrValue[int]
+        perception: StatisticBracket | int
         languages: list[str]
         senses: list[Sense]
         skills: list[Skill]
         inventory: dict[str, int]
-        abilities: Abilities[BracketOrValue[int]]
+        abilities: Abilities[StatisticBracket | int]
         interactions: list[tuple[str, str]]
-        ac: BracketOrValue[int]
-        saves: Saves[BracketOrValue[int]]
-        max_hp: BracketOrValue[int]
+        ac: StatisticBracket | int
+        saves: Saves[StatisticBracket | int]
+        max_hp: StatisticBracket | int
         immunities: list[str]
-        resistances: dict[str, BracketOrValue[int]]
-        weaknesses: dict[str, BracketOrValue[int]]
+        resistances: dict[str, StatisticBracket | int]
+        weaknesses: dict[str, StatisticBracket | int]
         defenses: list[SimpleAction]
         speeds: dict[str, int]
         actions: list[Action]
@@ -176,7 +174,7 @@ class CreatureBuilder:
 
     def update(self, **kwargs: Unpack['CreatureBuilder._UpdateArgs']):
         def update_dict[K, V](statistics: dict[K, '_Statistic[V]'],
-                              values: dict[K, BracketOrValue[V]], factory=None):
+                              values: dict[K, StatisticBracket | V], factory=None):
             for key, value in values.items():
                 if key in statistics:
                     statistics[key].update(value)
