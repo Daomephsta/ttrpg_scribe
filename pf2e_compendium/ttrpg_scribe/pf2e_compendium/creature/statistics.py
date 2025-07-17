@@ -9,6 +9,39 @@ from typing import Any, Self
 from ttrpg_scribe.core.dice import SimpleDice
 
 
+@dataclass
+class StatisticBracket:
+    name: str
+    rank: int = 1
+    adjustment: int = 0
+    maximum: int | None = None  # Maximum rank or adjustment
+
+    def __post_init__(self):
+        if self.rank != 1 and self.adjustment != 0:
+            raise ValueError('Rank and adjustment are mutually exclusive')
+
+    def __call__(self, rank: int):
+        return StatisticBracket(self.name, rank, self.adjustment)
+
+    def __add__(self, bonus: int):
+        return StatisticBracket(self.name, self.rank, self.adjustment + bonus)
+
+    def __sub__(self, penalty: int):
+        return StatisticBracket(self.name, self.rank, self.adjustment - penalty)
+
+    def __str__(self) -> str:
+        parts = [self.name]
+        if self.rank != 1:
+            parts.append(str(self.rank))
+        if self.adjustment > 0:
+            parts.append(f'+ {self.adjustment}')
+        elif self.adjustment < 0:
+            parts.append(f'- {abs(self.adjustment)}')
+        if self.maximum is not None:
+            parts.append(f'(of {self.maximum})')
+        return ' '.join(parts)
+
+
 class TableCell[V, SelfT: 'TableCell'](ABC):
     @classmethod
     @abstractmethod
@@ -18,35 +51,33 @@ class TableCell[V, SelfT: 'TableCell'](ABC):
     def value_for(self, rank: int, adjustment: int) -> V: ...
 
     @abstractmethod
-    def in_description(self, name: str, value: int) -> str: ...
+    def in_bracket(self, name: str, value: int) -> StatisticBracket: ...
 
     @abstractmethod
-    def above_description(self, name: str, value: int) -> str: ...
+    def above_bracket(self, name: str, value: int) -> StatisticBracket: ...
 
     @abstractmethod
-    def below_description(self, name: str, value: int) -> str: ...
+    def below_bracket(self, name: str, value: int) -> StatisticBracket: ...
 
     @classmethod
-    def _between_description0(cls, lower_bound: int, lower_name: str,
+    def _between_brackets_helper(cls, lower_bound: int, lower_name: str,
                             upper_bound: int, upper_name: str,
-                            value: int) -> str:
+                            value: int) -> StatisticBracket:
         diff_lower = value - lower_bound
         diff_upper = upper_bound - value
+        maximum = upper_bound - lower_bound - 1
         if abs(diff_upper) < abs(diff_lower):
-            return f'{upper_name} - {diff_upper} ' +\
-                   f'(of {upper_bound - lower_bound - 1})'
+            return StatisticBracket(upper_name, adjustment=-diff_upper, maximum=maximum)
         elif abs(diff_upper) == abs(diff_lower):
-            return f'{lower_name} + {value - lower_bound} ' +\
-                   f'(of {upper_bound - lower_bound - 1})'
+            return StatisticBracket(lower_name, adjustment=value - lower_bound, maximum=maximum)
         else:
-            return f'{lower_name} + {diff_lower} ' +\
-                   f'(of {upper_bound - lower_bound - 1})'
+            return StatisticBracket(lower_name, adjustment=diff_lower, maximum=maximum)
 
     @classmethod
     @abstractmethod
-    def between_description(cls: type[SelfT], lower: SelfT, lower_name: str,
+    def between_brackets(cls: type[SelfT], lower: SelfT, lower_name: str,
                             upper: SelfT, upper_name: str,
-                            value: int) -> str: ...
+                            value: int) -> StatisticBracket: ...
 
     @abstractmethod
     def __contains__(self, value: int) -> bool: ...
@@ -85,22 +116,22 @@ class NumberCell(TableCell[int, 'NumberCell']):
         else:  # self.adjustment == 0
             return self.low + rank - 1  # Rank 1 is +0
 
-    def in_description(self, name: str, value: int) -> str:
+    def in_bracket(self, name: str, value: int) -> StatisticBracket:
         if self.high == self.low:
-            return name
-        return f'{name} {value - self.low + 1} (of {self.high - self.low + 1})'
+            return StatisticBracket(name)
+        return StatisticBracket(name, rank=value - self.low + 1, maximum=self.high - self.low + 1)
 
-    def above_description(self, name: str, value: int) -> str:
-        return f'{name} + {value - self.high}'
+    def above_bracket(self, name: str, value: int) -> StatisticBracket:
+        return StatisticBracket(name, adjustment=value - self.high)
 
-    def below_description(self, name: str, value: int) -> str:
-        return f'{name} - {self.low - value}'
+    def below_bracket(self, name: str, value: int) -> StatisticBracket:
+        return StatisticBracket(name, adjustment=-(self.low - value))
 
     @classmethod
-    def between_description(cls, lower: 'NumberCell', lower_name: str,
+    def between_brackets(cls, lower: 'NumberCell', lower_name: str,
                             upper: 'NumberCell', upper_name: str,
-                            value: int) -> str:
-        return cls._between_description0(
+                            value: int) -> StatisticBracket:
+        return cls._between_brackets_helper(
             lower.high, lower_name,
             upper.low, upper_name,
             value
@@ -146,20 +177,20 @@ class DiceCell(TableCell[SimpleDice, 'DiceCell']):
         else:  # self.adjustment == 0
             return self.dice + rank - 1  # Rank 1 is +0
 
-    def in_description(self, name: str, value: int) -> str:
-        return name
+    def in_bracket(self, name: str, value: int) -> StatisticBracket:
+        return StatisticBracket(name)
 
-    def above_description(self, name: str, value: int) -> str:
-        return f'{name} + {value - self.average}'
+    def above_bracket(self, name: str, value: int) -> StatisticBracket:
+        return StatisticBracket(name, adjustment=value - self.average)
 
-    def below_description(self, name: str, value: int) -> str:
-        return f'{name} - {self.average - value}'
+    def below_bracket(self, name: str, value: int) -> StatisticBracket:
+        return StatisticBracket(name, adjustment=value - self.average)
 
     @classmethod
-    def between_description(cls, lower: 'DiceCell', lower_name: str,
+    def between_brackets(cls, lower: 'DiceCell', lower_name: str,
                             upper: 'DiceCell', upper_name: str,
-                            value: int) -> str:
-        return cls._between_description0(
+                            value: int) -> StatisticBracket:
+        return cls._between_brackets_helper(
             lower.average, lower_name,
             upper.average, upper_name,
             value)
@@ -180,22 +211,6 @@ class DiceCell(TableCell[SimpleDice, 'DiceCell']):
         return self.__str__()
 
 
-@dataclass
-class StatisticBracket:
-    name: str
-    rank: int = 1
-    adjustment: int = 0
-
-    def __call__(self, rank: int):
-        return StatisticBracket(self.name, rank, self.adjustment)
-
-    def __add__(self, bonus: int):
-        return StatisticBracket(self.name, self.rank, self.adjustment + bonus)
-
-    def __sub__(self, penalty: int):
-        return StatisticBracket(self.name, self.rank, self.adjustment - penalty)
-
-
 class Table[E](ABC):
     brackets: list[str]
     rows: list[list[TableCell]]
@@ -212,23 +227,23 @@ class Table[E](ABC):
 
         self.rows = [read_row(row) for row in rows]
 
-    def classify(self, level: int, value: int) -> str:
+    def classify(self, level: int, value: int) -> StatisticBracket:
         row = self.rows[level + 1]
         thresholds = itertools.pairwise(zip(self.brackets, row))
 
         for (upper_name, upper), (lower_name, lower) in thresholds:
             if value in upper:
-                return upper.in_description(upper_name, value)
+                return upper.in_bracket(upper_name, value)
             elif value in lower:
-                return lower.in_description(lower_name, value)
+                return lower.in_bracket(lower_name, value)
             elif lower < value < upper:
-                return self.cell_type.between_description(lower, lower_name,
+                return self.cell_type.between_brackets(lower, lower_name,
                                                           upper, upper_name, value)
         highest, *_, lowest = row
         if value < lowest:
-            return lowest.below_description(self.brackets[-1], value)
+            return lowest.below_bracket(self.brackets[-1], value)
         if value > highest:
-            return highest.above_description(self.brackets[0], value)
+            return highest.above_bracket(self.brackets[0], value)
         cell_str = ', '.join(str(cell) for cell in row)
         raise ValueError(f'Cannot classify {value} for level {level} thresholds: {cell_str}')
 

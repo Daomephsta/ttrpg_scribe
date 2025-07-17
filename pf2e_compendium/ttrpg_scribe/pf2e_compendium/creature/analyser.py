@@ -6,25 +6,25 @@ from ttrpg_scribe.pf2e_compendium.actions import SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature.statistics import (
     ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, SAVING_THROWS,
-    SKILLS, SPELL_DC, STRIKE_ATTACK_BONUS, STRIKE_DAMAGE)
+    SKILLS, SPELL_DC, STRIKE_ATTACK_BONUS, STRIKE_DAMAGE, StatisticBracket)
 
 
 @dataclass
 class Report:
     name: str
-    perception: str
-    skills: list[tuple[str, str]]
-    attributes: dict[str, str]
-    ac: str
-    saves: dict[str, str]
-    hp: str
+    perception: StatisticBracket
+    skills: list[tuple[str, StatisticBracket]]
+    attributes: dict[str, StatisticBracket]
+    ac: StatisticBracket
+    saves: dict[str, StatisticBracket]
+    hp: StatisticBracket
 
     @dataclass
     class Action:
         name: str
-        bonus: str = ''
-        dc: str = ''
-        damage: str = ''
+        bonus: StatisticBracket | None = None
+        dc: StatisticBracket | None = None
+        damage: StatisticBracket | None = None
 
     actions: list[Action]
 
@@ -48,7 +48,7 @@ def analyse(creature: PF2Creature):
                 actions.append(analyse_strike(action))
             case SimpleAction():
                 dc = re.search(r'DC (\d+)', action.desc)
-                dc = SPELL_DC.classify(creature.level, int(dc[1])) if dc else ''
+                dc = SPELL_DC.classify(creature.level, int(dc[1])) if dc else None
                 actions.append(Report.Action(action.name, dc=dc))
 
     return Report(
