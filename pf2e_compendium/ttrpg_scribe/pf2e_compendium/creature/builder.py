@@ -5,8 +5,9 @@ from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
 from ttrpg_scribe.pf2e_compendium.creature import (Abilities, PF2Creature,
                                                    Saves, Sense, Skill,
                                                    Spellcasting, statistics)
-from ttrpg_scribe.pf2e_compendium.creature.statistics import (StatisticBracket,
-                                                              Table)
+from ttrpg_scribe.pf2e_compendium.creature.statistics import (
+    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, MODERATE, PERCEPTION,
+    RESISTANCES, SAVING_THROWS, WEAKNESSES, StatisticBracket, Table)
 
 type BracketOrValue[T] = StatisticBracket | T
 
@@ -43,7 +44,12 @@ class _Statistic[E]:
             case int():
                 self.override = value
 
+    def __repr__(self) -> str:
+        return f'_Statistic(table=<Table {self.table.name}>, level={self.level}' +\
+               f', value={self.bracket or self.override!r})'
 
+
+@dataclass(eq=False, match_args=False)
 class CreatureBuilder:
     name: str
     level: int
@@ -71,9 +77,6 @@ class CreatureBuilder:
     type Template = Callable[[Self], Any]
 
     def __init__(self, name: str, level: int, init_template: Template):
-        from ttrpg_scribe.pf2e_compendium.creature.statistics import (
-            ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, MODERATE, PERCEPTION,
-            SAVING_THROWS)
         self.name = name
         self.level = level
         self.rarity = 'common'

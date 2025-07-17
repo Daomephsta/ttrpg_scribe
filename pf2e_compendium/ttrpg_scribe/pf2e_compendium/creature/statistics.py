@@ -41,6 +41,9 @@ class StatisticBracket:
             parts.append(f'(of {self.maximum})')
         return ' '.join(parts)
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} {self}>'
+
 
 class TableCell[V, SelfT: 'TableCell'](ABC):
     @classmethod
@@ -212,11 +215,13 @@ class DiceCell(TableCell[SimpleDice, 'DiceCell']):
 
 
 class Table[E](ABC):
+    name: str
     brackets: list[str]
     rows: list[list[TableCell]]
     cell_type: type[TableCell]
 
-    def __init__(self, cell_type: type[TableCell[E, Any]], table: str):
+    def __init__(self, name: str, cell_type: type[TableCell[E, Any]], table: str):
+        self.name = name
         self.cell_type = cell_type
         header, *rows = table.splitlines()
         level, *self.brackets = re.split(r'\s+', header)
@@ -266,7 +271,7 @@ MODERATE = StatisticBracket('Moderate')
 HIGH = StatisticBracket('High')
 EXTREME = StatisticBracket('Extreme')
 
-ATTRIBUTE_MODIFIERS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
+ATTRIBUTE_MODIFIERS = Table('ATTRIBUTE_MODIFIERS', NumberCell, '''Level	Extreme	High	Moderate	Low
 -1	—	+3	+2	+0
 0	—	+3	+2	+0
 1	+5	+4	+3	+1
@@ -294,7 +299,7 @@ ATTRIBUTE_MODIFIERS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
 23	+11	+10	+8	+6
 24	+13	+12	+9	+7''')
 
-PERCEPTION = Table(NumberCell, '''Level	Extreme	High	Moderate	Low	Terrible
+PERCEPTION = Table('PERCEPTION', NumberCell, '''Level	Extreme	High	Moderate	Low	Terrible
 -1	+9	+8	+5	+2	+0
 0	+10	+9	+6	+3	+1
 1	+11	+10	+7	+4	+2
@@ -322,7 +327,7 @@ PERCEPTION = Table(NumberCell, '''Level	Extreme	High	Moderate	Low	Terrible
 23	+44	+40	+37	+34	+31
 24	+46	+42	+38	+36	+32''')
 
-SKILLS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
+SKILLS = Table('SKILLS', NumberCell, '''Level	Extreme	High	Moderate	Low
 -1	+8	+5	+4	+2 to +1
 0	+9	+6	+5	+3 to +2
 1	+10	+7	+6	+4 to +3
@@ -350,7 +355,7 @@ SKILLS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
 23	+46	+43	+38	+36 to +32
 24	+48	+45	+40	+38 to +33''')
 
-ARMOR_CLASS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
+ARMOR_CLASS = Table('ARMOR_CLASS', NumberCell, '''Level	Extreme	High	Moderate	Low
 -1	18	15	14	12
 0	19	16	15	13
 1	19	16	15	13
@@ -378,7 +383,7 @@ ARMOR_CLASS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
 23	52	49	48	46
 24	54	51	50	48''')
 
-SAVING_THROWS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low	Terrible
+SAVING_THROWS = Table('SAVING_THROWS', NumberCell, '''Level	Extreme	High	Moderate	Low	Terrible
 -1	+9	+8	+5	+2	+0
 0	+10	+9	+6	+3	+1
 1	+11	+10	+7	+4	+2
@@ -406,7 +411,7 @@ SAVING_THROWS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low	Terrible
 23	+44	+40	+37	+34	+31
 24	+46	+42	+38	+36	+32''')
 
-HIT_POINTS = Table(NumberCell, '''Level	High	Moderate	Low
+HIT_POINTS = Table('HIT_POINTS', NumberCell, '''Level	High	Moderate	Low
 -1	9	8 to 7	6 to 5
 0	20 to 17	16 to 14	13 to 11
 1	26 to 24	21 to 19	16 to 14
@@ -434,7 +439,7 @@ HIT_POINTS = Table(NumberCell, '''Level	High	Moderate	Low
 23	581 to 569	466 to 454	351 to 339
 24	633 to 617	508 to 492	383 to 367''')
 
-RESISTANCES = WEAKNESSES = Table(NumberCell, '''Level	High	Moderate	Low
+RESISTANCES = Table('RESISTANCES', NumberCell, '''Level	High	Moderate	Low
 -1	1	1	1
 0	3	2	1
 1	3	2	2
@@ -462,7 +467,35 @@ RESISTANCES = WEAKNESSES = Table(NumberCell, '''Level	High	Moderate	Low
 23	25	19	13
 24	26	19	13''')
 
-STRIKE_ATTACK_BONUS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
+WEAKNESSES = Table('WEAKNESSES', NumberCell, '''Level	High	Moderate	Low
+-1	1	1	1
+0	3	2	1
+1	3	2	2
+2	5	3	2
+3	6	4	3
+4	7	5	4
+5	8	6	4
+6	9	7	5
+7	10	7	5
+8	11	8	6
+9	12	9	6
+10	13	10	7
+11	14	10	7
+12	15	11	8
+13	16	12	8
+14	17	13	9
+15	18	13	9
+16	19	14	9
+17	19	14	10
+18	20	15	10
+19	21	16	11
+20	22	16	11
+21	23	17	12
+22	24	18	12
+23	25	19	13
+24	26	19	13''')
+
+STRIKE_ATTACK_BONUS = Table('STRIKE_ATTACK_BONUS', NumberCell, '''Level	Extreme	High	Moderate	Low
 -1	+10	+8	+6	+4
 0	+10	+8	+6	+4
 1	+11	+9	+7	+5
@@ -491,7 +524,7 @@ STRIKE_ATTACK_BONUS = Table(NumberCell, '''Level	Extreme	High	Moderate	Low
 24	+46	+44	+42	+36''')
 
 
-STRIKE_DAMAGE = Table(DiceCell, '''Level	Extreme	High	Moderate	Low
+STRIKE_DAMAGE = Table('STRIKE_DAMAGE', DiceCell, '''Level	Extreme	High	Moderate	Low
 -1	1d6+1 (4)	1d4+1 (3)	1d4 (3)	1d4 (2)
 0	1d6+3 (6)	1d6+2 (5)	1d4+2 (4)	1d4+1 (3)
 1	1d8+4 (8)	1d6+3 (6)	1d6+2 (5)	1d4+2 (4)
@@ -520,7 +553,7 @@ STRIKE_DAMAGE = Table(DiceCell, '''Level	Extreme	High	Moderate	Low
 24	4d12+42 (68)	4d12+26 (52)	4d10+22 (44)	4d6+21 (35)''')
 
 
-SPELL_DC = Table(NumberCell, '''Level Extreme High Moderate
+SPELL_DC = Table('SPELL_DC', NumberCell, '''Level Extreme High Moderate
 -1	19	16	13
 0	19	16	13
 1	20	17	14
@@ -549,7 +582,7 @@ SPELL_DC = Table(NumberCell, '''Level Extreme High Moderate
 24	52	48	45''')
 
 
-SPELL_ATTACK_BONUS = Table(NumberCell, '''Level Extreme High Moderate
+SPELL_ATTACK_BONUS = Table('SPELL_ATTACK_BONUS', NumberCell, '''Level Extreme High Moderate
 -1	+11	+8	+5
 0	+11	+8	+5
 1	+12	+9	+6
