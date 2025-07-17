@@ -11,7 +11,7 @@
             <b>Skills</b>
             <ul>
             {% for skill, value in report.skills %}
-                <li>{{ skill | title }} {{ value }}</li>
+                <li><b>{{ skill | title }}</b> {{ value }}</li>
             {% endfor %}
             </ul>
         </li>
@@ -37,6 +37,28 @@
         </li>
 
         <li><b>HP</b> {{ report.hp }} </li>
+
+        {% if report.resistances %}
+        <li>
+            <b>Resistances</b>
+            <ul>
+            {% for damage_type, bracket in report.resistances.items() %}
+                <li><b>{{ damage_type | title }}</b> {{ bracket }}</li>
+            {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if report.weaknesses %}
+        <li>
+            <b>Weaknesses</b>
+            <ul>
+            {% for damage_type, bracket in report.weaknesses.items() %}
+                <li><b>{{ damage_type | title }}</b> {{ bracket }}</li>
+            {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
 
         <li>
             <b>Actions</b>
