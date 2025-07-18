@@ -215,14 +215,15 @@ def enrich(text: str) -> str:
                     dc = args.consume_str('dc')
                     match basic, dc:
                         case True, str():
-                            if check_type != 'flat':  # Flat checks aren't level-based statistics
-                                dc = _statistic_span(dc, 'dc')
                             return f'DC {dc} basic {check_type.title()}'
                         case False, None:
                             return check_type.title()
                         case False, str():
-                            if check_type != 'flat':
+                            if check_type != 'flat':  # Flat checks aren't level-based statistics
                                 dc = _statistic_span(dc, 'dc')
+                            else:
+                                # Special case check type name for flat checks
+                                return f'DC {dc} Flat Check'
                             return f'DC {dc} {check_type.title()}'
                         case True, None:
                             return f'basic {check_type.title()}'
