@@ -32,19 +32,24 @@
 <b>{{ action.weapon_type | title }}</b>
 {{ action.name }}
 {{ action.cost | action }}
+<span id="statistic-strike-bonus-{{ (action.name, action.weapon_type) | kebab }}" class="statistic-strike-bonus">{{ '%+d' | format(action.bonus) }}</span>
 {% for malus in action.attack_maluses() %}
-    {% if not loop.first %}
-        {% if action.traits.get('reload', '-1') | int > 0 %}
-        / reload {{ action.traits['reload'] | action }} /
-        {% else %}
-        /
-        {% endif %}
+    {% if action.traits.get('reload', '-1') | int > 0 %}
+    / reload {{ action.traits['reload'] | action }} /
+    {% else %}
+    /
     {% endif %}
     {{ '%+d' | format(action.bonus - malus) }}
 {% endfor %}
 {{ fmt_traits(action.traits) }}
 {% if action.damage %}
-    <b>Damage</b> {{ action.damage | map('format_as', '{} {}') | join(' plus ')}}
+    <b>Damage</b>
+    <span id="statistic-strike-damage-{{ (action.name, action.weapon_type) | kebab }}" class="statistic-strike-damage">
+    {% set damage_joiner = joiner(' plus ') %}
+    {% for amount, damage_type in action.damage -%}
+    {{ damage_joiner() }}<span class="statistic-damage-dice">{{ amount }}</span> {{ damage_type }}
+    {%- endfor %}
+    </span>
 {% endif %}
 {% if action.trigger %}
     <b>Trigger</b> {{ action.trigger }}

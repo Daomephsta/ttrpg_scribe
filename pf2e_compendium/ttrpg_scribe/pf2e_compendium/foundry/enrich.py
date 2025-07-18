@@ -1,3 +1,4 @@
+import itertools
 import re
 from collections.abc import Set
 from typing import overload
@@ -141,6 +142,18 @@ def consume_traits(args: Args):
     return traits
 
 
+_STATISTIC_ID = itertools.count(1)
+
+
+def _statistic_span(text: str, htmlClass: str):
+    attrs = {
+        'class': f'statistic-{htmlClass}',
+        'id': f'statistic-{htmlClass}-{next(_STATISTIC_ID)}'
+    }
+    attrs_str = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
+    return f'<span {attrs_str}>{text}</span>'
+
+
 def _damage_roll(args: Args) -> str:
     def strip_delimiters(s: str, prefix: str, suffix: str):
         if s.startswith(prefix) and s.endswith(suffix):
@@ -160,10 +173,10 @@ def _damage_roll(args: Args) -> str:
             amount = amount.removesuffix('[splash]')
             damage_types.append('splash')
         if args.consume_bool('shortLabel'):
-            buf.append(amount)
+            buf.append(_statistic_span(amount, 'damage-dice'))
         else:
-            buf.append(f'{amount} {" ".join(damage_types)}')
-    return ' plus '.join(buf)
+            buf.append(f'{_statistic_span(amount, 'damage-dice')} {" ".join(damage_types)}')
+    return _statistic_span(' plus '.join(buf), 'damage')
 
 
 def enrich(text: str) -> str:
@@ -202,10 +215,14 @@ def enrich(text: str) -> str:
                     dc = args.consume_str('dc')
                     match basic, dc:
                         case True, str():
+                            if check_type != 'flat':  # Flat checks aren't level-based statistics
+                                dc = _statistic_span(dc, 'dc')
                             return f'DC {dc} basic {check_type.title()}'
                         case False, None:
                             return check_type.title()
                         case False, str():
+                            if check_type != 'flat':
+                                dc = _statistic_span(dc, 'dc')
                             return f'DC {dc} {check_type.title()}'
                         case True, None:
                             return f'basic {check_type.title()}'
@@ -244,8 +261,10 @@ def enrich(text: str) -> str:
                         case None, statistic:
                             return f'{action} ({statistic})'
                         case dc, None:
+                            dc = _statistic_span(dc, 'dc')
                             return f'{action} (DC {dc})'
                         case dc, statistic:
+                            dc = _statistic_span(dc, 'dc')
                             return f'{action} (DC {dc} {statistic})'
                 case _ as name:
                     raise ValueError(f'Unknown enricher {result[0]} ({name=}, {args=})')

@@ -11,13 +11,13 @@
     <input type="checkbox" class="stat_block_collapser name" data-name="{{ creature.name }}">
     <span class="name">
         <span>{{ creature.name }}</span>
-        <span style="float: right;">Creature {{ creature.level }}</span>
+        <span style="float: right;">Creature <span id="statistic-level">{{ creature.level }}</span></span>
     </span>
     <div class="stat_block_content">
     {% else %}
     <p class="name">
         <span>{{ creature.name }}</span>
-        <span style="float: right;">Creature {{ creature.level }}</span>
+        <span style="float: right;">Creature <span id="statistic-level">{{ creature.level }}</span></span>
     </p>
     {% endif %}
     <!-- Traits -->
@@ -31,7 +31,7 @@
     {% endfor %}
     </div>
     <p>
-        <b>Perception</b> {{ '{:+d}'.format(creature.perception) }};
+        <b>Perception</b> <span id='statistic-perception'>{{ '{:+d}'.format(creature.perception) }}</span>;
         {% for sense in creature.senses %}
             {{ sense.name -}}
             {{ ' (%s)' % sense.acuity if sense.acuity -}}
@@ -46,17 +46,18 @@
     <!-- Skills -->
     <p>
         <b>Skills</b>
-        {% for skill in creature.skills %}
-            {{ skill.name | title }} {{ '{:+d}'.format(skill.mod) -}}
-            {% if skill.special %} (
+        {% set skill_joiner = joiner(', ') %}
+        {%- for skill in creature.skills -%}
+            {{ skill_joiner() }}{{ skill.name | title }} <span id="statistic-skill-{{ skill.name | kebab }}" class="statistic-skill-mod">{{ '{:+d}'.format(skill.mod) }}</span>
+            {%- if skill.special %} 
+            (
+            {%- set condition_joiner = joiner(', ') -%}
             {%- for condition, bonus in skill.special.items() -%}
-                {{ '%+d' % bonus }} {{ condition -}}
-                {{ ', ' if not loop.last }}
+                {{ condition_joiner() }}<span id="statistic-skill-{{ (skill.name, condition) | kebab }}" class="statistic-skill-mod">{{ '%+d' % bonus }}</span> {{ condition }}
             {%- endfor -%}
-            )
+            ) 
             {%- endif -%}
-            {{ ', ' if not loop.last }}
-        {% endfor %}
+        {%- endfor -%}
     </p>
     <!-- Inventory -->
     {% if creature.inventory %}
@@ -71,7 +72,7 @@
     <!-- Abilities -->
     <p>
     {% for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
-        <b>{{ key.title() }}</b> {{ '%+d' % creature.abilities[key] }}
+        <b>{{ key.title() }}</b> <span id="statistic-attribute-{{ key }}" class="statistic-attribute">{{ '%+d' % creature.abilities[key] }}</span>
         {{- ', ' if not loop.last }}
     {% endfor %}
     </p>
@@ -83,23 +84,31 @@
     </ul>
     <hr>
     <p>
-        <b>AC</b> {{ creature.ac }};
+        <b>AC</b> <span id='statistic-armour-class'>{{ creature.ac }}</span>;
         <!-- Saves -->
     {% for save in ['fortitude', 'reflex', 'will'] %}
-        <b>{{ save.title() }}</b> {{ '%+d' % creature.saves[save] }}
+        <b>{{ save.title() }}</b> <span id="statistic-save-{{ save }}" class="statistic-save">{{ '%+d' % creature.saves[save] }}</span>
         {{- ', ' if not loop.last }}
     {% endfor %}
     </p>
     <p>
-        <b>HP</b> {{ creature.max_hp }}
+        <b>HP</b> <span id='statistic-hit-points'>{{ creature.max_hp }}</span>
         {%- if creature.immunities %};
             <b>Immunities</b> {{ creature.immunities | join(', ') }}
         {%- endif -%}
         {%- if creature.resistances %};
-            <b>Resistances</b> {{ creature.resistances.items() | map('format_as', '{} {}') | join(', ') }}
+            <b>Resistances</b>
+            {% set resistance_joiner = joiner(', ') %}
+            {% for damage_type, amount in creature.resistances.items() -%}
+            {{ resistance_joiner() }}{{ damage_type }} <span id="statistic-resistance-{{ damage_type | kebab }}" class="statistic-resistance">{{ amount }}</span>
+            {%- endfor %}
         {%- endif -%}
         {%- if creature.weaknesses %};
-            <b>Weaknesses</b> {{ creature.weaknesses.items() | map('format_as', '{} {}') | join(', ') }}
+            <b>Weaknesses</b>
+            {% set weakness_joiner = joiner(', ') %}
+            {% for damage_type, amount in creature.weaknesses.items() -%}
+            {{ weakness_joiner() }}{{ damage_type }} <span id="statistic-weakness-{{ damage_type | kebab }}" class="statistic-weakness">{{ amount }}</span>
+            {%- endfor %}
         {% endif %}
     </p>
     <!-- Defenses -->
@@ -131,7 +140,8 @@
     {% for spellcasting in creature.spellcasting %}
     <p>
         <b>{{ spellcasting.name }}</b> {{ creature.name }} can cast these spells
-        (spell DC {{ spellcasting.dc }}, spell attack {{ '%+d' % spellcasting.attack }}).
+        (spell DC <span id="statistic-dc-spell-{{ loop.index }}" class='statistic-dc'>{{ spellcasting.dc }}</span>,
+        spell attack <span id="statistic-spell-attack-{{ loop.index }}" class='statistic-spell-attack'>{{ '%+d' % spellcasting.attack }}</span>).
         <ul style="list-style: none; margin-top: 0;">
         {% for level, spells in spellcasting.iter_spells() %}
             <li>
@@ -185,6 +195,97 @@
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='actions_font.css') }}">
     <script src="{{ url_for('core.static', filename='popup.js') }}" defer></script>
+    <script>
+    const ANALYSE_URL = "{{ url_for('.analyse', doc_type=request.view_args.doc_type) }}"
+
+    function analyse() {
+        function idElementMap(className) {
+            return Object.fromEntries(Array.from(document.getElementsByClassName(className), e => [e.id, e]))
+        }
+
+        function elementValueMap(elements, valueFunction) {
+            return Object.fromEntries(Object.entries(elements).map(([id, e]) => [id, valueFunction(e)]))
+        }
+
+        function elementNumberMap(elements) {
+            return elementValueMap(elements, v => Number(v.textContent))
+        }
+
+        function elementDamageMap(elements) {
+            return elementValueMap(elements,
+                v => Array.from(v.getElementsByClassName('statistic-damage-dice')).map(e => e.textContent))
+        }
+
+        function applyClassification(element, classification) {
+            element.classList.add(`${classification.name.toLowerCase()}-statistic`)
+            element.title = classification.human
+        }
+
+        function applyClassifications(elements, classifications) {
+            for (const [id, classification] of Object.entries(classifications)) {
+                applyClassification(elements[id], classification)
+            }
+        }
+
+        const level = document.getElementById('statistic-level')
+        const perception = document.getElementById('statistic-perception')
+        const skills = idElementMap('statistic-skill-mod')
+        const attributes = idElementMap('statistic-attribute')
+        const saves = idElementMap('statistic-save')
+        const ac = document.getElementById('statistic-armour-class')
+        const hp = document.getElementById('statistic-hit-points')
+        const resistances = idElementMap('statistic-resistance')
+        const weaknesses = idElementMap('statistic-weakness')
+        const strikes = {
+            bonuses: idElementMap('statistic-strike-bonus'),
+            damage: idElementMap('statistic-strike-damage')
+        }
+        const dcs = idElementMap('statistic-dc')
+        const spellAttackBonuses = idElementMap('statistic-spell-attack')
+        const otherDamage = idElementMap('statistic-damage')
+
+        window.fetch(ANALYSE_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                level: Number(level.textContent),
+                perception: Number(perception.textContent),
+                skills: elementNumberMap(skills),
+                attributes: elementNumberMap(attributes),
+                saves: elementNumberMap(saves),
+                ac: Number(ac.textContent),
+                hp: Number(hp.textContent),
+                resistances: elementNumberMap(resistances),
+                weaknesses: elementNumberMap(weaknesses),
+                strikes: {
+                    bonuses: elementNumberMap(strikes.bonuses),
+                    damage: elementDamageMap(strikes.damage)
+                },
+                dcs: elementNumberMap(dcs),
+                spell_attack_bonuses: elementNumberMap(spellAttackBonuses),
+                damage: elementDamageMap(otherDamage)
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then((r) => r.json())
+        .then((json) => {
+            applyClassification(perception, json['perception'])
+            applyClassifications(skills, json['skills'])
+            applyClassifications(attributes, json['attributes'])
+            applyClassifications(saves, json['saves'])
+            applyClassification(ac, json['ac'])
+            applyClassification(hp, json['hp'])
+            applyClassifications(resistances, json['resistances'])
+            applyClassifications(weaknesses, json['weaknesses'])
+            applyClassifications(strikes.bonuses, json['strikes']['bonuses'])
+            applyClassifications(strikes.damage, json['strikes']['damage'])
+            applyClassifications(dcs, json['dcs'])
+            applyClassifications(spellAttackBonuses, json['spell_attack_bonuses'])
+            applyClassifications(otherDamage, json['damage'])
+        })
+    }
+    </script>
 </head>
 <body>
     <header>
@@ -195,7 +296,17 @@
     {{ stat_block(creature, collapsible=False) }}
     <footer>
         <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a>
-        <a href="{{ url_for('.analyse', doc_type=request.view_args.doc_type, id=request.view_args.id, **request.args) }}">Analyse</a>
+        <button onclick="analyse()">
+            Analyse 
+            <span>
+                (
+                {%- for bracket in ['terrible', 'low', 'moderate', 'high', 'extreme'] -%}
+                {{- ' ' if not loop.first -}}
+                <span class="{{ bracket }}-statistic">{{ bracket[0] | title }}</span>
+                {%- endfor -%}
+                )
+            </span>
+        </button>
     </footer>
 </body>
 {% endif %}

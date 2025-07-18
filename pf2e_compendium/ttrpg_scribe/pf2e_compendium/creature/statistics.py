@@ -44,6 +44,15 @@ class StatisticBracket:
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self}>'
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'rank': self.rank,
+            'adjustment': self.adjustment,
+            'maximum': self.maximum,
+            'human': str(self)
+        }
+
 
 class TableCell[V, SelfT: 'TableCell'](ABC):
     @classmethod

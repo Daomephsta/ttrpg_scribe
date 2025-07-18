@@ -87,8 +87,8 @@ class Strike(Action):
 
     def attack_maluses(self):
         if 'agile' in self.traits:
-            return [0, 4, 8]
-        return [0, 5, 10]
+            return [4, 8]
+        return [5, 10]
 
     @classmethod
     def from_json_with(cls, curried_constructor: partial, data: dict) -> Self:

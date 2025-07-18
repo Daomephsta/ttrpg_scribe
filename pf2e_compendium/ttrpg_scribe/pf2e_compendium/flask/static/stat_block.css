@@ -74,3 +74,19 @@
     max-height: initial;
     overflow-y: initial;
 }
+
+.terrible-statistic {
+    color: red;
+}
+.low-statistic {
+    color: orange;
+}
+.moderate-statistic {
+    color: grey;
+}
+.high-statistic {
+    color: green;
+}
+.extreme-statistic {
+    color: blue;
+}

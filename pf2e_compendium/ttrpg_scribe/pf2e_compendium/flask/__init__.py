@@ -77,16 +77,13 @@ def raw_content(doc_type: str, id: str):
     return mongo_client.get_document(doc_type, id) or f'{id} does not exist in {doc_type}'
 
 
-@blueprint.get('/analyse/<doc_type>/<path:id>')
-def analyse(doc_type: str, id: str):
-    type, content = foundry_packs.read_doc(doc_type, id)
-    match type, content:
-        case 'creature', PF2Creature():
-            _apply_adjustments(content)
-            report = creature_analyser.analyse(content)
+@blueprint.post('/analyse/<doc_type>/')
+def analyse(doc_type: str):
+    match doc_type:
+        case 'npc':
+            return json.jsonify(creature_analyser.analyse(flask.request.get_json()))
         case _:
             raise BadRequest(f'No analyser for content type {type}')
-    return render_template(f'analyse/{type}.j2.html', report=report)
 
 
 def _apply_adjustments(content):

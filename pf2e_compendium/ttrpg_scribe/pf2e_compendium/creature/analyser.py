@@ -1,75 +1,76 @@
 import math
-import re
-from dataclasses import dataclass
+from typing import Any, Callable, TypedDict
 
-from ttrpg_scribe.pf2e_compendium.actions import SimpleAction, Strike
-from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
+from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.pf2e_compendium.creature.statistics import (
-    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, RESISTANCES, SAVING_THROWS,
-    SKILLS, SPELL_DC, STRIKE_ATTACK_BONUS, STRIKE_DAMAGE, WEAKNESSES, StatisticBracket, Table)
+    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, RESISTANCES,
+    SAVING_THROWS, SKILLS, SPELL_ATTACK_BONUS, SPELL_DC, STRIKE_ATTACK_BONUS,
+    STRIKE_DAMAGE, WEAKNESSES, StatisticBracket, Table)
 
 
-@dataclass
-class Report:
-    name: str
-    perception: StatisticBracket
-    skills: list[tuple[str, StatisticBracket]]
-    attributes: dict[str, StatisticBracket]
-    ac: StatisticBracket
-    saves: dict[str, StatisticBracket]
-    hp: StatisticBracket
-
-    @dataclass
-    class Action:
-        name: str
-        bonus: StatisticBracket | None = None
-        dc: StatisticBracket | None = None
-        damage: StatisticBracket | None = None
-
-    actions: list[Action]
-    resistances: dict[str, StatisticBracket | int]
-    weaknesses: dict[str, StatisticBracket | int]
+class _AnalyseStrikes[B, D](TypedDict):
+    bonuses: dict[str, B]
+    damage: dict[str, D]
 
 
-def analyse(creature: PF2Creature):
-    def classify(table: Table, value: int):
-        return table.classify(creature.level, value)
+class _Analyse[T](TypedDict):
+    perception: T
+    skills: dict[str, T]
+    attributes: dict[str, T]
+    saves: dict[str, T]
+    ac: T
+    hp: T
+    resistances: dict[str, T]
+    weaknesses: dict[str, T]
+    dcs: dict[str, T]
+    spell_attack_bonuses: dict[str, T]
 
-    def analyse_strike(strike: Strike) -> Report.Action:
-        bonus_bracket = classify(STRIKE_ATTACK_BONUS, strike.bonus)
-        if strike.damage:
-            average_damage = sum(
-                math.floor(amount if isinstance(amount, int) else amount.average())
-                for amount, _ in strike.damage
-            )
-            damage_bracket = classify(STRIKE_DAMAGE, average_damage)
-            return Report.Action(strike.name, bonus=bonus_bracket, damage=damage_bracket)
-        return Report.Action(strike.name, bonus=bonus_bracket)
 
-    actions = []
-    for action in creature.actions:
-        match action:
-            case Strike():
-                actions.append(analyse_strike(action))
-            case SimpleAction():
-                dc = re.search(r'DC (\d+)', action.desc)
-                dc = classify(SPELL_DC, int(dc[1])) if dc else None
-                actions.append(Report.Action(action.name, dc=dc))
+class _AnalyseRequest(_Analyse[int]):
+    level: int
+    strikes: _AnalyseStrikes[int, list[str]]
+    damage: dict[str, list[str]]
 
-    return Report(
-        creature.name,
-        perception=classify(PERCEPTION, creature.perception),
-        skills=[(skill.name, classify(SKILLS, skill.mod))
-         for skill in creature.skills],
-        attributes={ability: classify(ATTRIBUTE_MODIFIERS, value)
-         for ability, value in creature.abilities.items()},
-        ac=classify(ARMOR_CLASS, creature.ac),
-        saves={save: classify(SAVING_THROWS, value)
-         for save, value in creature.saves.items()},
-        hp=HIT_POINTS.classify(creature.level, creature.max_hp),
-        actions=actions,
-        resistances={damage_type: classify(RESISTANCES, value)
-         for damage_type, value in creature.resistances.items()},
-        weaknesses={damage_type: classify(WEAKNESSES, value)
-         for damage_type, value in creature.weaknesses.items()}
-    )
+
+class _AnalyseResponse(_Analyse[StatisticBracket]):
+    strikes: _AnalyseStrikes[StatisticBracket, StatisticBracket]
+    damage: dict[str, StatisticBracket]
+
+
+def analyse(request: _AnalyseRequest) -> _AnalyseResponse:
+    def classify(table: Table[Any], value: int):
+        return table.classify(request['level'], value)
+
+    def classify_dict[V](table: Table[Any], value: dict[str, V],
+                         classifier: Callable[[Table[Any], V], StatisticBracket] = classify
+                         ) -> dict[str, StatisticBracket]:
+        return {k: classifier(table, v) for k, v in value.items()}
+
+    def classify_damage(table: Table[Any], damage: list[str]) -> StatisticBracket:
+
+        def dice_averages():
+            for part in damage:
+                if part.isnumeric():
+                    yield int(part)
+                else:
+                    yield math.floor(SimpleDice.parse(part).average())
+
+        return classify(table, sum(dice_averages()))
+
+    return {
+        'perception': classify(PERCEPTION, request['perception']),
+        'skills': classify_dict(SKILLS, request['skills']),
+        'ac': classify(ARMOR_CLASS, request['ac']),
+        'attributes': classify_dict(ATTRIBUTE_MODIFIERS, request['attributes']),
+        'saves': classify_dict(SAVING_THROWS, request['saves']),
+        'hp': classify(HIT_POINTS, request['hp']),
+        'resistances': classify_dict(RESISTANCES, request['resistances']),
+        'weaknesses': classify_dict(WEAKNESSES, request['weaknesses']),
+        'strikes': {
+            'bonuses': classify_dict(STRIKE_ATTACK_BONUS, request['strikes']['bonuses']),
+            'damage': classify_dict(STRIKE_DAMAGE, request['strikes']['damage'], classify_damage)
+        },
+        'dcs': classify_dict(SPELL_DC, request['dcs']),
+        'spell_attack_bonuses': classify_dict(SPELL_ATTACK_BONUS, request['spell_attack_bonuses']),
+        'damage': classify_dict(STRIKE_DAMAGE, request['damage'], classify_damage)
+    }
