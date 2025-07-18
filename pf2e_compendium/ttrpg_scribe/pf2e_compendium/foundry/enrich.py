@@ -169,10 +169,11 @@ def _damage_roll(args: Args) -> str:
         amountEnd = part.rfind('[')
         amount = strip_delimiters(part[:amountEnd], '(', ')')
         damage_types = strip_delimiters(part[amountEnd:], '[', ']').split(',')
+        damage_types.remove('healing')  # healing "damage type" shouldn't be included in output
         if '[splash]' in amount:
             amount = amount.removesuffix('[splash]')
             damage_types.append('splash')
-        if args.consume_bool('shortLabel'):
+        if args.consume_bool('shortLabel') or damage_types == []:
             buf.append(_statistic_span(amount, 'damage-dice'))
         else:
             buf.append(f'{_statistic_span(amount, 'damage-dice')} {" ".join(damage_types)}')
