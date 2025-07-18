@@ -11,13 +11,13 @@
     <input type="checkbox" class="stat_block_collapser name" data-name="{{ creature.name }}">
     <span class="name">
         <span>{{ creature.name }}</span>
-        <span style="float: right;">Creature <span id="statistic-level">{{ creature.level }}</span></span>
+        <span class="level">Creature <span id="statistic-level">{{ creature.level }}</span></span>
     </span>
     <div class="stat_block_content">
     {% else %}
     <p class="name">
         <span>{{ creature.name }}</span>
-        <span style="float: right;">Creature <span id="statistic-level">{{ creature.level }}</span></span>
+        <span class="level">Creature <span id="statistic-level">{{ creature.level }}</span></span>
     </p>
     {% endif %}
     <!-- Traits -->

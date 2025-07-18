@@ -11,6 +11,9 @@
     font-weight: bold;
     text-transform: uppercase;
 }
+.stat_block .level {
+    float: right;
+}
 .stat_block .field_list {
     list-style: none;
     padding-left: 0px;

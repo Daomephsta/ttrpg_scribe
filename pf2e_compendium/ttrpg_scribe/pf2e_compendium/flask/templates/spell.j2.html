@@ -16,7 +16,7 @@
             {% else %}
                 {% set level = spell.system.level.value %}
             {% endif %}
-            <span style="float: right;">{{ spell_type }} {{ level }}</span>
+            <span class="level">{{ spell_type }} {{ level }}</span>
         </p>
         <div id="traits-container">
         {% if spell.system.traits.rarity != 'common' %}
