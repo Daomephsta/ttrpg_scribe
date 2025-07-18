@@ -80,3 +80,10 @@ def format_as(value: Any, spec: str):
             return spec.format(*value)
         case _:
             return spec.format(value)
+
+
+@_blueprint.app_template_filter()
+def kebab(value: str | tuple[str, ...]):
+    if isinstance(value, tuple):
+        value = '-'.join(value)
+    return value.lower().replace(' ', '-')
