@@ -169,7 +169,8 @@ def _damage_roll(args: Args) -> str:
         amountEnd = part.rfind('[')
         amount = strip_delimiters(part[:amountEnd], '(', ')')
         damage_types = strip_delimiters(part[amountEnd:], '[', ']').split(',')
-        damage_types.remove('healing')  # healing "damage type" shouldn't be included in output
+        if 'healing' in damage_types:  # healing "damage type" shouldn't be included in output
+            damage_types.remove('healing')
         if '[splash]' in amount:
             amount = amount.removesuffix('[splash]')
             damage_types.append('splash')
