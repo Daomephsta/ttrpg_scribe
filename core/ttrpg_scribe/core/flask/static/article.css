@@ -1,9 +1,4 @@
 body {
-    display: grid;
-    grid-template-areas:
-        'toc content'
-        '. footer';
-    column-gap: 1em;
     justify-content: center;
     font-family: 'Bookinsanity', sans-serif;
 }
@@ -13,7 +8,6 @@ body {
     top: 10px;
     height: calc(100vh - 20px);
     overflow-y: scroll;
-    box-shadow: 0px 0px 10px;
 }
 .toc > ul {
     padding-left: 20px;
@@ -37,4 +31,27 @@ main {
 }
 footer {
     grid-area: footer;
+}
+
+@media screen {
+    body {
+        width: 100vw;
+        display: grid;
+        grid-template-areas:
+            'toc content'
+            '. footer';
+        grid-template-columns: max-content 1fr;
+        column-gap: 1em;
+    }
+    main {
+        flex-grow: 2;
+    }
+    .toc {
+        border-right: 2px solid gray;
+    }
+}
+@media print {
+    .toc {
+        display: none;
+    }
 }

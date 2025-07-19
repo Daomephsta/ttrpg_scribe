@@ -6,11 +6,10 @@ html {
 }
 body {
     font-family: 'Bookinsanity', sans-serif;
+    width: 850px;
 }
 main {
     padding: 20px;
-    width: 850px;
-    box-shadow: 0px 0px 10px;
 }
 footer {
     margin-top: 10px;
