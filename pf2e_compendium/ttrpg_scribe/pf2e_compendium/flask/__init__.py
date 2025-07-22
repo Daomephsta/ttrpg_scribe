@@ -111,7 +111,7 @@ def action(kind: int | str):
     glyph: str
     match kind:
         case 0:
-            glyph = ''
+            return ''
         case int(i):
             glyph = str(i)
         case 're' | 'reaction':
