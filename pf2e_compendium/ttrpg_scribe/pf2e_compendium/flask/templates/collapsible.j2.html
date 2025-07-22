@@ -1,0 +1,8 @@
+{% macro collapsible(name, open=False) %}
+<div>
+    <input type="checkbox" class="collapser" data-name="{{ name }}"{% if open %} checked{% endif%}>
+    <div class="collapsible">
+    {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
