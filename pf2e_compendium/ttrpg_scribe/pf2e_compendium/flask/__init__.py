@@ -67,7 +67,7 @@ def _content(type: str, content):
         return content
     _apply_adjustments(content)
     return render_template(f'{type}.j2.html', **{
-        type: content,
+        'data': content,
         'render': True,
     })
 

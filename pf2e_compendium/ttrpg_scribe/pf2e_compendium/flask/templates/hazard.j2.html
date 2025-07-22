@@ -1,29 +1,34 @@
 {% from 'actions.j2.html' import action %}
 
-{% macro trap(hazard) %}
+{% macro trap(data) %}
+{{- DEPRECATED('hazard.trap', 'hazard.hazard') -}}
+{{ hazard(data) }}
+{% endmacro %}
+
+{% macro hazard(data) %}
 <div class="stat_block">
-    <span class="name">{{ hazard.name }}<span style="float: right">Hazard {{ hazard.level }}</span></span>
+    <span class="name">{{ data.name }}<span style="float: right">Hazard {{ data.level }}</span></span>
     <hr>
     <ul class="field_list">
-        <li><b>Notice</b> DC {{ 10 + hazard.stealth }} Perception Check </li>
-        {% if hazard.complex %}
-        <li><b>Initiative</b> Stealth {{ '%+d' | format(hazard.stealth) }}</li>
+        <li><b>Notice</b> DC {{ 10 + data.stealth }} Perception Check </li>
+        {% if data.complex %}
+        <li><b>Initiative</b> Stealth {{ '%+d' | format(data.stealth) }}</li>
         {% endif %}
-        <li><b>Disable</b> {{ hazard.disable | safe }}</li>
-        {% for data in hazard.actions %}
+        <li><b>Disable</b> {{ data.disable | safe }}</li>
+        {% for data in data.actions %}
         <li>{{ action(data) }}</li>
         {% endfor %}
         <li><hr></li>
-        {% if hazard.reset %}
-        <li><b>Reset</b> {{ hazard.reset | safe }}</li>
+        {% if data.reset %}
+        <li><b>Reset</b> {{ data.reset | safe }}</li>
         {% endif %}
         <!-- Hazards with a physical component always have all of ac, saves, and HP -->
-        {% if hazard.ac %} 
+        {% if data.ac %} 
             <li>
             <!-- AC -->
-            <b>AC</b> {{ hazard.ac }};
+            <b>AC</b> {{ data.ac }};
             <!-- Saves -->
-            {% for key, value in hazard.saves.items() if value %}
+            {% for key, value in data.saves.items() if value %}
                 <b>{{ key | title }}</b> {{ '%+d' % value }}
                 {{- ', ' if not loop.last }}
             {% endfor %}
@@ -31,28 +36,28 @@
             <li>
             <!-- Hardness -->
             {% set comma = joiner(';') %}
-            {% if hazard.hardness %}
-            <b>Hardness</b> {{ hazard.hardness }};
+            {% if data.hardness %}
+            <b>Hardness</b> {{ data.hardness }};
             {% endif %}
-            <b>HP</b> {{ hazard.max_hp }}
+            <b>HP</b> {{ data.max_hp }}
             <!-- HP -->
             </li>
         {% endif %}
-        {% if hazard.complex %}
-        <li><b>Routine</b> {{ hazard.routine | safe }}</li>
+        {% if data.complex %}
+        <li><b>Routine</b> {{ data.routine | safe }}</li>
         {% endif %}
     </ul>
-    {{ hazard.description | safe }}
+    {{ data.description | safe }}
 </div>
 {% endmacro %}
 
 {% if render | default(False) %}
 <!DOCTYPE html>
 <head>
-    <title>{{ hazard.name | title }}</title>
+    <title>{{ data.name | title }}</title>
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
 </head>
-<body>{{ trap(hazard) }}</body>
+<body>{{ trap(data) }}</body>
 <footer>
     <a href="{{ request.base_url }}.json">View JSON</a>
 </footer>

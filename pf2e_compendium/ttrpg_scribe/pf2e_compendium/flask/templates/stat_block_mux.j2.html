@@ -3,8 +3,8 @@
 
 {% macro stat_block(stats, collapsible=False) %}
 {% if stats.kind() == 'PF2Creature' %}
-{{ creature.stat_block(stats, collapsible) }}
+{{ creature.creature(stats, collapsible) }}
 {% elif stats.kind() == 'PF2Hazard' %}
-{{ hazard.trap(stats) }}
+{{ hazard.hazard(stats) }}
 {% endif %}
 {% endmacro %}
