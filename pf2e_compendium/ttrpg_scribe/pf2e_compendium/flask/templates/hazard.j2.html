@@ -1,7 +1,7 @@
 {% from 'actions.j2.html' import action %}
 
 {% macro trap(data) %}
-{{- DEPRECATED('hazard.trap', 'hazard.hazard') -}}
+{{- DEPRECATED(trap, hazard) -}}
 {{ hazard(data) }}
 {% endmacro %}
 
