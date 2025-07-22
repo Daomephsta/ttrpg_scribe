@@ -52,9 +52,11 @@ class SimpleDice(Rollable):
     def __sub__(self, malus: int) -> 'SimpleDice':
         return SimpleDice(self.count, self.size, self.mod - malus)
 
-    def __str__(self, joiner='') -> str:
-        if self.mod:
+    def __str__(self) -> str:
+        if self.mod > 0:
             return f'{self.count}d{self.size} + {self.mod}'
+        elif self.mod < 0:
+            return f'{self.count}d{self.size} - {abs(self.mod)}'
         return f'{self.count}d{self.size}'
 
     def to_json(self) -> dict[str, Any]:
