@@ -1,0 +1,10 @@
+main > p {
+    text-indent: 1em each-line;
+}
+dd {
+    display: inline-block;
+    margin-left: 1em;
+}
+dt {
+    font-weight: bold;
+}

@@ -1,0 +1,6 @@
+{% extends "layout/article.j2.html" %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='pf2e.css') }}"/>
+{% endblock head %}
