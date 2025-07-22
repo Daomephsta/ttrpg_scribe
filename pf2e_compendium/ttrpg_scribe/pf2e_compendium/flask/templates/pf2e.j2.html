@@ -1,0 +1,68 @@
+{% macro settlement(name, level, size, government, 
+    population, languages, religions, threats, major_npcs) %}
+<div class="stat_block">
+    <p class="name">
+        <span>{{ name }}</span>
+        <span style="float: right">Settlement {{ level }}</span>
+    </p>
+    <p>
+        <span class="trait size">{{ size }}</span>
+    </p>
+    <p>{{ caller() }}</p>
+    <ul class="field_list">
+        <li><b>Government</b> {{ government }}</li>
+        <li><b>Population</b> {{ population }}</li>
+        <li><b>Languages</b> {{ languages | sort | join(', ') }}</li>
+    </ul>
+    <hr>
+    <ul class="field_list">
+        <li><b>Religions</b> {{ religions | join(', ') }}</li>
+        {% if threats %}
+        <li><b>Threats</b> {{ threats | join(', ') }}</li>
+        {% endif %}
+    </ul>
+    {% if major_npcs %}<hr>{% endif %}
+    {% for name, description in major_npcs %}
+    <p><b>{{ name }}</b> {{ description }}</p>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro dofs(cs="", s="", f="", cf="") %}
+<p style="text-indent: 1em each-line hanging;" markdown="1">
+    {% if cs %}
+    <b>Critical Success</b> {{ cs | safe }}<br/>
+    {% endif %}
+    {% if s %}
+    <b>Success</b> {{ s | safe }}<br/>
+    {% endif %}
+    {% if f %}
+    <b>Failure</b> {{ f | safe }}<br/>
+    {% endif %}
+    {% if cf %}
+    <b>Critical Failure</b> {{ cf | safe }}<br/>
+    {% endif %}
+</p>
+{% endmacro %}
+
+{% macro coins0(copper) %}
+{%- set gold = copper // 100 -%}
+{%- if gold > 0 -%}
+    {%- set copper = copper - 100 * gold -%}
+    {{ '%dg' % gold }}
+{%- endif -%}
+{%- set silver = copper // 10 -%}
+{%- set copper = copper - 10 * silver -%}
+{%- if silver > 0 -%}
+    {{ '%ds' % silver }}
+{%- endif -%}
+{%- if copper > 0 -%}
+    {{ '%dc' % copper }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro coins_each(g=0, s=0, c=0, total=False) -%}
+{%- set copper = g * 100 + s * 10 + c -%}
+({% if total %}total {{ coins0(copper) }}, {% endif %}
+{{ coins0(copper / (config.PARTY | length + config.get('PARTY_FUND_SHARES', 0))) }} each)
+{%- endmacro %}
