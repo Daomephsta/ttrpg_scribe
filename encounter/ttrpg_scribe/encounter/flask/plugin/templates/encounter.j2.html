@@ -37,3 +37,14 @@
 {% macro random_encounter(size, creature) %}
 <button data-size="{{ size }}"  data-creature="{{ creature | tojson | forceescape }}" data-party="{{ config.PARTY | tojson | forceescape }}"  onclick="launchRandomEncounter(event)">Launch</button> |
 {% endmacro %}
+
+{% macro exclusive_encounters(id, encounters) %}
+<div>
+    {% for name, data in encounters %}
+    <input type="radio" name="{{ id }}" class="collapser" data-name="{{ name }}" {{ 'checked' if loop.first }}>
+    <div class="collapsible">
+    {{ encounter(data) }}
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}
