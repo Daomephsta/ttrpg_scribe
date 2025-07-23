@@ -7,11 +7,11 @@
             {# TocExtension already escapes the name #}
             <title>{{ toc[0].name | safe }}</title>
         {% endif %}
-        {% for sheet in extra_stylesheets %}
+        {% for sheet in g.assets.stylesheets %}
             <link rel="stylesheet" href="{{ sheet }}"/>
         {% endfor %}
         <link rel="stylesheet" href="{{ url_for('core.static', filename='base.css') }}"/>
-        {% for script in extra_scripts %}
+        {% for script in g.assets.scripts %}
             <script{{ script | xmlattr }}></script>
         {% endfor %}
         <script src="{{ url_for('core.static', filename='popup.js') }}" defer></script>

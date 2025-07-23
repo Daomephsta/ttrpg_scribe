@@ -6,6 +6,7 @@ from http import HTTPStatus
 from pathlib import Path
 
 import flask
+import frontmatter
 from jinja2 import FileSystemLoader, TemplateNotFound
 from markupsafe import Markup
 from werkzeug.exceptions import NotFound
@@ -99,7 +100,15 @@ def create_app(config: Path, project_dir: str | Path | None = None):
             script=data_script.bind(namespace, selected.name))
         if selected.name.endswith('.md'):
             dump('markdown', 'md')
-            rendered = markdown.render(rendered)
+            metadata, md = frontmatter.parse(rendered)
+            metadata = markdown.parse_metadata(metadata)
+            page_assets = flask.g.assets
+            page_assets['stylesheets'] = page_assets['stylesheets'].union(
+                metadata['extra_stylesheets'])
+            page_assets['scripts'] += metadata['extra_scripts']
+            html_fragment, toc = markdown.convert(md)
+            return flask.render_template(f"layout/{metadata['layout']}.j2.html",
+                                         content=Markup(html_fragment), toc=toc)
         return rendered
 
     @app.get('/assets/<namespace_id>/<path:asset>')

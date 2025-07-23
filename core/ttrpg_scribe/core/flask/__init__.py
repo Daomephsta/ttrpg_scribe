@@ -110,3 +110,11 @@ def deprecated(old: Macro | str, new: Macro | str | None):
         new = macro_name(new)
     logging.warning(f'{old} is deprecated!' if new is None
                     else f'{old} is deprecated! Use {new} instead.')
+
+
+@_blueprint.before_app_request
+def setup_asset_registry():
+    flask.g.assets = {
+        'scripts': list(),
+        'stylesheets': set(),
+    }

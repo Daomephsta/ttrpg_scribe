@@ -2,10 +2,8 @@ import re
 from typing import Any, NamedTuple, TypedDict, cast
 
 import frontmatter
-from flask import render_template
 from markdown import Markdown
 from markdown.extensions.toc import TocExtension
-from markupsafe import Markup
 
 MD_HEADER = re.compile('^# (.+)$', flags=re.MULTILINE)
 __renderer = Markdown(extensions=['admonition', 'attr_list', 'def_list',
@@ -71,15 +69,3 @@ def convert(markdown: str):
     toc = getattr(__renderer, 'toc_tokens')
     __renderer.reset()
     return RenderResult(html, toc)
-
-
-def render(markdown: str):
-    metadata, markdown = frontmatter.parse(markdown)
-    metadata = parse_metadata(metadata)
-    html_fragment, toc = convert(markdown)
-
-    return render_template(f"layout/{metadata['layout']}.j2.html",
-        content=Markup(html_fragment),
-        toc=toc,
-        extra_stylesheets=metadata['extra_stylesheets'],
-        extra_scripts=metadata['extra_scripts'])

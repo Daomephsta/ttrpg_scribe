@@ -8,7 +8,10 @@
 
 {% macro encounter(enemies, allies=[], show_xp=True) %}
 <section class="encounter">
-    <link rel="stylesheet" href="{{ url_for('encounter_plugin.static', filename='encounter.css') }}">
+    {%- set _ = g.assets.stylesheets.add(url_for('encounter_plugin.static', filename='encounter.css')) -%}
+    {%- set _ = g.assets.scripts.append({
+        'src': url_for('encounter_plugin.static', filename='launch_encounter.js'),
+        'defer': True}) -%}
     <ul>
         {% for count, participant in enemies %}
             {{ _combatant(count, participant) }}
