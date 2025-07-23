@@ -5,14 +5,31 @@
     background-color: #f8f3e8;
     margin: 10px 0;
     padding: 10px;
+    display: grid;
+    grid-template-areas: 
+        "name name level"
+        "content content content";
+    grid-template-columns: 1.5em 1fr 1fr;
 }
-.stat_block .name {
+.stat_block.has-collapser {
+    grid-template-areas: 
+        "collapser name level"
+        "content content content";
+}
+.stat_block .header {
     font-size: 1.5em;
     font-weight: bold;
     text-transform: uppercase;
 }
+.stat_block .name {
+    grid-area: name;
+}
 .stat_block .level {
-    float: right;
+    grid-area: level;
+    text-align: right;
+}
+.stat_block_content {
+    grid-area: content;
 }
 .stat_block .field_list {
     list-style: none;
@@ -58,7 +75,7 @@
     padding-left: 1em;
 }
 
-.stat_block_content {
+.stat_block_content.closed {
     transition: height 0.2s;
     max-height: 0px;
     overflow-y: clip;
@@ -66,6 +83,8 @@
 .stat_block_collapser {
     font-family: inherit;
     appearance: none;
+    grid-area: collapser;
+    margin: 0 auto;
 }
 .stat_block_collapser::after {
     content: '\02c3';
@@ -73,7 +92,7 @@
 .stat_block_collapser:checked:after {
     content: '\02c5';
 }
-.stat_block_collapser:checked ~ .stat_block_content {
+.stat_block .stat_block_collapser:checked ~ .stat_block_content {
     max-height: initial;
     overflow-y: initial;
 }

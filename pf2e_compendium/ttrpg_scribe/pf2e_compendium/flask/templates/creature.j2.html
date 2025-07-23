@@ -11,20 +11,13 @@
 <div class="error">{{ data | handle_exception }}</div>
 {% else %}
 {# Output a stat block otherwise #}
-<div class="stat_block pf2e_data">
+<div class="stat_block pf2e_creature {{ 'has-collapser' if collapsible }}">
     {% if collapsible %}
-    <input type="checkbox" class="stat_block_collapser name" data-name="{{ data.name }}">
-    <span class="name">
-        <span>{{ data.name }}</span>
-        <span class="level">Creature <span id="statistic-level">{{ data.level }}</span></span>
-    </span>
-    <div class="stat_block_content">
-    {% else %}
-    <p class="name">
-        <span>{{ data.name }}</span>
-        <span class="level">Creature <span id="statistic-level">{{ data.level }}</span></span>
-    </p>
+    <input type="checkbox" class="header stat_block_collapser" data-name="{{ data.name }}">
     {% endif %}
+    <span class="header name">{{ data.name }}</span>
+    <span class="header level">Creature <span id="statistic-level">{{ data.level }}</span></span>
+    <div class="stat_block_content {{ 'closed' if collapsible }}">
     <!-- Traits -->
     <div id="traits-container">
     {% if data.rarity != 'common' %}
@@ -186,9 +179,7 @@
     </p>
     {% endfor %}
     <hr>
-    {% if collapsible %}
     </div>
-    {% endif %}
 </div>
 {% endif %}
 {% endmacro %}
