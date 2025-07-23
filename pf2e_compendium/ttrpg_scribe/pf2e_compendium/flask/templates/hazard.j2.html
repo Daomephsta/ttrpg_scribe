@@ -8,8 +8,10 @@
 {% macro hazard(data) %}
 {%- set _ = g.assets.stylesheets.add(url_for('pf2e_compendium.static', filename='stat_block.css')) -%}
 <div class="stat_block">
-    <span class="name">{{ data.name }}<span style="float: right">Hazard {{ data.level }}</span></span>
+    <span class="header name">{{ data.name }}</span>
+    <span class="header level">Hazard {{ data.level }}</span>
     <hr>
+    <div class="stat_block_content">
     <ul class="field_list">
         <li><b>Notice</b> DC {{ 10 + data.stealth }} Perception Check </li>
         {% if data.complex %}
@@ -49,6 +51,7 @@
         {% endif %}
     </ul>
     {{ data.description | safe }}
+    </div>
 </div>
 {% endmacro %}
 
