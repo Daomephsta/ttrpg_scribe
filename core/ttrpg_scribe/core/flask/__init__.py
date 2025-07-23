@@ -28,28 +28,6 @@ def extend(app: flask.Flask):
     app.json = ExtensibleJSONProvider(app)
     app.jinja_env.policies['json.dumps_kwargs'].update(
         default=ExtensibleJSONProvider.encode_json)
-
-    def deprecated(old: Macro | str, new: Macro | str | None):
-        def macro_name(macro: Macro):
-            import inspect
-            from pathlib import Path
-            source = inspect.getsourcefile(macro._func)
-            if source is None:
-                return f'{macro.name}()'
-            else:
-                source = Path(source)
-                source = reduce(str.removesuffix, reversed(source.suffixes), source.name)
-                return f'{source}.{macro.name}()'
-        if isinstance(old, Macro):
-            old = macro_name(old)
-        if isinstance(new, Macro):
-            new = macro_name(new)
-        logging.warning(f'{old} is deprecated!' if new is None
-                        else f'{old} is deprecated! Use {new} instead.')
-
-    app.jinja_env.globals.update(
-        DEPRECATED=deprecated
-    )
     app.register_blueprint(_blueprint)
 
 
@@ -112,3 +90,23 @@ def kebab(value: str | tuple[str, ...]):
     if isinstance(value, tuple):
         value = '-'.join(value)
     return value.lower().replace(' ', '-')
+
+
+@_blueprint.app_template_global('DEPRECATED')
+def deprecated(old: Macro | str, new: Macro | str | None):
+    def macro_name(macro: Macro):
+        import inspect
+        from pathlib import Path
+        source = inspect.getsourcefile(macro._func)
+        if source is None:
+            return f'{macro.name}()'
+        else:
+            source = Path(source)
+            source = reduce(str.removesuffix, reversed(source.suffixes), source.name)
+            return f'{source}.{macro.name}()'
+    if isinstance(old, Macro):
+        old = macro_name(old)
+    if isinstance(new, Macro):
+        new = macro_name(new)
+    logging.warning(f'{old} is deprecated!' if new is None
+                    else f'{old} is deprecated! Use {new} instead.')
