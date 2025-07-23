@@ -6,6 +6,7 @@
 {% endmacro %}
 
 {% macro creature(data, collapsible=False) %}
+{%- set _ = g.assets.stylesheets.add(url_for('pf2e_compendium.static', filename='stat_block.css')) -%}
 {% if data is exception %}
 {# Output the exception into the log and HTML #}
 <div class="error">{{ data | handle_exception }}</div>
@@ -189,7 +190,6 @@
 <head>
     <title>{{ data.name | title }}</title>
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
-    <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='actions_font.css') }}">
     <script src="{{ url_for('core.static', filename='popup.js') }}" defer></script>
     <script>
     const ANALYSE_URL = "{{ url_for('.analyse', doc_type=request.view_args.doc_type) }}"

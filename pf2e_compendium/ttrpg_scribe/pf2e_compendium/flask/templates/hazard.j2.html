@@ -6,6 +6,7 @@
 {% endmacro %}
 
 {% macro hazard(data) %}
+{%- set _ = g.assets.stylesheets.add(url_for('pf2e_compendium.static', filename='stat_block.css')) -%}
 <div class="stat_block">
     <span class="name">{{ data.name }}<span style="float: right">Hazard {{ data.level }}</span></span>
     <hr>
@@ -57,7 +58,7 @@
     <title>{{ data.name | title }}</title>
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
 </head>
-<body>{{ trap(data) }}</body>
+<body>{{ hazard(data) }}</body>
 <footer>
     <a href="{{ request.base_url }}.json">View JSON</a>
 </footer>
