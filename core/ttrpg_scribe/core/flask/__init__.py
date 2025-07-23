@@ -1,16 +1,15 @@
-from functools import reduce
 import logging
 import traceback
+from functools import reduce
 from typing import Any
 
 import flask
+from jinja2.runtime import Macro
 from markupsafe import Markup
 from pluralizer import Pluralizer
-from jinja2.runtime import Macro
 
 import ttrpg_scribe.core.markdown
 
-_LOGGER = logging.getLogger(__name__)
 _blueprint = flask.Blueprint('core', __name__, static_folder='static',
                       template_folder='templates', url_prefix='/core')
 
