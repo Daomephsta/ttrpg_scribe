@@ -1,58 +1,54 @@
 {% from 'actions.j2.html' import action %}
+{% from 'stat_block.j2.html' import stat_block %}
 
 {% macro trap(data) %}
 {{- DEPRECATED(trap, hazard) -}}
 {{ hazard(data) }}
 {% endmacro %}
 
-{% macro hazard(data) %}
-{%- set _ = g.assets.stylesheets.add(url_for('pf2e_compendium.static', filename='stat_block.css')) -%}
-<div class="stat_block">
-    <span class="header name">{{ data.name }}</span>
-    <span class="header level">Hazard {{ data.level }}</span>
-    <hr>
-    <div class="stat_block_content">
-    <ul class="field_list">
-        <li><b>Notice</b> DC {{ 10 + data.stealth }} Perception Check </li>
-        {% if data.complex %}
-        <li><b>Initiative</b> Stealth {{ '%+d' | format(data.stealth) }}</li>
-        {% endif %}
-        <li><b>Disable</b> {{ data.disable | safe }}</li>
-        {% for data in data.actions %}
-        <li>{{ action(data) }}</li>
+{% macro hazard(data, collapsible=False) %}
+{% call stat_block(data.name, 'hazard', data.level, data.size, data.rarity, data.traits, collapsible=collapsible) %}
+<ul class="field_list">
+    <li><b>Notice</b> DC {{ 10 + data.stealth }} Perception Check </li>
+    {% if data.complex %}
+    <li><b>Initiative</b> Stealth {{ '%+d' | format(data.stealth) }}</li>
+    {% endif %}
+    <li><b>Disable</b> {{ data.disable | safe }}</li>
+    {% for data in data.actions %}
+    <li>{{ action(data) }}</li>
+    {% endfor %}
+    <li><hr></li>
+    {% if data.reset %}
+    <li><b>Reset</b> {{ data.reset | safe }}</li>
+    {% endif %}
+    <!-- Hazards with a physical component always have all of ac, saves, and HP -->
+    {% if data.ac %} 
+        <li>
+        <!-- AC -->
+        <b>AC</b> {{ data.ac }};
+        <!-- Saves -->
+        {% for key, value in data.saves.items() if value %}
+            <b>{{ key | title }}</b> {{ '%+d' % value }}
+            {{- ', ' if not loop.last }}
         {% endfor %}
-        <li><hr></li>
-        {% if data.reset %}
-        <li><b>Reset</b> {{ data.reset | safe }}</li>
+        </li>
+        <li>
+        <!-- Hardness -->
+        {% set comma = joiner(';') %}
+        {% if data.hardness %}
+        <b>Hardness</b> {{ data.hardness }};
         {% endif %}
-        <!-- Hazards with a physical component always have all of ac, saves, and HP -->
-        {% if data.ac %} 
-            <li>
-            <!-- AC -->
-            <b>AC</b> {{ data.ac }};
-            <!-- Saves -->
-            {% for key, value in data.saves.items() if value %}
-                <b>{{ key | title }}</b> {{ '%+d' % value }}
-                {{- ', ' if not loop.last }}
-            {% endfor %}
-            </li>
-            <li>
-            <!-- Hardness -->
-            {% set comma = joiner(';') %}
-            {% if data.hardness %}
-            <b>Hardness</b> {{ data.hardness }};
-            {% endif %}
-            <b>HP</b> {{ data.max_hp }}
-            <!-- HP -->
-            </li>
-        {% endif %}
-        {% if data.complex %}
-        <li><b>Routine</b> {{ data.routine | safe }}</li>
-        {% endif %}
-    </ul>
-    {{ data.description | safe }}
-    </div>
+        <b>HP</b> {{ data.max_hp }}
+        <!-- HP -->
+        </li>
+    {% endif %}
+    {% if data.complex %}
+    <li><b>Routine</b> {{ data.routine | safe }}</li>
+    {% endif %}
+</ul>
+{{ data.description | safe }}
 </div>
+{% endcall %}
 {% endmacro %}
 
 {% if render | default(False) %}

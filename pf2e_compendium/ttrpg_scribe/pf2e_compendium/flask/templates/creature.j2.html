@@ -1,4 +1,5 @@
 {% from 'actions.j2.html' import action, simple_action %}
+{% from 'stat_block.j2.html' import stat_block as stat_block_base %}
 
 {% macro stat_block(data, collapsible=False) %}
 {{- DEPRECATED(stat_block, creature) -}}
@@ -6,183 +7,159 @@
 {% endmacro %}
 
 {% macro creature(data, collapsible=False) %}
-{%- set _ = g.assets.stylesheets.add(url_for('pf2e_compendium.static', filename='stat_block.css')) -%}
-{% if data is exception %}
-{# Output the exception into the log and HTML #}
-<div class="error">{{ data | handle_exception }}</div>
-{% else %}
-{# Output a stat block otherwise #}
-<div class="stat_block pf2e_creature {{ 'has-collapser' if collapsible }}">
-    {% if collapsible %}
-    <input type="checkbox" class="header stat_block_collapser" data-name="{{ data.name }}">
-    {% endif %}
-    <span class="header name">{{ data.name }}</span>
-    <span class="header level">Creature <span id="statistic-level">{{ data.level }}</span></span>
-    <div class="stat_block_content {{ 'closed' if collapsible }}">
-    <!-- Traits -->
-    <div id="traits-container">
-    {% if data.rarity != 'common' %}
-        <span class="trait {{ data.rarity }}">{{ data.rarity }}</span>
-    {% endif %}
-        <span class="trait size">{{ data.size }}</span>
-    {% for trait in data.traits %}
-        <span class="trait">{{ trait }}</span>
+{% call stat_block_base(data.name, 'creature', data.level, data.size, data.rarity, data.traits, collapsible=collapsible) %}
+<p>
+    <b>Perception</b> <span id='statistic-perception'>{{ '{:+d}'.format(data.perception) }}</span>;
+    {% for sense in data.senses %}
+        {{ sense.name -}}
+        {{ ' (%s)' % sense.acuity if sense.acuity -}}
+        {{ ' %d feet' % sense.range if sense.range -}}
+        {{ ', ' if not loop.last }}
     {% endfor %}
-    </div>
-    <p>
-        <b>Perception</b> <span id='statistic-perception'>{{ '{:+d}'.format(data.perception) }}</span>;
-        {% for sense in data.senses %}
-            {{ sense.name -}}
-            {{ ' (%s)' % sense.acuity if sense.acuity -}}
-            {{ ' %d feet' % sense.range if sense.range -}}
-            {{ ', ' if not loop.last }}
-        {% endfor %}
-    </p>
-    <!-- Languages -->
-    {% if data.languages %}
-    <b>Languages</b> {{ data.languages | map('title') | join(', ') }}
-    {% endif %}
-    <!-- Skills -->
-    <p>
-        <b>Skills</b>
-        {% set skill_joiner = joiner(', ') %}
-        {%- for skill in data.skills -%}
-            {{ skill_joiner() }}{{ skill.name | title }} <span id="statistic-skill-{{ skill.name | kebab }}" class="statistic-skill-mod">{{ '{:+d}'.format(skill.mod) }}</span>
-            {%- if skill.special %} 
-            (
-            {%- set condition_joiner = joiner(', ') -%}
-            {%- for condition, bonus in skill.special.items() -%}
-                {{ condition_joiner() }}<span id="statistic-skill-{{ (skill.name, condition) | kebab }}" class="statistic-skill-mod">{{ '%+d' % bonus }}</span> {{ condition }}
-            {%- endfor -%}
-            ) 
-            {%- endif -%}
-        {%- endfor -%}
-    </p>
-    <!-- Inventory -->
-    {% if data.inventory %}
-    <p>
-        <b>Items</b>
-        {% for name, quantity in data.inventory.items() %}
-            {{ name | plural(quantity, inclusive=quantity > 1) }}
-            {{- ', ' if not loop.last }}
-        {% endfor %}
-    </p>
-    {% endif %}
-    <!-- Abilities -->
-    <p>
-    {% for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
-        <b>{{ key.title() }}</b> <span id="statistic-attribute-{{ key }}" class="statistic-attribute">{{ '%+d' % data.abilities[key] }}</span>
-        {{- ', ' if not loop.last }}
-    {% endfor %}
-    </p>
-    <!-- Interactions -->
-    <ul class="field_list">
-    {% for name, desc in data.interactions %}
-        <li><b>{{ name }}</b> {{ desc | safe }}</li>
-    {% endfor %}
-    </ul>
-    <hr>
-    <p>
-        <b>AC</b> <span id='statistic-armour-class'>{{ data.ac }}</span>;
-        <!-- Saves -->
-    {% for save in ['fortitude', 'reflex', 'will'] %}
-        <b>{{ save.title() }}</b> <span id="statistic-save-{{ save }}" class="statistic-save">{{ '%+d' % data.saves[save] }}</span>
-        {{- ', ' if not loop.last }}
-    {% endfor %}
-    </p>
-    <p>
-        <b>HP</b> <span id='statistic-hit-points'>{{ data.max_hp }}</span>
-        {%- if data.immunities %};
-            <b>Immunities</b> {{ data.immunities | join(', ') }}
-        {%- endif -%}
-        {%- if data.resistances %};
-            <b>Resistances</b>
-            {% set resistance_joiner = joiner(', ') %}
-            {% for damage_type, amount in data.resistances.items() -%}
-            {{ resistance_joiner() }}{{ damage_type }} <span id="statistic-resistance-{{ damage_type | kebab }}" class="statistic-resistance">{{ amount }}</span>
-            {%- endfor %}
-        {%- endif -%}
-        {%- if data.weaknesses %};
-            <b>Weaknesses</b>
-            {% set weakness_joiner = joiner(', ') %}
-            {% for damage_type, amount in data.weaknesses.items() -%}
-            {{ weakness_joiner() }}{{ damage_type }} <span id="statistic-weakness-{{ damage_type | kebab }}" class="statistic-weakness">{{ amount }}</span>
-            {%- endfor %}
-        {% endif %}
-    </p>
-    <!-- Defenses -->
-    <ul class="field_list">
-    {% for defense in data.defenses %}
-        <li>{{ simple_action(defense) }}</li>
-    {% endfor %}
-    </ul>
-    <hr>
-    <!-- Speeds -->
-    <p>
-        <b>Speed</b>
-        {% for kind, value in data.speeds.items() %}
-            {% if kind != 'walk' %}
-            {{ kind }} {{ value }} ft
-            {%- else %}
-            {{ value }} ft
-            {%- endif -%}
-            {{- ', ' if not loop.last }}
-        {% endfor %}
-    </p>
-    <!-- Actions -->
-    <ul class="field_list">
-        {% for data in data.actions %}
-        <li>{{ action(data) }}</li>
-        {% endfor %}
-    </ul>
-    <!-- Spellcasting -->
-    {% for spellcasting in data.spellcasting %}
-    <p>
-        <b>{{ spellcasting.name }}</b> {{ data.name }} can cast these spells
-        (spell DC <span id="statistic-dc-spell-{{ loop.index }}" class='statistic-dc'>{{ spellcasting.dc }}</span>,
-        spell attack <span id="statistic-spell-attack-{{ loop.index }}" class='statistic-spell-attack'>{{ '%+d' % spellcasting.attack }}</span>).
-        <ul style="list-style: none; margin-top: 0;">
-        {% for level, spells in spellcasting.iter_spells() %}
-            <li>
-                <b>
-                {% if level > 0 %}
-                Level {{ level }}
-                {% else %}
-                Cantrips
-                {% endif %}
-                </b>
-                {% set slots = spells | length if spellcasting.casting_type == 'focus' else spellcasting.slots.get(level, 0) %}
-                {%- for _ in range(slots) -%}
-                <input type="checkbox" class="spell-slot"/>
-                {%- endfor -%}
-                {% for name, quantity in spells %}
-                    <i>{{ name }}</i>
-                    {%- if name in spellcasting.spell_info %}
-                    <form method="POST" action="/compendium/view" target="popup" class="view-spell">
-                        <textarea name="json" hidden>{{ spellcasting.spell_info.get(name) | tojson }}</textarea>
-                        <input type="submit" value="&#x1F441;"/>
-                    </form>
-                    {%- else %}
-                    <form method="POST" action="{{ url_for('.search', **{'doc-type': 'spell', 'query': name}) }}" target="popup" class="view-spell">
-                        <input type="submit" value="&#x1F441;"/>
-                    </form>
-                    {%- endif -%}
-                    {%- if spellcasting.casting_type in ['innate', 'prepared'] -%}
-                        {%- for _ in range(quantity) -%}
-                        <input type="checkbox" class="spell-slot"/>
-                        {%- endfor -%}
-                    {%- endif -%}
-                    {{- ', ' if not loop.last }}
-                {% endfor %}
-            </li>
-        {% endfor %}
-        </ul>
-    </p>
-    {% endfor %}
-    <hr>
-    </div>
-</div>
+</p>
+<!-- Languages -->
+{% if data.languages %}
+<b>Languages</b> {{ data.languages | map('title') | join(', ') }}
 {% endif %}
+<!-- Skills -->
+<p>
+    <b>Skills</b>
+    {% set skill_joiner = joiner(', ') %}
+    {%- for skill in data.skills -%}
+        {{ skill_joiner() }}{{ skill.name | title }} <span id="statistic-skill-{{ skill.name | kebab }}" class="statistic-skill-mod">{{ '{:+d}'.format(skill.mod) }}</span>
+        {%- if skill.special %} 
+        (
+        {%- set condition_joiner = joiner(', ') -%}
+        {%- for condition, bonus in skill.special.items() -%}
+            {{ condition_joiner() }}<span id="statistic-skill-{{ (skill.name, condition) | kebab }}" class="statistic-skill-mod">{{ '%+d' % bonus }}</span> {{ condition }}
+        {%- endfor -%}
+        ) 
+        {%- endif -%}
+    {%- endfor -%}
+</p>
+<!-- Inventory -->
+{% if data.inventory %}
+<p>
+    <b>Items</b>
+    {% for name, quantity in data.inventory.items() %}
+        {{ name | plural(quantity, inclusive=quantity > 1) }}
+        {{- ', ' if not loop.last }}
+    {% endfor %}
+</p>
+{% endif %}
+<!-- Abilities -->
+<p>
+{% for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
+    <b>{{ key.title() }}</b> <span id="statistic-attribute-{{ key }}" class="statistic-attribute">{{ '%+d' % data.abilities[key] }}</span>
+    {{- ', ' if not loop.last }}
+{% endfor %}
+</p>
+<!-- Interactions -->
+<ul class="field_list">
+{% for name, desc in data.interactions %}
+    <li><b>{{ name }}</b> {{ desc | safe }}</li>
+{% endfor %}
+</ul>
+<hr>
+<p>
+    <b>AC</b> <span id='statistic-armour-class'>{{ data.ac }}</span>;
+    <!-- Saves -->
+{% for save in ['fortitude', 'reflex', 'will'] %}
+    <b>{{ save.title() }}</b> <span id="statistic-save-{{ save }}" class="statistic-save">{{ '%+d' % data.saves[save] }}</span>
+    {{- ', ' if not loop.last }}
+{% endfor %}
+</p>
+<p>
+    <b>HP</b> <span id='statistic-hit-points'>{{ data.max_hp }}</span>
+    {%- if data.immunities %};
+        <b>Immunities</b> {{ data.immunities | join(', ') }}
+    {%- endif -%}
+    {%- if data.resistances %};
+        <b>Resistances</b>
+        {% set resistance_joiner = joiner(', ') %}
+        {% for damage_type, amount in data.resistances.items() -%}
+        {{ resistance_joiner() }}{{ damage_type }} <span id="statistic-resistance-{{ damage_type | kebab }}" class="statistic-resistance">{{ amount }}</span>
+        {%- endfor %}
+    {%- endif -%}
+    {%- if data.weaknesses %};
+        <b>Weaknesses</b>
+        {% set weakness_joiner = joiner(', ') %}
+        {% for damage_type, amount in data.weaknesses.items() -%}
+        {{ weakness_joiner() }}{{ damage_type }} <span id="statistic-weakness-{{ damage_type | kebab }}" class="statistic-weakness">{{ amount }}</span>
+        {%- endfor %}
+    {% endif %}
+</p>
+<!-- Defenses -->
+<ul class="field_list">
+{% for defense in data.defenses %}
+    <li>{{ simple_action(defense) }}</li>
+{% endfor %}
+</ul>
+<hr>
+<!-- Speeds -->
+<p>
+    <b>Speed</b>
+    {% for kind, value in data.speeds.items() %}
+        {% if kind != 'walk' %}
+        {{ kind }} {{ value }} ft
+        {%- else %}
+        {{ value }} ft
+        {%- endif -%}
+        {{- ', ' if not loop.last }}
+    {% endfor %}
+</p>
+<!-- Actions -->
+<ul class="field_list">
+    {% for data in data.actions %}
+    <li>{{ action(data) }}</li>
+    {% endfor %}
+</ul>
+<!-- Spellcasting -->
+{% for spellcasting in data.spellcasting %}
+<p>
+    <b>{{ spellcasting.name }}</b> {{ data.name }} can cast these spells
+    (spell DC <span id="statistic-dc-spell-{{ loop.index }}" class='statistic-dc'>{{ spellcasting.dc }}</span>,
+    spell attack <span id="statistic-spell-attack-{{ loop.index }}" class='statistic-spell-attack'>{{ '%+d' % spellcasting.attack }}</span>).
+    <ul style="list-style: none; margin-top: 0;">
+    {% for level, spells in spellcasting.iter_spells() %}
+        <li>
+            <b>
+            {% if level > 0 %}
+            Level {{ level }}
+            {% else %}
+            Cantrips
+            {% endif %}
+            </b>
+            {% set slots = spells | length if spellcasting.casting_type == 'focus' else spellcasting.slots.get(level, 0) %}
+            {%- for _ in range(slots) -%}
+            <input type="checkbox" class="spell-slot"/>
+            {%- endfor -%}
+            {% for name, quantity in spells %}
+                <i>{{ name }}</i>
+                {%- if name in spellcasting.spell_info %}
+                <form method="POST" action="/compendium/view" target="popup" class="view-spell">
+                    <textarea name="json" hidden>{{ spellcasting.spell_info.get(name) | tojson }}</textarea>
+                    <input type="submit" value="&#x1F441;"/>
+                </form>
+                {%- else %}
+                <form method="POST" action="{{ url_for('.search', **{'doc-type': 'spell', 'query': name}) }}" target="popup" class="view-spell">
+                    <input type="submit" value="&#x1F441;"/>
+                </form>
+                {%- endif -%}
+                {%- if spellcasting.casting_type in ['innate', 'prepared'] -%}
+                    {%- for _ in range(quantity) -%}
+                    <input type="checkbox" class="spell-slot"/>
+                    {%- endfor -%}
+                {%- endif -%}
+                {{- ', ' if not loop.last }}
+            {% endfor %}
+        </li>
+    {% endfor %}
+    </ul>
+</p>
+{% endfor %}
+<hr>
+{% endcall %}
 {% endmacro %}
 
 {% if render | default(False) %}

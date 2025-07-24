@@ -1,13 +1,8 @@
+{% from 'stat_block.j2.html' import stat_block %}
+
 {% macro settlement(name, level, size, government, 
     population, languages, religions, threats, major_npcs) %}
-<div class="stat_block">
-    <p class="name">
-        <span>{{ name }}</span>
-        <span style="float: right">Settlement {{ level }}</span>
-    </p>
-    <p>
-        <span class="trait size">{{ size }}</span>
-    </p>
+{% call stat_block(name, 'settlement', level, size) %}
     <p>{{ caller() }}</p>
     <ul class="field_list">
         <li><b>Government</b> {{ government }}</li>
@@ -25,7 +20,6 @@
     {% for name, description in major_npcs %}
     <p><b>{{ name }}</b> {{ description }}</p>
     {% endfor %}
-</div>
 {% endmacro %}
 
 {% macro dofs(cs="", s="", f="", cf="") %}

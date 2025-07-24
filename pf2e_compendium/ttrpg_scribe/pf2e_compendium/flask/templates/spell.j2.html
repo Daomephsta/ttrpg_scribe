@@ -1,31 +1,21 @@
+{% from 'stat_block.j2.html' import stat_block %}
+
 <!DOCTYPE html>
 <head>
     <title>{{ data.name | title }}</title>
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
 </head>
 <body>
-    <div class="stat_block pf2e_data">
-        <p class="name">
-            <span>{{ data.name }}</span>
-            {% set data_type = 'cantrip' if 'cantrip' in data.system.traits.value 
-               else 'focus' if 'focus' in data.system.traits.value
-               else 'data'
-            %}
-            {% if 'location' in data.system and 'heightenedLevel' in data.system.location %}
-                {% set level = data.system.location.heightenedLevel %}
-            {% else %}
-                {% set level = data.system.level.value %}
-            {% endif %}
-            <span class="level">{{ data_type }} {{ level }}</span>
-        </p>
-        <div id="traits-container">
-        {% if data.system.traits.rarity != 'common' %}
-            <span class="trait {{ data.system.traits.rarity }}">{{ data.system.traits.rarity }}</span>
-        {% endif %}
-        {% for trait in data.system.traits.value %}
-            <span class="trait">{{ trait }}</span>
-        {% endfor %}
-        </div>
+    {% set data_type = 'cantrip' if 'cantrip' in data.system.traits.value 
+       else 'focus' if 'focus' in data.system.traits.value
+       else 'spell'
+    %}
+    {% if 'location' in data.system and 'heightenedLevel' in data.system.location %}
+        {% set level = data.system.location.heightenedLevel %}
+    {% else %}
+        {% set level = data.system.level.value %}
+    {% endif %}
+    {% call stat_block(data.name, data_type, level, rarity=data.system.traits.rarity, traits=data.system.traits.value) %}
         <ul class="field_list">
             {% if data.system.traits.traditions %}
             <li><b>Traditions</b> {{ data.system.traits.traditions | join(', ') }}</li>
@@ -91,7 +81,7 @@
         <hr/>
         {% endif %}
         {{ data.system.description.value | enrich | safe }}
-    </div>
+    {% endcall %}
     <footer>
         {# <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a> #}
     </footer>
