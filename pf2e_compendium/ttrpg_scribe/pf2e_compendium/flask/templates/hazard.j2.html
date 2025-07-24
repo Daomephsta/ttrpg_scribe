@@ -1,5 +1,5 @@
 {% from 'actions.j2.html' import action %}
-{% from 'stat_block.j2.html' import stat_block %}
+{% from 'stat_block.j2.html' import detailed_dc, detailed_int, stat_block %}
 
 {% macro trap(data) %}
 {{- DEPRECATED(trap, hazard) -}}
@@ -11,9 +11,9 @@
     traits=(['complex'] if data.complex else []) + data.traits, collapsible=collapsible) %}
 <ul class="field_list">
     {% if data.complex %}
-    <li><b>Stealth</b> {{ '%+d' | format(data.stealth) }}</li>
+    <li><b>Stealth</b> {{ detailed_int(data.stealth) }}</li>
     {% else %}
-    <li><b>Notice</b> DC {{ 10 + data.stealth }} Perception Check </li>
+    <li><b>Notice</b> {{ detailed_dc(data.stealth, from_modifier=True) }}</li>
     {% endif %}
     <li><b>Description</b> {{ data.description | safe }}</li>
     <hr>

@@ -4,6 +4,7 @@ from typing import Any, Callable
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
+from ttrpg_scribe.pf2e_compendium.actor import DetailedValue
 
 
 @dataclass
@@ -13,7 +14,7 @@ class PF2Hazard(InitiativeParticipant):
     rarity: str
     traits: list[str]
     complex: bool
-    stealth: int
+    stealth: DetailedValue[int]
     disable: str
     ac: int
     saves: dict[str, int]
@@ -25,7 +26,7 @@ class PF2Hazard(InitiativeParticipant):
     description: str
 
     def initiative_mod(self) -> int:
-        return self.stealth
+        return self.stealth.value
 
     def default_hp(self) -> int:
         return self.max_hp
@@ -115,7 +116,7 @@ def elite(hazard: PF2Hazard):
     for save in hazard.saves:
         if hazard.saves[save]:  # Hazard saves can be None
             hazard.saves[save] += 2
-    hazard.stealth += 2
+    hazard.stealth.value += 2
     if starting_level <= 1:
         hazard.max_hp += 10
     elif 2 <= starting_level <= 4:
@@ -143,7 +144,7 @@ def weak(hazard: PF2Hazard):
     for save in hazard.saves:
         if hazard.saves[save]:  # Hazard saves can be None
             hazard.saves[save] -= 2
-    hazard.stealth -= 2
+    hazard.stealth.value -= 2
     if starting_level <= 2:
         hazard.max_hp -= 10
     elif 3 <= starting_level <= 5:

@@ -5,6 +5,7 @@ from typing import Any, Callable
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
+from ttrpg_scribe.pf2e_compendium.actor import DetailedValue
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
@@ -219,7 +220,8 @@ def _read_hazard(json: Json) -> PF2Hazard:
         rarity=system.traits.rarity(json),
         traits=system.traits.value(json),
         complex=details.isComplex(json),
-        stealth=attributes.stealth.value(json),
+        stealth=DetailedValue(attributes.stealth.value(json),
+                              enrich(attributes.stealth.details(json))),
         disable=enrich(details.disable(json)),
         ac=attributes.ac.value(json),
         saves={k: v['value'] for k, v in json['system']['saves'].items()},
