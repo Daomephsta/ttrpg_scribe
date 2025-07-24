@@ -147,12 +147,13 @@ def _read_creature(json: Json) -> PF2Creature:
         except Exception as e:
             e.add_note(f'Item {i}: {item['name']}')
             raise
+    size: str = system.traits.size.value(json)
 
     return PF2Creature(
         name=json['name'],
         level=system.details.level.value(json),
         rarity=system.traits.rarity(json),
-        size=SIZES[system.traits.size.value(json)],
+        size=SIZES[size],
         # Filter out legacy alignment traits
         traits=[t for t in system.traits.value(json) if t not in ALIGNMENTS],
         perception=system.perception.mod(json),
