@@ -7,19 +7,20 @@
     <span class="header name">{{ name }}</span>
     <span class="header level">{{ type | title }} <span id="statistic-level">{{ level }}</span></span>
     <div class="stat_block_content {{ 'closed' if collapsible }}">
-    <!-- Traits -->
-    <div id="traits-container">
-    {% if rarity and rarity != 'common' %}
-        <span class="trait {{ rarity }}">{{ rarity }}</span>
-    {% endif %}
-    {% if size %}
-        <span class="trait size">{{ size }}</span>
-    {% endif %}
-    {% for trait in traits %}
-        <span class="trait">{{ trait }}</span>
-    {% endfor %}
+        <!-- Traits -->
+        <div id="traits-container">
+        {% if rarity and rarity != 'common' %}
+            <span class="trait {{ rarity }}">{{ rarity }}</span>
+        {% endif %}
+        {% if size %}
+            <span class="trait size">{{ size }}</span>
+        {% endif %}
+        {% for trait in traits %}
+            <span class="trait">{{ trait }}</span>
+        {% endfor %}
+        </div>
+        {{ caller() }}
     </div>
-    {{ caller() }}
 </div>
 {% endmacro %}
 
