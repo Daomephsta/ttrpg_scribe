@@ -147,13 +147,12 @@ def _read_creature(json: Json) -> PF2Creature:
         except Exception as e:
             e.add_note(f'Item {i}: {item['name']}')
             raise
-    size: str = system.traits.size.value(json)
 
     return PF2Creature(
         name=json['name'],
         level=system.details.level.value(json),
         rarity=system.traits.rarity(json),
-        size=SIZES[size],
+        size=SIZES[system.traits.size.value(json)],
         # Filter out legacy alignment traits
         traits=[t for t in system.traits.value(json) if t not in ALIGNMENTS],
         perception=system.perception.mod(json),
@@ -216,6 +215,8 @@ def _read_hazard(json: Json) -> PF2Hazard:
     return PF2Hazard(
         name=json['name'],
         level=details.level.value(json),
+        rarity=system.traits.rarity(json),
+        traits=system.traits.value(json),
         complex=details.isComplex(json),
         stealth=attributes.stealth.value(json),
         disable=enrich(details.disable(json)),

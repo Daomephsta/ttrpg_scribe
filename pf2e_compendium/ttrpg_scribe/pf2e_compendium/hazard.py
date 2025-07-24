@@ -10,6 +10,8 @@ from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 class PF2Hazard(InitiativeParticipant):
     name: str
     level: int
+    rarity: str
+    traits: list[str]
     complex: bool
     stealth: int
     disable: str
@@ -39,6 +41,8 @@ class PF2Hazard(InitiativeParticipant):
         data.update(
             name=self.name,
             level=self.level,
+            rarity=self.rarity,
+            traits=self.traits,
             complex=self.complex,
             stealth=self.stealth,
             disable=self.disable,
@@ -57,6 +61,8 @@ class PF2Hazard(InitiativeParticipant):
         return PF2Hazard(
             name=data['name'],
             level=data['level'],
+            rarity=data['rarity'],
+            traits=data['traits'],
             complex=data['complex'],
             stealth=data['stealth'],
             disable=data['disable'],
