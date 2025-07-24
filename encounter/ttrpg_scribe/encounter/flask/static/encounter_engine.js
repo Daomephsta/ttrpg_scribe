@@ -2,11 +2,11 @@ currentTurn = 0
 
 function setCurrentTurn(turn)
 {
-    current = document.getElementById('current_turn')
+    current = document.getElementById('current-turn')
     if (current)
         current.removeAttribute('id')
     currentTurn = turn % rows.length
-    rows[currentTurn].id = 'current_turn'
+    rows[currentTurn].id = 'current-turn'
 }
 
 function getRound()

@@ -1,38 +1,38 @@
-.stat_block {
+.stat-block {
     font-family: 'Scaly Sans';
     background-color: #f8f3e8;
     margin: 10px 0;
     padding: 10px;
 }
-.stat_block .name {
+.stat-block .name {
     font: bold 1.5em 'Mr Eaves Small Caps';
     text-transform: uppercase;
 }
-.stat_block .actions_heading {
+.stat-block .actions_heading {
     font-family: 'Mr Eaves Small Caps';
     font-size: 1.2em;
     font-weight: bold;
     text-transform: uppercase;
     margin-bottom: 0px;
 }
-.stat_block > table {
+.stat-block > table {
     text-align: center;
 }
-.stat_block_content {
+.stat-block-content {
     transition: height 0.2s;
     max-height: 0px;
     overflow-y: clip;
 }
-.stat_block_collapser {
+.stat-block-collapser {
     appearance: none;
 }
-.stat_block_collapser::after {
+.stat-block-collapser::after {
     content: '\02c3  ' attr(data-name);
 }
-.stat_block_collapser:checked:after {
+.stat-block-collapser:checked:after {
     content: '\02c5  ' attr(data-name);
 }
-.stat_block_collapser:checked ~ .stat_block_content {
+.stat-block-collapser:checked ~ .stat-block-content {
     max-height: initial;
     overflow-y: initial;
 }

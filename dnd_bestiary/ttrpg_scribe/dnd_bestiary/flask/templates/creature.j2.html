@@ -4,10 +4,10 @@
 <div class="error">{{ creature | handle_exception }}</div>
 {% else %}
 {# Output a stat block otherwise #}
-<section id="{{ creature.name | replace(' ', '_') }}" class="stat_block">
+<section id="{{ creature.name | replace(' ', '_') }}" class="stat-block">
     <link rel="stylesheet" href="{{ url_for('dnd_bestiary.static', filename='stat_block.css') }}">
     {% if collapsible %}
-    <input type="checkbox" class="stat_block_collapser name" data-name="{{ creature.name }}">
+    <input type="checkbox" class="stat-block-collapser name" data-name="{{ creature.name }}">
     <div class="stat_block_content">
     {% else %}
     <span class="name">{{ creature.name }}</span><br>

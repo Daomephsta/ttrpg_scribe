@@ -18,7 +18,7 @@
 .name {
     text-transform: capitalize;
 }
-.damage,.initiative {
+.damage, .initiative {
     font-size: 16px;
     text-align: center;
     width: 3em;
@@ -51,10 +51,10 @@
         "sort next"
         "save load";
 }
-#sort_initiative {
+#sort-initiative {
     grid-area: "sort";
 }
-#next_turn {
+#next-turn {
     grid-area: "next";
 }
 #save {
@@ -63,10 +63,10 @@
 #load {
     grid-area: "load";
 }
-#add_reinforcements {
+#add-reinforcements {
     flex-grow: 1;
 }
-#current_turn {
+#current-turn {
     background: lightgrey;
 }
 #reinforcements {
@@ -76,7 +76,7 @@
 input[name="quantity"], input[name="initiative_mod"], input[name="max_hp"] {
     width: 4em;
 }
-#stat_blocks_pane {
+#stat-blocks-pane {
     max-width: 580px;
     overflow-y: scroll;
 }

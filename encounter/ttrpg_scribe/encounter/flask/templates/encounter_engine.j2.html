@@ -60,8 +60,8 @@
             </table>
         </fieldset>
         <div id="buttons">
-            <button onclick="sortInitiative()" id="sort_initiative">Sort</button>
-            <button onclick="nextTurn()" id="next_turn">Next Turn</button>
+            <button onclick="sortInitiative()" id="sort-initiative">Sort</button>
+            <button onclick="nextTurn()" id="next-turn">Next Turn</button>
             <button onclick="save()" id="save">Save</button>
             <dialog id="load_dialog">
                 <form method="dialog" enctype="multipart/form-data" id="load_dialog_form">
@@ -83,28 +83,28 @@
             </label>
             <form method="post" id="reinforce_with_new_controls" class="collapsed">
                 <input type="hidden" name="reinforcement_type" value="with_new">
-                <input type="submit" value="Add" class="add_reinforcements">
+                <input type="submit" value="Add" class="add-reinforcements">
                 <input type="number" name="quantity" value="1" min="1">
                 &#x00D7;
                 <input type="text" name="name" placeholder="Name" required="true">
                 <input type="number" name="initiative_mod" placeholder="DEX" min="-10" max="10" required="true">
                 <input type="number" name="max_hp" placeholder="&#x2764;" min="0" required="true">
-                <select name="side" class="feature_value" required="true">
+                <select name="side" class="feature-value" required="true">
                     <option value="enemy">Enemy</option>
                     <option value="ally">Ally</option>
                 </select>
             </form>
             <form method="post" id="reinforce_with_existing_controls">
                 <input type="hidden" name="reinforcement_type" value="with_existing">
-                <input type="submit" value="Add" class="add_reinforcements">
+                <input type="submit" value="Add" class="add-reinforcements">
                 <input type="number" name="quantity" value="1" min="1">
                 &#x00D7;
-                <select name="stats" class="feature_value" required="true" style="text-transform: capitalize;">
+                <select name="stats" class="feature-value" required="true" style="text-transform: capitalize;">
                     {% for stats in stat_block_data %}
                     <option value="{{ stats.name }}">{{ stats.name }}</option>
                     {% endfor %}
                 </select>
-                <select name="side" class="feature_value" required="true">
+                <select name="side" class="feature-value" required="true">
                     <option value="enemy">Enemy</option>
                     <option value="ally">Ally</option>
                 </select>
@@ -112,7 +112,7 @@
         </fieldset>
         {{ description | block_markdown }}
     </div>
-    <div id="stat_blocks_pane">
+    <div id="stat-blocks-pane">
     {% for stats in stat_block_data %}
         {{ stat_block(stats, collapsible=True) }}
     {% endfor %}

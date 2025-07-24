@@ -1,6 +1,6 @@
 @import 'actions_font.css';
 
-.stat_block {
+.stat-block {
     font-family: Arial;
     background-color: #f8f3e8;
     margin: 10px 0;
@@ -11,39 +11,39 @@
         "content content content";
     grid-template-columns: 1.5em 1fr 1fr;
 }
-.stat_block.has-collapser {
+.stat-block.has-collapser {
     grid-template-areas: 
         "collapser name level"
         "content content content";
 }
-.stat_block .header {
+.stat-block .header {
     font-size: 1.5em;
     font-weight: bold;
     text-transform: uppercase;
 }
-.stat_block .name {
+.stat-block .name {
     grid-area: name;
 }
-.stat_block .level {
+.stat-block .level {
     grid-area: level;
     text-align: right;
 }
-.stat_block_content {
+.stat-block-content {
     grid-area: content;
 }
-.stat_block .field_list {
+.stat-block .field-list {
     list-style: none;
     padding-left: 0px;
 }
-.stat_block .field_list li p {
+.stat-block .field-list li p {
     display: inline;
 }
-.stat_block #traits-container {
+.stat-block #traits-container {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
 }
-.stat_block .trait {
+.stat-block .trait {
     text-transform: uppercase;
     font-weight: bold;
     color: white;
@@ -51,23 +51,23 @@
     padding: 5px;
     display: inline-block;
 }
-.stat_block .trait.size {
+.stat-block .trait.size {
     background-color: green;
 }
-.stat_block .trait.uncommon {
+.stat-block .trait.uncommon {
     background-color: orange;
 }
-.stat_block .trait.rare {
+.stat-block .trait.rare {
     background-color: darkblue;
 }
-.stat_block .trait.unique {
+.stat-block .trait.unique {
     background-color: purple;
 }
-.stat_block p {
+.stat-block p {
     margin-top: 8px;
     margin-bottom: 8px;
 }
-.stat_block .view-spell {
+.stat-block .view-spell {
     display: inline-block;
 }
 .pf2e_creature .details {
@@ -75,24 +75,24 @@
     padding-left: 1em;
 }
 
-.stat_block_content.closed {
+.stat-block-content.closed {
     transition: height 0.2s;
     max-height: 0px;
     overflow-y: clip;
 }
-.stat_block_collapser {
+.stat-block-collapser {
     font-family: inherit;
     appearance: none;
     grid-area: collapser;
     margin: 0 auto;
 }
-.stat_block_collapser::after {
+.stat-block-collapser::after {
     content: '\02c3';
 }
-.stat_block_collapser:checked:after {
+.stat-block-collapser:checked:after {
     content: '\02c5';
 }
-.stat_block .stat_block_collapser:checked ~ .stat_block_content {
+.stat-block .stat-block-collapser:checked ~ .stat-block-content {
     max-height: initial;
     overflow-y: initial;
 }

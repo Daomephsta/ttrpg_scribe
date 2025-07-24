@@ -26,10 +26,10 @@ img {
 table {
     font-family: 'Scaly Sans';
 }
-.image_stack {
+.image-stack {
     display: grid;
 }
-.image_stack > img {
+.image-stack > img {
     grid-row: 1;
     grid-column: 1;
 }
@@ -39,17 +39,17 @@ blockquote {
     padding: 5px 5px 5px 40px;
 }
 /*Center align data by default*/
-.bi_table td {
+.bi-table td {
     text-align: center;
 }
 /* Make row headers bold & right-aligned
  * Overrides previous selector due to specificity */
-.bi_table td:first-of-type {
+.bi-table td:first-of-type {
     text-align: right;
     font-weight: bold;
 }
 /* Pad column headers to clearly divide columns */
-.bi_table th {
+.bi-table th {
     padding-left: 1em;
     padding-right: 1em;
 }

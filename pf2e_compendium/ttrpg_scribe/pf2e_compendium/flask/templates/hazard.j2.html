@@ -9,7 +9,7 @@
 {% macro hazard(data, collapsible=False) %}
 {% call stat_block(data.name, 'hazard', data.level, rarity=data.rarity, 
     traits=(['complex'] if data.complex else []) + data.traits, collapsible=collapsible) %}
-<ul class="field_list">
+<ul class="field-list">
     {% if data.complex %}
     <li><b>Stealth</b> {{ detailed_int(data.stealth) }}</li>
     {% else %}

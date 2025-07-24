@@ -55,7 +55,7 @@
 {% endfor %}
 </p>
 <!-- Interactions -->
-<ul class="field_list">
+<ul class="field-list">
 {% for name, desc in data.interactions %}
     <li><b>{{ name }}</b> {{ desc | safe }}</li>
 {% endfor %}
@@ -90,7 +90,7 @@
     {% endif %}
 </p>
 <!-- Defenses -->
-<ul class="field_list">
+<ul class="field-list">
 {% for defense in data.defenses %}
     <li>{{ simple_action(defense) }}</li>
 {% endfor %}
@@ -109,7 +109,7 @@
     {% endfor %}
 </p>
 <!-- Actions -->
-<ul class="field_list">
+<ul class="field-list">
     {% for data in data.actions %}
     <li>{{ action(data) }}</li>
     {% endfor %}

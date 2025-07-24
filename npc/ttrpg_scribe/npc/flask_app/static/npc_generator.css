@@ -15,17 +15,17 @@ body {
 #features {
   width: 320px;
 }
-.control_button {
+.control-button {
   width: 320px;
   height: 32px;
   margin-top: 3px;
   margin-bottom: 3px;
 }
-#result_frame {
+#result-frame {
   width: 50%;
   border: none;
 }
-.feature_value {
+.feature-value {
   width: 100%;
 }
 #feedback {

@@ -16,7 +16,7 @@
         {% set level = data.system.level.value %}
     {% endif %}
     {% call stat_block(data.name, data_type, level, rarity=data.system.traits.rarity, traits=data.system.traits.value) %}
-        <ul class="field_list">
+        <ul class="field-list">
             {% if data.system.traits.traditions %}
             <li><b>Traditions</b> {{ data.system.traits.traditions | join(', ') }}</li>
             {% endif %}

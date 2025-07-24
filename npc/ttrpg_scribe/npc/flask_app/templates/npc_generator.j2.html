@@ -5,7 +5,7 @@
 {% endmacro %}
 
 {% macro choice_feature(name) %}
-<select name="{{ name }}" class="feature_value">
+<select name="{{ name }}" class="feature-value">
     <option value=""></option>
     {% for choice in features[name].choices %}
     <option>{{ choice }}</option>
@@ -131,7 +131,7 @@
             .then(response => response.json())
             .then(json =>
             {
-                resultDocument = document.getElementById("result_frame").contentDocument
+                resultDocument = document.getElementById("result-frame").contentDocument
                 resultDocument.body.replaceChildren() // Clear body
                 table = resultDocument.body.appendChild(resultDocument.createElement("table"))
                 for (const [feature, value] of json) {
@@ -170,7 +170,7 @@
                     <tr>
                         <td>Region</td>
                         <td>
-                            <select name="region" id="region" class="feature_value" onchange="regionChanged()">
+                            <select name="region" id="region" class="feature-value" onchange="regionChanged()">
                                 <option value=""></option>
                                 {% for region in config.REGIONS %}
                                 <option>{{ region }}</option>
@@ -180,7 +180,7 @@
                     </tr>
                     <tr>
                         <td>Name</td>
-                        <td><input type="text" name="name" class="feature_value"></td>
+                        <td><input type="text" name="name" class="feature-value"></td>
                     </tr>
                     <tr>
                         <td>Age</td>
@@ -189,7 +189,7 @@
                     <tr>
                         <td>Culture</td>
                         <td>
-                            <select name="culture" id="culture" class="feature_value" onchange="cultureChanged()">
+                            <select name="culture" id="culture" class="feature-value" onchange="cultureChanged()">
                                 <option value=""></option>
                             </select>
                         </td>
@@ -197,7 +197,7 @@
                     <tr>
                         <td>Race</td>
                         <td>
-                            <select name="race" id="race" class="feature_value" onchange="updateSubrace()">
+                            <select name="race" id="race" class="feature-value" onchange="updateSubrace()">
                                 <option value=""></option>
                             </select>
                             <input name="subrace" id="subrace" type="hidden">
@@ -225,35 +225,35 @@
                     </tr>
                     <tr>
                         <td>Appearance</td>
-                        <td><input type="text" name="appearance" class="feature_value"></td>
+                        <td><input type="text" name="appearance" class="feature-value"></td>
                     </tr>
                     <tr>
                         <td>Positive Personality</td>
-                        <td><input type="text" name="positive_personality" class="feature_value"></td>
+                        <td><input type="text" name="positive_personality" class="feature-value"></td>
                     </tr>
                     <tr>
                         <td>Negative Personality</td>
-                        <td><input type="text" name="negative_personality" class="feature_value"></td>
+                        <td><input type="text" name="negative_personality" class="feature-value"></td>
                     </tr>
                     <tr>
                         <td>Mannerism</td>
-                        <td><input type="text" name="mannerism" class="feature_value"></td>
+                        <td><input type="text" name="mannerism" class="feature-value"></td>
                     </tr>
                     <tr>
                         <td>Notes</td>
-                        <td><textarea name="notes" class="feature_value" style="height: 3.5em;"></textarea></td>
+                        <td><textarea name="notes" class="feature-value" style="height: 3.5em;"></textarea></td>
                     </tr>
                 </table>
             </form>
-            <button onclick="generate()" class="control_button">Generate</button>
-            <button id="save" onclick="save()" class="control_button" disabled>Save</button>
-            <button onclick="reset()" class="control_button">Reset</button>
+            <button onclick="generate()" class="control-button">Generate</button>
+            <button id="save" onclick="save()" class="control-button" disabled>Save</button>
+            <button onclick="reset()" class="control-button">Reset</button>
             <a href="{{ url_for('list_npcs')}}">
-                <button class="control_button">List</button>
+                <button class="control-button">List</button>
             </a>
             <p id="feedback"></p>
         </div>
-        <iframe name="result_frame" id="result_frame">
+        <iframe name="result-frame" id="result-frame">
         </iframe>
     </body>
 </html>

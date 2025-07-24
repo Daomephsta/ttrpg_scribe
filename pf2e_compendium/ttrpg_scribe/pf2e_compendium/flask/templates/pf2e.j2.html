@@ -4,13 +4,13 @@
     population, languages, religions, threats, major_npcs) %}
 {% call stat_block(name, 'settlement', level, size) %}
     <p>{{ caller() }}</p>
-    <ul class="field_list">
+    <ul class="field-list">
         <li><b>Government</b> {{ government }}</li>
         <li><b>Population</b> {{ population }}</li>
         <li><b>Languages</b> {{ languages | sort | join(', ') }}</li>
     </ul>
     <hr>
-    <ul class="field_list">
+    <ul class="field-list">
         <li><b>Religions</b> {{ religions | join(', ') }}</li>
         {% if threats %}
         <li><b>Threats</b> {{ threats | join(', ') }}</li>
