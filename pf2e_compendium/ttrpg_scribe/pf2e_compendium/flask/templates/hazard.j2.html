@@ -10,6 +10,9 @@
 {% call stat_block(data.name, 'hazard', data.level, rarity=data.rarity, 
     traits=(['complex'] if data.complex else []) + data.traits, collapsible=collapsible) %}
 <ul class="field_list">
+    {% if data.complex %}
+    <li><b>Stealth</b> {{ '%+d' | format(data.stealth) }}</li>
+    {% else %}
     <li><b>Notice</b> DC {{ 10 + data.stealth }} Perception Check </li>
     {% endif %}
     <li><b>Description</b> {{ data.description | safe }}</li>
@@ -47,7 +50,6 @@
     <li><b>Routine</b> {{ data.routine | safe }}</li>
     {% endif %}
 </ul>
-{{ data.description | safe }}
 </div>
 {% endcall %}
 {% endmacro %}
