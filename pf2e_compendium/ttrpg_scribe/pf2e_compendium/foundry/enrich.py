@@ -236,9 +236,6 @@ def enrich(text: str) -> str:
                 raise ValueError(f'Unknown enricher @{unknown}[{raw_args}]')
 
     def inline_enrichers(result: re.Match) -> str:
-        def parse_inline_args(args: str, *, context: str) -> tuple[Args, str]:
-            args, _, tag = args.partition('#')
-            return Args(args.strip(), arg_sep=' ', key_value_sep='=', error_context=context), tag
         name, raw_args, display = result.groups()
         name: str
         raw_args: str
@@ -279,7 +276,7 @@ def enrich(text: str) -> str:
     for pattern in [r'@(Damage)\[((?:[^[\]]*|\[[^[\]]*\])*)\](?:{([^}]+)})?',
                     r'@(\w+)\[([^\]]+)\](?:{([^}]+)})?']:
         text = re.sub(pattern, at_enrichers, text)
-    text = re.sub(r'\[\[\/(?P<name>\w+) (?P<args>[^]]+)\]\](?:\{(?P<display>[\w ]+?)\})?',
+    text = re.sub(r'\[\[\/(?P<name>\w+) (?P<args>[^]]+)\]\](?:\{(?P<display>[^}]+?)\})?',
                   inline_enrichers, text)
     return text
 
