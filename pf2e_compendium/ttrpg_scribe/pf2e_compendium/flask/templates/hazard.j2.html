@@ -11,9 +11,9 @@
     traits=(['complex'] if data.complex else []) + data.traits, collapsible=collapsible) %}
 <ul class="field_list">
     <li><b>Notice</b> DC {{ 10 + data.stealth }} Perception Check </li>
-    {% if data.complex %}
-    <li><b>Initiative</b> Stealth {{ '%+d' | format(data.stealth) }}</li>
     {% endif %}
+    <li><b>Description</b> {{ data.description | safe }}</li>
+    <hr>
     <li><b>Disable</b> {{ data.disable | safe }}</li>
     {% for data in data.actions %}
     <li>{{ action(data) }}</li>
