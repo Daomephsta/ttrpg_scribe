@@ -3,10 +3,12 @@
     <head>
         <meta charset="utf-8">
         {% block head %}
+            {% block title %}
         {% if toc %}
             {# TocExtension already escapes the name #}
             <title>{{ toc[0].name | safe }}</title>
         {% endif %}
+            {% endblock title %}
         {% for sheet in g.assets.stylesheets %}
             <link rel="stylesheet" href="{{ sheet }}"/>
         {% endfor %}
