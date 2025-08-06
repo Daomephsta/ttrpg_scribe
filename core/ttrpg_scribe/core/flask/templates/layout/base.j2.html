@@ -1,13 +1,20 @@
+{% macro script_dependency(version, cors, development, production) %}
+{% if config.DEBUG %}
+<script src="{{ development[0].format(version=version) }}" {{ development[1] | xmlattr }} crossorigin="{{ cors }}"></script>
+{% else %}
+<script src="{{ production[0].format(version=version) }}" {{ production[1] | xmlattr }} crossorigin="{{ cors }}"></script>
+{% endif %}
+{% endmacro %}
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8">
         {% block head %}
             {% block title %}
-        {% if toc %}
-            {# TocExtension already escapes the name #}
-            <title>{{ toc[0].name | safe }}</title>
-        {% endif %}
+            {% if toc %}
+                {# TocExtension already escapes the name #}
+                <title>{{ toc[0].name | safe }}</title>
+            {% endif %}
             {% endblock title %}
         {% for sheet in g.assets.stylesheets %}
             <link rel="stylesheet" href="{{ sheet }}"/>
@@ -17,6 +24,10 @@
             <script{{ script | xmlattr }}></script>
         {% endfor %}
         <script src="{{ url_for('core.static', filename='popup.js') }}" defer></script>
+        {{ script_dependency(version='3.7.1', cors='anonymous',
+            development=('https://code.jquery.com/jquery-{version}.js', {'integrity': 'sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4='}),
+            production=('https://code.jquery.com/jquery-{version}.min.js', {'integrity': 'sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo='}),
+        ) }}
         {% endblock head %}
     </head>
     <body>
