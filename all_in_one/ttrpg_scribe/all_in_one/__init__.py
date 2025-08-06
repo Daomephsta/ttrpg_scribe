@@ -128,8 +128,12 @@ def pf2e_foundry(args):
         case 'mongo':
             from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
             mongo_server.start()
-            while True:  # Keep server alive until termination
-                pass
+            try:
+                while True:  # Keep server alive until termination
+                    pass
+            except KeyboardInterrupt:
+                print('Keyboard interrupt recieved')
+                sys.exit(130)
 
 
 def main():
