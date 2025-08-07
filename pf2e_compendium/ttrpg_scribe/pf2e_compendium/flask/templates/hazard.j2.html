@@ -2,7 +2,7 @@
 {% from 'stat_block.j2.html' import detailed_dc, detailed_int, stat_block %}
 
 {% macro trap(data) %}
-{{- DEPRECATED(trap, hazard) -}}
+{% set _ = DEPRECATED(trap, hazard) %}
 {{ hazard(data) }}
 {% endmacro %}
 

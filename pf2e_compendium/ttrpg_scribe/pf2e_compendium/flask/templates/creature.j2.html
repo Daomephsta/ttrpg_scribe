@@ -2,7 +2,7 @@
 {% from 'stat_block.j2.html' import stat_block as stat_block_base %}
 
 {% macro stat_block(data, collapsible=False) %}
-{{- DEPRECATED(stat_block, creature) -}}
+{% set _ = DEPRECATED(stat_block, creature) %}
 {{ creature(data, collapsible) }}
 {% endmacro %}
 
