@@ -52,16 +52,16 @@
         "save load";
 }
 #sort-initiative {
-    grid-area: "sort";
+    grid-area: sort;
 }
 #next-turn {
-    grid-area: "next";
+    grid-area: next;
 }
 #save {
-    grid-area: "save";
+    grid-area: save;
 }
 #load {
-    grid-area: "load";
+    grid-area: load;
 }
 #add-reinforcements {
     flex-grow: 1;
