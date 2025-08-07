@@ -33,7 +33,7 @@
     it sends data-encounter as the body of a POST request to /encounter
     -->
     <button data-encounter="{{ dict(pcs=config.PARTY, enemies=enemies, allies=allies, description=caller() if caller else '') | tojson | forceescape }}"
-        class="launch_encounter">Launch</button>
+        class="launch-encounter">Launch</button>
 </section>
 {% endmacro %}
 

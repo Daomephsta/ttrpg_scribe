@@ -1,14 +1,3 @@
-currentTurn = 0
-
-function setCurrentTurn(turn)
-{
-    current = document.getElementById('current-turn')
-    if (current)
-        current.removeAttribute('id')
-    currentTurn = turn % rows.length
-    rows[currentTurn].id = 'current-turn'
-}
-
 function getRound()
 {
     return Number(sessionStorage.getItem('current_round') || 1)
@@ -17,7 +6,7 @@ function getRound()
 function setRound(round)
 {
     sessionStorage.setItem('current_round', round)
-    document.getElementById('current_round').textContent = `Round ${round}`
+    $('#current-round').text(`Round ${round}`)
 }
 
 function getInitiative(row)
@@ -27,32 +16,24 @@ function getInitiative(row)
 
 function sortInitiative()
 {
-    tbody = document.querySelector('#tracker tbody')
-    rows = Array.from(tbody.querySelectorAll('tr'))
-    rows.sort((a, b) => getInitiative(b) - getInitiative(a))
-        .forEach(row => tbody.appendChild(row))
-    setCurrentTurn(0)
+    const $trackerBody = $('#tracker tbody')
+    const rows = $trackerBody.find('tr').detach()
+        .toArray().sort((a, b) => getInitiative(b) - getInitiative(a))
+    $trackerBody.append(rows)
 }
 
 function nextTurn()
 {
-    rows = document.querySelectorAll('#tracker tbody > tr')
-    setCurrentTurn(currentTurn + 1)
-    if (currentTurn == 0)
-        setRound(getRound() + 1)
-    // Skip dead creatures
-    rows = document.querySelectorAll('#tracker tbody > tr')
-    while(rows[currentTurn].classList.contains('dead'))
-        nextTurn()
+    const $current = $('.current-turn').removeClass('current-turn')
+    const $prev = $current.prevAll(':not(.dead)').uniqueSort()
+    const $next = $current.nextAll(':not(.dead)')
+    $([...$next, ...$prev]).first().addClass('current-turn')
 }
 
 function updateDeadStatus(damageInput)
 {
-    let row = damageInput.closest('tr')
-    if (damageInput.max > 0 && damageInput.valueAsNumber >= damageInput.max)
-        row.classList.add('dead')
-    else
-        row.classList.remove('dead')
+    let $row = $(damageInput).closest('tr')
+    $row.toggleClass(damageInput.max > 0 && damageInput.valueAsNumber >= damageInput.max)
 }
 
 function updateReinforcementControls()
@@ -78,7 +59,6 @@ function saveRow(row)
         initiative: getInitiative(row),
         notes: row.querySelector('.notes').value,
     }
-    console.log(json.name)
     if (type != 'player') {
         json.damage = row.querySelector('.damage').valueAsNumber
     }
@@ -164,6 +144,7 @@ onload = (_) =>  {
         })
     }
     updateReinforcementControls()
+    $('#tracker tbody tr').first().addClass('current-turn')
     setRound(getRound())
 };
 
@@ -171,6 +152,6 @@ onload = (_) =>  {
 window.addEventListener('beforeunload', (event) =>
 {
     // except if all enemies are dead
-    if (document.querySelectorAll('.enemy.dead').length < document.querySelectorAll('.enemy').length)
+    if ($('.enemy.dead').length < $('.enemy').length)
         event.preventDefault();
 })

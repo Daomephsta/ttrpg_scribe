@@ -1,8 +1,10 @@
 {% extends "layout/base.j2.html" %}
 {% from 'stat_block_mux.j2.html' import stat_block %}
+{% block title %}
+<title>Initiative Tracker</title>
+{% endblock title %}
 {% block head %}
-    <title>Initiative Tracker</title>
-    <link rel="stylesheet" href="{{ url_for('core.static', filename='base.css') }}"/>
+    {{ super() }}
     <link rel="stylesheet" href="{{ url_for('.static', filename='encounter_engine.css') }}"/>
     <link rel="stylesheet" href="{{ url_for(system.compendium_blueprint.name + '.static', filename='stat_block.css') }}">
     <script src="{{ url_for('.static', filename='encounter_engine.js') }}"></script>
@@ -18,7 +20,7 @@
 <div id="container">
     <div id="tracker">
         <fieldset>
-            <legend id="current_round">Round 1</legend>
+            <legend id="current-round">Round 1</legend>
             <table>
                 <thead>
                     <th>Name</th>
