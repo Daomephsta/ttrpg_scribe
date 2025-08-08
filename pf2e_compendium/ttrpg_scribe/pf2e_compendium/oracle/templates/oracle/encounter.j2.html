@@ -1,0 +1,246 @@
+{% extends "layout/base.j2.html" %}
+{% block title %}
+<title>Encounter Oracle</title>
+{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <style>
+    body {
+        width: initial;
+    }
+    main {
+        display: flex;
+    }
+    #specifications, #results {
+        display: inline-block;
+    }
+    .quantity {
+        text-align: center;
+        width: 4em;
+    }
+    .rarity {
+        text-align: center;
+        width: 5em;
+    }
+    .size {
+        text-align: center;
+        width: 8em;
+    }
+    .level {
+        text-align: center;
+        width: 5em;
+    }
+    .traits {
+        text-align: center;
+        --width: 15em;
+        width: var(--width);
+        max-width: var(--width);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .name {
+        text-align: center;
+        width: 25em;
+    }
+    </style>
+    <script>
+    const ORACLE = "{{ url_for('oracle.encounter') }}"
+
+    function toTitleCase(str) {
+        return str.replace(/(?:^|\s)\w/g, m => m.toUpperCase());
+    }
+
+    function rarityLetter(rarity) {
+        return rarity == 'unique' ? 'Q' : rarity[0].toUpperCase()
+    }
+
+    function updateSpecification($specification) {
+        const data = JSON.parse($specification.find('.data').val())
+        $specification.find('.quantity').text(data['quantity'])
+        $specification.find('.level').text(data['level-min'] == data['level-max']
+            ? data['level-min']
+            : `${data['level-min']} to ${data['level-max']}`
+        )
+        $specification.find('.rarity').empty()
+            .attr('title', data['rarity'].map(toTitleCase).join(', '))
+            .text(data['rarity'].map(rarityLetter).join(''))
+        $specification.find('.size')
+            .attr('title', data['size'].map(toTitleCase).join(', '))
+            .text(data['size'].map(s => s[0].toUpperCase()).join(''))
+        traits = data['traits'].map(toTitleCase).join(', ')
+        $specification.find('.traits')
+            .attr('title', traits)
+            .text(traits)
+    }
+
+    function addSpecification() {
+        const $specification = $($('#specification-template').html())
+        updateSpecification($specification)
+        $('#specifications tbody').append($specification)
+    }
+    
+    function editSpecification($specification) {
+        const $dialog = $('#specification-dialog')
+        const dialog = $dialog[0]
+        const $data = $specification.find('.data');
+        const data = JSON.parse($data.val())
+
+        function writeData(name, getter) {
+            data[name] = getter($dialog.find(`[name="${name}"]`))
+        }
+
+        function writeNumericData(name) {
+            writeData(name, f => Number(f.val()))
+        }
+
+        function writeBoolArrayData(name) {
+            writeData(name, f => f.filter(':checked').toArray().map(e => e.value))
+        }
+
+        for (const key in data) {
+            $dialog.find(`[name="${key}"]`).val(data[key])
+        }
+        dialog.querySelector('form').addEventListener('submit', (_) => {
+            writeNumericData('quantity')
+            writeNumericData('level-min')
+            writeNumericData('level-max')
+            writeBoolArrayData('rarity')
+            writeBoolArrayData('size')
+            writeData('traits', f => f.val().split(',').map(s => s.toLowerCase().trim()))
+            $data.val(JSON.stringify(data))
+            updateSpecification($specification)
+        }, {once: true})
+        dialog.showModal()
+
+    }
+
+    function generate() {
+        const specifications = $('.specification .data').toArray()
+            .map(data => JSON.parse(data.value))
+        fetch(ORACLE, {
+            method: 'POST',
+            body: JSON.stringify(specifications),
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).then(r => r.json()).then(results => {
+            $('#results tbody').empty().append(results.map(r => {
+                return $(`<tr></tr>`)
+                    .append($(`<td>`, {'class': 'quantity'}).text(r.quantity))
+                    .append($(`<td>`, {'class': 'name'}).text(r.name))
+                    .append($(`<td>`, {'class': 'level'}).text(r.level))
+                    .append($(`<td>`, {'class': 'rarity'}).text(toTitleCase(r.rarity)))
+                [0]
+            }))
+        })
+    }
+
+    $(() => {
+        addSpecification()
+    })
+    </script>
+{% endblock head %}
+{% block main %}
+<main>
+    {% set LEVEL_MIN = [config.PARTY_LEVEL - 4, -1] | max %}
+    {% set LEVEL_MAX = [config.PARTY_LEVEL + 4, 25] | min %}
+    <dialog id="specification-dialog">
+        <form method="dialog">
+            <div>
+                <label>
+                    Quantity
+                    <input name="quantity" type="number" min="0" max="99" style="width: 3em;"/>
+                </label>
+            </div>
+            <div>
+                <label>
+                    Level
+                    <span>
+                        <input name="level-min" type="number" min="{{ LEVEL_MIN }}" max="{{ LEVEL_MAX }}"/>
+                        to
+                        <input name="level-max" type="number" min="{{ LEVEL_MIN }}" max="{{ LEVEL_MAX }}"/>
+                    </span>
+                </label>
+            </div>
+            <label>
+                Rarity
+                <div>
+                    {% for rarity in ['Common', 'Uncommon', 'Rare', 'Unique'] %}
+                    <label>
+                        <input type="checkbox" name="rarity" value="{{ rarity | lower }}"/> {{ rarity}}
+                    </label>
+                    {% endfor %}
+                </div>
+            </label>
+            <label>
+                Size
+                <div>
+                    {% for size in ['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan'] %}
+                    <label>
+                        <input type="checkbox" name="size" value="{{ size | lower }}"/> {{ size }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </label>
+            <label>
+                Traits <input type="text" name="traits"/>
+            </label>
+            <input type="submit" value="Apply"/>
+        </form>
+    </dialog>
+
+    <template id="specification-template">
+        <tr class="specification">
+            <td class="quantity"></td>
+            <td class="level"></td>
+            <td class="rarity"></td>
+            <td class="size"></td>
+            <td class="traits"></td>
+            <td>
+                <button onclick="editSpecification($(event.target.closest('.specification')))">Edit</button>
+                <textarea hidden class="data">{{ {
+                    "quantity": 1,
+                    "level-min": LEVEL_MIN,
+                    "level-max": LEVEL_MAX,
+                    "rarity": ["common", "uncommon", "rare", "unique"],
+                    "size": ["tiny", "small", "medium", "large", "huge", "gargantuan"],
+                    "traits": []
+                } | tojson }}</textarea>
+            </td>
+        </tr>
+    </template>
+
+    <fieldset id="specifications">
+        <legend>Specifications</legend>
+            <table>
+                <thead>
+                    <th class="quantity">Quantity</th>
+                    <th class="level">Level</th>
+                    <th class="rarity">Rarity</th>
+                    <th class="size">Size</th>
+                    <th class="traits">Traits</th>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </form>
+        <button onclick="addSpecification()" style="width: 100%;">+</button>
+    </fieldset>
+
+    <fieldset id="results">
+        <legend>Results</legend>
+        <table>
+            <thead>
+                <th>Quantity</th>
+                <th class="name">Combatant</th>
+                <th>Level</th>
+                <th>Rarity</th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <button style="width: 100%;" onclick="generate()">Generate</button>
+    </fieldset>
+</main>
+{% endblock main %}

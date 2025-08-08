@@ -1,5 +1,5 @@
 import math
-from typing import Any
+from typing import Any, Iterable
 
 import flask
 from flask import Blueprint, Flask, json, render_template, request
@@ -8,6 +8,7 @@ from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.pf2e_compendium.foundry.enrich
+import ttrpg_scribe.pf2e_compendium.oracle
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
@@ -150,7 +151,9 @@ class Pf2ePlugin(SystemPlugin):
     @classmethod
     def configure(cls, main_app: Flask):
         super().configure(main_app)
-        main_app.config['TOOLS'].insert(-1, ('/compendium', 'Compendium', {}))
+        ttrpg_scribe.pf2e_compendium.oracle.extend(main_app)
+        main_app.config['TOOLS'].insert(-1, (blueprint.url_prefix, 'Compendium', {}))
+        main_app.config['TOOLS'].append(('/oracle/encounter', 'Encounter Oracle', {}))
         foundry.check_for_updates()
 
     @classmethod
@@ -168,18 +171,25 @@ class Pf2ePlugin(SystemPlugin):
                      allies: list[tuple[int, PF2Creature]],
                      party: dict[str, dict[str, Any]]) -> str:
         party_level: int = flask.current_app.config['PARTY_LEVEL']
+        return cls.compute_xp(
+            ((count, creature.level) for count, creature in enemies),
+            ((count, creature.level) for count, creature in allies),
+            party_level, len(party))
 
-        def xp(creature: PF2Creature):
-            delta = creature.level - party_level
+    @classmethod
+    def compute_xp(cls, enemies: Iterable[tuple[int, int]], allies: Iterable[tuple[int, int]],
+                   party_level: int, party_size: int) -> str:
+        def xp(creature_level: int):
+            delta = creature_level - party_level
             if delta < -4:
                 return 0
             elif delta >= 4:
                 return 160
             return Pf2ePlugin._CREATURE_XP_BY_DELTA[delta]
-        total = sum(max(0, count) * xp(creature) for count, creature in enemies)
+        total = sum(max(0, count) * xp(level) for count, level in enemies)
 
-        reward = math.ceil(total * 4 // len(party) / 10) * 10  # round up to nearest 10
-        extra_players = len(party) - 4
+        reward = math.ceil(total * 4 // party_size / 10) * 10  # round up to nearest 10
+        extra_players = party_size - 4
         threat_levels: list[tuple[int, str, int]] = [
             (40 + extra_players * 10, 'Trivial', reward),
             (60 + extra_players * 15, 'Low', reward),
