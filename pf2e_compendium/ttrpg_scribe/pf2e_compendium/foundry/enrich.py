@@ -167,6 +167,8 @@ def _damage_roll(args: Args) -> str:
     damage = args.consume_index(0)
     for part in re.split(r',(?![A-z])', damage):
         amountEnd = part.rfind('[')
+        if amountEnd == -1:
+            amountEnd = len(part)
         amount = strip_delimiters(part[:amountEnd], '(', ')')
         damage_types = strip_delimiters(part[amountEnd:], '[', ']').split(',')
         if 'healing' in damage_types:  # healing "damage type" shouldn't be included in output
