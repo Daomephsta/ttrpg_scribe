@@ -214,7 +214,7 @@ class PF2Creature(InitiativeParticipant):
             saves: Saves[StatisticBracket], hp: StatisticBracket, speeds: dict[str, int],
             actions: Callable[[_Lookup], list[Any | list[Action]] | list[Action]]):
 
-        from pf2e_compendium.ttrpg_scribe.pf2e_compendium.creature.builder import \
+        from ttrpg_scribe.pf2e_compendium.creature.builder import \
             CreatureBuilder
 
         def lookup(table: Table, bracket: StatisticBracket):
