@@ -1,8 +1,13 @@
+import ast
 import itertools
 import re
+from ast import Constant, Name
+from collections import defaultdict
 from collections.abc import Set
-from typing import overload
+from dataclasses import dataclass
+from typing import cast, overload
 
+from ttrpg_scribe.core.dice import SimpleDice, d
 from ttrpg_scribe.pf2e_compendium.foundry import i18n
 
 
@@ -154,33 +159,95 @@ def _statistic_span(text: str, htmlClass: str):
     return f'<span {attrs_str}>{text}</span>'
 
 
-def _damage_roll(args: Args) -> str:
-    def strip_delimiters(s: str, prefix: str, suffix: str):
-        if s.startswith(prefix) and s.endswith(suffix):
-            return s[len(prefix):-len(suffix)]
-        return s
+@dataclass
+class _DamageInstance:
+    dice: list[tuple[list[SimpleDice | int], list[str]]]
 
-    buf = []
+    def __init__(self, dice: SimpleDice | int):
+        self.dice = [([dice], [])]
+
+    def add_category(self, category: str):
+        for _, existing in self.dice:
+            existing.append(category)
+
+    def __add__(self, other):
+        match other:
+            case _DamageInstance():
+                by_type: dict[tuple[str, ...], list[SimpleDice | int]] = defaultdict(list)
+                for dice, damage_types in itertools.chain(self.dice, other.dice):
+                    by_type[tuple(damage_types)] += dice
+                self.dice = [(dice, list(damage_types)) for damage_types, dice in by_type.items()]
+                return self
+            case int() as result if len(self.dice) == 1 and len(self.dice[0][0]) == 1:
+                dice, categories = self.dice[0]
+                dice[0] += result
+                self.dice[0] = (dice, categories)
+                return self
+            case _:
+                raise ValueError(f"Can't add {other!r} to {self!r}")
+
+    def __str__(self) -> str:
+        def helper(dice: list[SimpleDice | int], damage_types: list[str]):
+            amount = _statistic_span(' + '.join(map(str, dice)), 'damage-dice')
+            return f'{amount} {' '.join(damage_types)}'
+        return ' + '.join(helper(dice, damage_types) for dice, damage_types in self.dice)
+
+
+def _damage_roll(args: Args) -> str:
     args.ignore('immutable', 'name')
     consume_options(args)
     consume_traits(args)
     damage = args.consume_index(0)
-    for part in re.split(r',(?![A-z])', damage):
-        amountEnd = part.rfind('[')
-        if amountEnd == -1:
-            amountEnd = len(part)
-        amount = strip_delimiters(part[:amountEnd], '(', ')')
-        damage_types = strip_delimiters(part[amountEnd:], '[', ']').split(',')
-        if 'healing' in damage_types:  # healing "damage type" shouldn't be included in output
-            damage_types.remove('healing')
-        if '[splash]' in amount:
-            amount = amount.removesuffix('[splash]')
-            damage_types.append('splash')
-        if args.consume_bool('shortLabel') or damage_types == []:
-            buf.append(_statistic_span(amount, 'damage-dice'))
-        else:
-            buf.append(f'{_statistic_span(amount, 'damage-dice')} {" ".join(damage_types)}')
-    return _statistic_span(' plus '.join(buf), 'damage')
+    damage = re.sub(r'(\d+)?d(\d+)', lambda m: f'd({m[1] or 1}, {m[2]})',
+                    damage)
+    expr = ast.parse(damage, mode='eval')
+
+    def to_damage(expr: ast.AST) -> _DamageInstance:
+        def process(node: ast.AST):
+            match node:
+                case ast.Expression(body):
+                    return to_damage(body)
+                case ast.BinOp(left, ast.Add(), right):
+                    return to_damage(left) + process(right)
+                case ast.Subscript(value, Name(id=damage_type)):
+                    instance = to_damage(value)
+                    instance.add_category(damage_type)
+                    return instance
+                case ast.Subscript(value, ast.Tuple(damage_types))\
+                        if all(isinstance(e, ast.Name) for e in damage_types):
+                    instance = to_damage(value)
+                    for t in cast(list[Name], damage_types):
+                        instance.add_category(t.id)
+                    return instance
+                case ast.Call(
+                        Name(id='d'),
+                        [
+                            Constant(int() as count),
+                            Constant(int() as size)
+                        ]):
+                    return _DamageInstance(count * d(size))
+                case ast.Constant(int() as value):
+                    return value
+                case ast.Tuple(elements):
+                    return tuple(to_damage(e) for e in elements)
+                case n:
+                    raise SyntaxError(f'Unexpected node {ast.dump(n, indent=2)}')
+
+        match process(expr):
+            case _DamageInstance() as result:
+                return result
+            case tuple() as results:
+                result = results[0]
+                for r in results[1:]:
+                    result.dice += r.dice
+                return result
+            case int() as result:
+                return _DamageInstance(result)
+            case x:
+                raise ValueError(f"Can't convert {x} to DamageInstance")
+
+    instance = to_damage(expr)
+    return _statistic_span(str(instance), 'damage')
 
 
 def enrich(text: str) -> str:
