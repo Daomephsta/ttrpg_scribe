@@ -1,14 +1,14 @@
-import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
+
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.actor import DetailedValue
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
-from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
+from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, roll_data
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -33,6 +33,7 @@ def _read_creature(json: Json) -> PF2Creature:
     SIZES = {'tiny': 'tiny', 'sm': 'small', 'med': 'medium',
              'lg': 'large', 'huge': 'huge', 'grg': 'gargantuan'}
 
+    actor_roll_data = roll_data.actor(json)
     system = JsonPath('system')
     attributes = system.attributes
 
@@ -85,17 +86,18 @@ def _read_creature(json: Json) -> PF2Creature:
 
     for i, item in enumerate(json['items']):
         try:
+            item_roll_data = actor_roll_data | roll_data.item(item)
             match item['type']:
                 case 'action':
                     name = item['name']
-                    desc = enrich(system.description.value(item))
+                    desc = enrich(system.description.value(item), item_roll_data)
                     match system.category(item):
                         case 'interaction':
                             interactions.append((name, desc))
                         case 'defensive':
-                            defenses.append(_read_simple_action(item))
+                            defenses.append(_read_simple_action(item, item_roll_data))
                         case 'offensive':
-                            actions.append(_read_simple_action(item))
+                            actions.append(_read_simple_action(item, item_roll_data))
                 case 'lore':
                     skills.append(Skill(
                         item['name'],
@@ -139,7 +141,9 @@ def _read_creature(json: Json) -> PF2Creature:
                         location = system.location.value(item, _or=None)
                     spellcasting_lists[location].add_spell(item)
                 case 'condition':
-                    interactions.append((item['name'], enrich(system.description.value(item))))
+                    interactions.append((
+                        item['name'],
+                        enrich(system.description.value(item), item_roll_data)))
                 case 'effect':
                     # Items that don't need to be in the stat block
                     pass
@@ -193,16 +197,18 @@ def hazards(*ids: str):
 
 
 def _read_hazard(json: Json) -> PF2Hazard:
+    actor_roll_data = roll_data.actor(json)
     system = JsonPath('system')
     attributes = system.attributes
     details = system.details
 
     actions: list[Action] = []
     for i, item in enumerate(json['items']):
+        item_roll_data = actor_roll_data | roll_data.item(item)
         try:
             match item['type']:
                 case 'action':
-                    actions.append(_read_simple_action(item))
+                    actions.append(_read_simple_action(item, item_roll_data))
                 case 'melee':
                     actions.append(_read_strike(item))
                 case 'consumable':
@@ -234,7 +240,7 @@ def _read_hazard(json: Json) -> PF2Hazard:
     )
 
 
-def _read_simple_action(item):
+def _read_simple_action(item, item_roll_data):
     system = JsonPath('system')
 
     match system.actionType.value(item):
@@ -248,7 +254,7 @@ def _read_simple_action(item):
             cost = 0
         case unknown:
             raise ValueError(f'Unknown action type {unknown}')
-    return SimpleAction(item['name'], enrich(system.description.value(item)),
+    return SimpleAction(item['name'], enrich(system.description.value(item), item_roll_data),
                         cost, system.traits.value(item))
 
 
@@ -315,43 +321,3 @@ def keyed(*values: tuple[Callable[[str], Any], str | list[str]]) -> dict[str, An
 
 def map_ids[T](factory: Callable[[str], T], *ids: str) -> dict[str, T]:
     return keyed(*((factory, id) for id in ids))
-
-
-def __test_read_all_content():
-    import time
-    from pathlib import Path
-
-    (logs := Path('logs')).mkdir(exist_ok=True)
-    short_log = logging.getLogger('short')
-    handler = logging.FileHandler(f'{logs}/{__test_read_all_content.__name__}_short.log', mode='w')
-    handler.setFormatter(logging.Formatter(
-        '%(levelname)s: %(message)s\n\t%(notes)s'))
-    short_log.addHandler(handler)
-
-    full_log = logging.getLogger('full')
-    handler = logging.FileHandler(f'{logs}/{__test_read_all_content.__name__}_full.log', mode='w')
-    handler.setFormatter(logging.Formatter(
-        '%(levelname)s: %(message)s'))
-    full_log.addHandler(handler)
-
-    start = time.perf_counter()
-    errors = 0
-    for name in mongo_client.get_collection_names():
-        logging.info(f'Testing collection {name}')
-        size = mongo_client.db[name].count_documents({})
-        for progress, document in enumerate(mongo_client.get_collection_content(name), start=1):
-            if progress % (size // 5) == 0 or progress == size:
-                logging.info(f'\t{progress}/{size}')
-            try:
-                read(document)
-            except Exception as e:
-                logging.getLogger('short').exception(
-                    e, exc_info=False,
-                    extra={'notes': '\n\t'.join(e.__notes__)})
-                logging.getLogger('full').exception(e)
-                errors += 1
-    logging.info(f'Finished test in {time.perf_counter() - start:.2f}s with {errors} errors')
-
-
-if __name__ == '__main__':
-    __test_read_all_content()

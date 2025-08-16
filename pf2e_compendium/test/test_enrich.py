@@ -5,6 +5,12 @@ from bs4 import BeautifulSoup, Tag
 
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 
+TEST_CONTEXT = {
+    'actor': {
+        'level': 3
+    }
+}
+
 
 @pytest.mark.parametrize(['text', 'result'], [
     ('@Damage[1d6[fire]]{ouch!}', 'ouch!'),
@@ -16,9 +22,10 @@ from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
     ('@Damage[(5[splash])[fire]]', [('5', 'splash fire')]),
     ('@Damage[1d6[persistent,fire]]', [('1d6', 'persistent fire')]),
     ('@Damage[2d6[fire]|options:area-damage]', [('2d6', 'fire')]),
+    ('@Damage[(@actor.level)d6[fire]]', [(f'{TEST_CONTEXT['actor']['level']}d6', 'fire')])
 ])
 def test_damage_enricher(text: str, result: str | list[tuple[str, str]]):
-    enriched = enrich(text)
+    enriched = enrich(text, TEST_CONTEXT)
     match result:
         case str():
             assert enriched == result
