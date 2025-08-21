@@ -14,8 +14,5 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
 
 
 def sample_documents(sample: int | None):
-    [base, *rest] = mongo_client.get_collection_names()
-    pipeline: list[dict] = [{'$unionWith': c} for c in rest]
-    if sample is not None:
-        pipeline.append({'$sample': {'size': sample}})
-    yield from mongo_client.db[base].aggregate(pipeline)
+    pipeline: list[dict] = [{'$sample': {'size': sample}}] if sample is not None else []
+    yield from mongo_client.db.all.aggregate(pipeline)
