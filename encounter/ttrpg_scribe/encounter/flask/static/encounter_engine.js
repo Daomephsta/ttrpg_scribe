@@ -33,7 +33,7 @@ function nextTurn()
 function updateDeadStatus(damageInput)
 {
     let $row = $(damageInput).closest('tr')
-    $row.toggleClass(damageInput.max > 0 && damageInput.valueAsNumber >= damageInput.max)
+    $row.toggleClass('dead', damageInput.max > 0 && damageInput.valueAsNumber >= damageInput.max)
 }
 
 function updateReinforcementControls()
