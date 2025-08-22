@@ -8,6 +8,16 @@ def setup_mongo():
     foundry.check_for_updates()
 
 
+_BUGS: dict[str, tuple[type[Exception], str]] = {
+}
+
+
 @pytest.mark.usefixtures('setup_mongo')
 def test_read_document(test_document):
-    packs.read(test_document)
+    match _BUGS.get(test_document['_id'], None):
+        case ex_type, pattern:
+            with pytest.raises(ex_type, match=pattern):
+                packs.read(test_document)
+            pytest.xfail('Foundry PF2e system bug')
+        case None:
+            packs.read(test_document)
