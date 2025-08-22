@@ -135,8 +135,8 @@ def _read_creature(json: Json) -> PF2Creature:
                 case 'spell':
                     if 'ritual' in system(item):
                         ritual_dc = system.spellcasting.rituals.dc(json, _or=0)
-                        spellcasting_lists[location := 'ritual'] = SpellcastingBuilder(
-                            'Rituals', '', 'ritual', ritual_dc, 0)
+                        spellcasting_lists[location := 'rituals'] = SpellcastingBuilder(
+                            'Rituals', '', 'rituals', ritual_dc, 0)
                     else:
                         location = system.location.value(item, _or=None)
                     spellcasting_lists[location].add_spell(item)
