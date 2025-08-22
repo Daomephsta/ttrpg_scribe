@@ -105,51 +105,6 @@ class Args:
         return f'Args({args})'
 
 
-def consume_options(args: Args):
-    KNOWN = {
-        'area-damage', 'area-effect', 'bedside-manner', 'crosstalk', 'damaging-effect',
-        'disable-bloodmoon', 'fall-damage', 'forced-movement', 'mid-air-collision',
-        'mind-if-i-borrow-that', 'natures-patient-healing', 'nobles-ally', 'siege-weapon',
-        'spotlight-ready', 'sweeping-spell', 'youre-next'
-    }
-
-    def is_known(option: str):
-        return option in KNOWN or option.startswith(('action:', 'inflicts:', 'item:'))
-    options = args.consume_set('options')
-    unknown = {option for option in options if not is_known(option)}
-    assert len(unknown) == 0, f'Unknown options {unknown}'
-    return options
-
-
-def consume_traits(args: Args):
-    # TODO: Look into these more
-    NOT_REALLY_TRAITS = {
-        'area-damage', 'cold-iron', 'compulsion', 'controlling', 'custom', 'damaging-effect',
-        'interact', 'keyboard', 'manipulate', 'poison:xulgath-bile', 'skill', 'slashing', 'spell',
-        'trip-tangle'
-    }
-    KNOWN = {
-        'abjuration', 'acid', 'air', 'alchemical', 'amphibious', 'arcana', 'arcane', 'attack',
-        'auditory', 'aura', 'beast', 'chaotic', 'charm', 'cold', 'complex', 'concentrate',
-        'conjuration', 'contact', 'curse', 'darkness', 'death', 'disarm', 'disease', 'divination',
-        'divine', 'earth', 'electricity', 'emotion', 'enchantment', 'environmental', 'evocation',
-        'exploration', 'fear', 'fey', 'fire', 'force', 'fungus', 'good', 'grippli', 'haunt',
-        'hazard', 'holy', 'humanoid', 'illusion', 'incapacitation', 'inhaled', 'injury', 'kaiju',
-        'light', 'linguistic', 'magical', 'manipulate', 'mechanical', 'mental', 'misfortune',
-        'move', 'necromancy', 'nonlethal', 'occult', 'olfactory', 'poison', 'polymorph',
-        'possession', 'primal', 'rare', 'secret', 'shadow', 'sleep', 'sonic', 'swarm',
-        'teleportation', 'transmutation', 'trap', 'trip', 'uncommon', 'unholy', 'unique',
-        'virulent', 'visual', 'vitality', 'void', 'water'
-    } | NOT_REALLY_TRAITS
-
-    def is_known(trait: str):
-        return trait in KNOWN or trait.startswith(('action:', 'item:'))
-    traits = args.consume_set('traits')
-    unknown = {trait for trait in traits if not is_known(trait)}
-    assert len(unknown) == 0, f'Unknown traits {unknown}'
-    return traits
-
-
 _STATISTIC_ID = itertools.count(1)
 
 
@@ -217,9 +172,7 @@ def _damage_roll(args: Args, context: dict[str, Any]) -> str:
                 return f'{amount}' if self.shortLabel else f'{amount} {' '.join(damage_types)}'
             return ' + '.join(helper(dice, damage_types) for dice, damage_types in self.dice)
 
-    args.ignore('immutable', 'name')
-    consume_options(args)
-    consume_traits(args)
+    args.ignore('immutable', 'name', 'options', 'traits')
     damage = args.consume_index(0)
     # Transform dice notation to a form parseable as Python code
     damage = re.sub(r'@(actor|item)', lambda m: f'"@{m[1]}"', damage)
@@ -314,9 +267,7 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
                 return raw_args[raw_args.rindex('.') + 1:]
             case 'Template':
                 with parse_args(raw_args, context='@Template') as args:
-                    args.ignore('damaging')
-                    consume_options(args)
-                    consume_traits(args)
+                    args.ignore('damaging', 'options', 'traits')
                     shape = args.consume_str('type') or args.consume_index(0)
                     distance = args.consume_str('distance')
                     if shape == 'line' and (width := args.consume_str('width')) is not None:
@@ -325,9 +276,7 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
             case 'Check':
                 with parse_args(raw_args, context='@Check') as args:
                     args.ignore('against', 'defense', 'immutable', 'name', 'overrideTraits',
-                                'rollerRole', 'showDC')
-                    consume_options(args)
-                    consume_traits(args)
+                                'rollerRole', 'showDC', 'options', 'traits')
                     check_type = args.consume_str('type') or args.consume_index(0)
                     basic = args.consume_bool('basic')
                     dc = args.consume_str('dc')
@@ -367,7 +316,7 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
                     amount = ' '.join(args.consume_positional())
                     return f'{amount} {tag}' if tag else amount
                 case 'act':
-                    consume_options(args)
+                    args.ignore('options')
                     action = args.consume_index(0).replace('-', ' ').title()
                     dc = args.consume_str('dc')
                     statistic = args.consume_str('statistic') or args.consume_str('skill')
