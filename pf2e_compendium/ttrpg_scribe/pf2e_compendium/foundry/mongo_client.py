@@ -63,6 +63,7 @@ def search_by_name(query: str, doc_types: list[str] = []):
 
 
 def update():
+    client.drop_database('pf2e')
     packs_dir = foundry.pf2e_dir/'packs'
     _LOGGER.info(f'Updating MongoDB from {packs_dir.as_posix()}')
 
@@ -108,5 +109,4 @@ def update():
 
 if __name__ == '__main__':
     _LOGGER.info('Dropping and reconstructing database')
-    client.drop_database('pf2e')
     update()
