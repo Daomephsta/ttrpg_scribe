@@ -5,7 +5,7 @@ import subprocess
 
 import platformdirs
 
-VERSION = '7.4.1'
+VERSION = '7.4.2'
 data_dir = (platformdirs.user_data_path('ttrpg_scribe') / 'pf2e_compendium/data').absolute()
 pf2e_dir = (data_dir / 'foundryvtt/pf2e').absolute()
 _LOGGER = logging.getLogger(__name__)

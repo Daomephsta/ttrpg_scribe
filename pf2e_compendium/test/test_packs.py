@@ -9,9 +9,6 @@ def setup_mongo():
 
 
 _BUGS: dict[str, tuple[type[Exception], str]] = {
-    'battlecry-bestiary/arboreal-copse': (
-        AssertionError, r"Unconsumed arguments \['optionsarea-effect'\]"
-    ),
     'lost-omens-bestiary/shining-kingdoms/lamp-blighter': (
         KeyError, 'rituals'
     )
