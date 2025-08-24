@@ -10,6 +10,7 @@
     }
     main {
         display: flex;
+        flex-direction: column;
     }
     #specifications, #results {
         display: inline-block;
@@ -41,6 +42,9 @@
     .name {
         text-align: center;
         width: 25em;
+    }
+    iframe[name="preview"] {
+        height: 50vh;
     }
     </style>
     <script>
@@ -125,9 +129,11 @@
             }
         }).then(r => r.json()).then(results => {
             $('#results tbody').empty().append(results.map(r => {
+                const url = "{{ url_for('pf2e_compendium.content', doc_type='npc', id='ID') }}".replace('ID', r._id)
                 return $(`<tr></tr>`)
                     .append($(`<td>`, {'class': 'quantity'}).text(r.quantity))
-                    .append($(`<td>`, {'class': 'name'}).text(r.name))
+                    .append($(`<td>`, {'class': 'name'})
+                        .append($('<a>', {href: url, target: 'preview'}).text(r.name)))
                     .append($(`<td>`, {'class': 'level'}).text(r.level))
                     .append($(`<td>`, {'class': 'rarity'}).text(toTitleCase(r.rarity)))
                 [0]
@@ -242,5 +248,9 @@
         </table>
         <button style="width: 100%;" onclick="generate()">Generate</button>
     </fieldset>
+
+    <iframe name="preview">
+
+    </iframe>
 </main>
 {% endblock main %}

@@ -89,7 +89,6 @@ class EncounterSpecification:
                 {'$sample': {'size': 1}},
                 {
                     '$project': {
-                        '_id': 0,
                         'name': 1,
                         'level': '$system.details.level.value',
                         'rarity': '$system.traits.rarity'
