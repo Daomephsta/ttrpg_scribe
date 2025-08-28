@@ -1,0 +1,57 @@
+[project]
+name = "ttrpg_scribe"
+description = ""
+authors = [
+    {name = "Daomephsta", email = "<dtnilfisk@gmail.com>"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "argcomplete>=3.1.2,<4",
+    "waitress>=3,<4",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+runtime = [
+    "matplotlib>=3.7.2,<4",
+    "pandas>=2.0.3,<3",
+    "tabulate>=0.9.0,<1",
+]
+
+[project.scripts]
+ttrpg_scribe = "ttrpg_scribe.all_in_one:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry]
+packages = [
+    {include = "ttrpg_scribe/all_in_one"},
+    {include = "core/ttrpg_scribe/core"},
+    {include = "dnd_bestiary/ttrpg_scribe/dnd_bestiary"},
+    {include = "pf2e_compendium/ttrpg_scribe/pf2e_compendium"},
+    {include = "notes/ttrpg_scribe/notes"},
+    {include = "encounter/ttrpg_scribe/encounter"},
+    {include = "npc/ttrpg_scribe/npc"},
+]
+version = "0.0.0"
+
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
+
+[tool.poetry.dependencies]
+ttrpg_scribe_core = { path = "core", develop = true }
+ttrpg_scribe_dnd_bestiary = { path = "dnd_bestiary", develop = true }
+ttrpg_scribe_pf2e_compendium = { path = "pf2e_compendium", develop = true }
+ttrpg_scribe_notes = { path = "notes", develop = true }
+ttrpg_scribe_encounter = { path = "encounter", develop = true }
+ttrpg_scribe_npc = { path = "npc", develop = true }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+format-jinja = "{{ timestamp }}+{{ branch_escaped }}.{{ commit }}{{ '.dirty' if dirty }}"
