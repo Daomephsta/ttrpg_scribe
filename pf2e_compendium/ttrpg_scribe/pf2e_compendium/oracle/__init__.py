@@ -71,7 +71,7 @@ class EncounterSpecification:
                 query['system.traits.rarity'] = {'$in': self.rarities}
             if self.sizes is not None:
                 query['system.traits.size.value'] = {'$in': [_SIZES[s] for s in self.sizes]}
-            if self.traits is not None:
+            if self.traits is not None and len(self.traits) > 0:
                 query['system.traits.value'] = {'$all': self.traits}
             return query
 
