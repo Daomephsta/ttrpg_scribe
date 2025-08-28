@@ -55,7 +55,7 @@ class EncounterSpecification:
                 (json['level-min'], json['level-max']),
                 json['rarity'],
                 json['size'],
-                None
+                json['traits']
             )
 
         def to_mongo_query(self) -> dict:
