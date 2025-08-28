@@ -75,12 +75,18 @@
         $specification.find('.traits')
             .attr('title', traits)
             .text(traits)
+        return $specification
     }
 
     function addSpecification() {
         const $specification = $($('#specification-template').html())
         updateSpecification($specification)
-        $('#specifications tbody').append($specification)
+        return $specification.appendTo($('#specifications tbody'))
+    }
+    
+    function duplicateSpecification($specification) {
+        const $duplicate = updateSpecification($specification.clone())
+        return $duplicate.appendTo($('#specifications tbody'))
     }
     
     function editSpecification($specification) {
@@ -115,7 +121,6 @@
             updateSpecification($specification)
         }, {once: true})
         dialog.showModal()
-
     }
 
     function generate() {
@@ -203,6 +208,7 @@
             <td class="size"></td>
             <td class="traits"></td>
             <td>
+                <button onclick="duplicateSpecification($(event.target.closest('.specification')))">Duplicate</button>
                 <button onclick="editSpecification($(event.target.closest('.specification')))">Edit</button>
                 <textarea hidden class="data">{{ {
                     "quantity": 1,
