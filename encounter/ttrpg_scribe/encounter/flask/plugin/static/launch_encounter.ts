@@ -1,4 +1,5 @@
-$('.launch-encounter').on('click', event => {
+function launchEncounter(event: JQuery.ClickEvent) 
+{
     // Send POST request to /encounter endpoint (see ttrpg_scribe.server)
     fetch('/encounter', {
         method: 'POST', 
@@ -13,18 +14,19 @@ $('.launch-encounter').on('click', event => {
         // Clear session storage for new encounter
         initiative.sessionStorage.clear()
     });
-})
+}
+$('.launch-encounter').on('click', launchEncounter)
 
 const DICE = /(?:(?<dice_count>\d+)d(?<dice_size>\d+) \+ )?(?<base>\d+)/
 var randomInteger = (min, max) => Math.floor(min + Math.random() * (max - min))
 
-function launchRandomEncounter(event) 
+function launchRandomEncounter(event: JQuery.ClickEvent) 
 {
     // Parse data attributes
-    let {groups: {dice_count, dice_size, base}} = DICE.exec(event.target.dataset.size)
+    const {groups: {dice_count_g, dice_size_g, base}} = DICE.exec(event.target.dataset.size)
     let encounter_size = Number(base)
-    dice_count = Number(dice_count | 0)
-    dice_size = Number(dice_size | 0)
+    const dice_count = Number(dice_count_g || 0)
+    const dice_size = Number(dice_size_g || 0)
     // Generate random encounter size
     for (let i = 0; i < dice_count; i++) 
         encounter_size += randomInteger(1, dice_size)
@@ -40,3 +42,4 @@ function launchRandomEncounter(event)
     })
     .then(r => window.open(r.url, 'initiative'));
 }
+$('.launch-random-encounter').on('click', launchRandomEncounter)

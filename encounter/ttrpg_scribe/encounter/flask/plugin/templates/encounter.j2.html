@@ -38,7 +38,7 @@
 {% endmacro %}
 
 {% macro random_encounter(size, creature) %}
-<button data-size="{{ size }}"  data-creature="{{ creature | tojson | forceescape }}" data-party="{{ config.PARTY | tojson | forceescape }}"  onclick="launchRandomEncounter(event)">Launch</button> |
+<button data-size="{{ size }}" data-creature="{{ creature | tojson | forceescape }}" data-party="{{ config.PARTY | tojson | forceescape }}"  class="launch-random-encounter">Launch</button> |
 {% endmacro %}
 
 {% macro exclusive_encounters(id, encounters) %}
