@@ -169,3 +169,4 @@ cython_debug/
 # ttrpg_scribe
 _build
 mongod
+.pdm-python
