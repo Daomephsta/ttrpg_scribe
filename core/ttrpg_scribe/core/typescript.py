@@ -1,3 +1,4 @@
+import atexit
 import logging
 import shutil
 import subprocess
@@ -26,10 +27,11 @@ def ensure_compiled(instance_dir: Path):
     else:
         tsc = ['tsc']
     with (logs_dir/'tsc_watch.log').open('w') as tsc_watch_log:
-        subprocess.Popen(
+        tsc = subprocess.Popen(
             [*tsc, '--watch', '--outDir', build_dir, '--pretty', 'false'],
             stdout=tsc_watch_log, stderr=subprocess.STDOUT
         )
+        atexit.register(lambda: tsc.terminate())
 
 
 @overload
