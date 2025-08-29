@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import flask
-
+import ttrpg_scribe.core.typescript
 import ttrpg_scribe.npc.flask_app
 from ttrpg_scribe.core.plugin import Plugin
 
@@ -10,6 +10,7 @@ class NpcPlugin(Plugin):
     _blueprint = flask.Blueprint(import_name='ttrpg_scribe.npc.flask_app.plugin',
         name='npc_plugin',
         static_folder='static', template_folder='templates')
+    ttrpg_scribe.core.typescript.extend(_blueprint)
 
     @classmethod
     def create_app(cls, instance_path: Path, config: flask.Config) -> flask.Flask:

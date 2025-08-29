@@ -2,13 +2,12 @@ import math
 from typing import Any, Iterable
 
 import flask
-from flask import Blueprint, Flask, json, render_template, request
-from markupsafe import Markup
-from werkzeug.exceptions import BadRequest
-
 import ttrpg_scribe.core.flask
+import ttrpg_scribe.core.typescript
 import ttrpg_scribe.pf2e_compendium.foundry.enrich
 import ttrpg_scribe.pf2e_compendium.oracle
+from flask import Blueprint, Flask, json, render_template, request
+from markupsafe import Markup
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
@@ -17,11 +16,13 @@ from ttrpg_scribe.pf2e_compendium.creature import templates
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
+from werkzeug.exceptions import BadRequest
 
 blueprint = Blueprint('pf2e_compendium', __name__,
     static_folder='static',
     template_folder='templates',
     url_prefix='/compendium')
+ttrpg_scribe.core.typescript.extend(blueprint)
 
 
 @blueprint.get('/')

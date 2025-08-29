@@ -4,14 +4,15 @@ from functools import reduce
 from typing import Any
 
 import flask
+import ttrpg_scribe.core.markdown
+import ttrpg_scribe.core.typescript
 from jinja2.runtime import Macro
 from markupsafe import Markup
 from pluralizer import Pluralizer
 
-import ttrpg_scribe.core.markdown
-
 _blueprint = flask.Blueprint('core', __name__, static_folder='static',
                       template_folder='templates', url_prefix='/core')
+ttrpg_scribe.core.typescript.extend(_blueprint)
 
 
 class ExtensibleJSONProvider(flask.json.provider.DefaultJSONProvider):
@@ -29,6 +30,7 @@ def extend(app: flask.Flask):
     app.jinja_env.policies['json.dumps_kwargs'].update(
         default=ExtensibleJSONProvider.encode_json)
     app.register_blueprint(_blueprint)
+    ttrpg_scribe.core.typescript.extend(app)
 
 
 @_blueprint.app_template_test()

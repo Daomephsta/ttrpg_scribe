@@ -2,11 +2,12 @@ from dataclasses import dataclass
 from typing import Any
 
 import flask
-
+import ttrpg_scribe.core.typescript
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 
 _blueprint = flask.Blueprint('oracle', __name__, static_folder='static',
                       template_folder='templates', url_prefix='/oracle')
+ttrpg_scribe.core.typescript.extend(_blueprint)
 
 
 @_blueprint.get('/encounter')

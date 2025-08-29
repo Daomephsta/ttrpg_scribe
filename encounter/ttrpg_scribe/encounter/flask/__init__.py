@@ -6,10 +6,8 @@ from pathlib import Path
 from typing import Any
 
 import flask
-from flask import Flask
-
 import ttrpg_scribe.core.flask
-import ttrpg_scribe.encounter.flask.plugin
+from flask import Flask
 from ttrpg_scribe.core.plugin import Plugin
 
 

@@ -1,7 +1,7 @@
 from typing import Any
 
+import ttrpg_scribe.core.typescript
 from flask import Blueprint, Flask, render_template
-
 from ttrpg_scribe.dnd_bestiary import apis
 from ttrpg_scribe.dnd_bestiary.creature import DndCreature as DndCreature
 from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
@@ -10,6 +10,7 @@ blueprint = Blueprint('dnd_bestiary', __name__,
     static_folder='static',
     template_folder='templates',
     url_prefix='/compendium')
+ttrpg_scribe.core.typescript.extend(blueprint)
 
 
 @blueprint.get('/view/<string:id>')
