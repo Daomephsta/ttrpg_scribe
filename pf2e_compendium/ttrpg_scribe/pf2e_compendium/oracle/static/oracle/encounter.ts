@@ -1,15 +1,23 @@
 export {}
 
-function toTitleCase(str) {
+function toTitleCase(str: string) {
     return str.replace(/(?:^|\s)\w/g, m => m.toUpperCase());
 }
 
-function rarityLetter(rarity) {
+function rarityLetter(rarity: string) {
     return rarity == 'unique' ? 'Q' : rarity[0].toUpperCase()
 }
 
-function updateSpecification($specification) {
-    const data = JSON.parse($specification.find('.data').val())
+interface SpecificationJson {
+    'level-min': number,
+    'level-max': number,
+    'rarity': Array<string>,
+    'size': Array<string>,
+    'traits': Array<string>
+}
+
+function updateSpecification($specification: JQuery) {
+    const data: SpecificationJson = JSON.parse($specification.find('.data').val() as string)
     $specification.find('.quantity').text(data['quantity'])
     $specification.find('.level').text(data['level-min'] == data['level-max']
         ? data['level-min']
@@ -34,26 +42,26 @@ function addSpecification() {
     return $specification.appendTo($('#specifications tbody'))
 }
 
-function duplicateSpecification($specification) {
+function duplicateSpecification($specification: JQuery) {
     const $duplicate = updateSpecification($specification.clone())
     return $duplicate.appendTo($('#specifications tbody'))
 }
 
-function editSpecification($specification) {
+function editSpecification($specification: JQuery) {
     const $dialog = $<HTMLDialogElement>('#specification-dialog')
     const dialog = $dialog[0]
     const $data = $specification.find('.data');
-    const data = JSON.parse($data.val())
+    const data: SpecificationJson = JSON.parse($data.val() as string)
 
-    function writeData(name, getter) {
-        data[name] = getter($dialog.find(`[name="${name}"]`))
+    function writeData(name: string, getter: (inputElement: JQuery<HTMLInputElement>) => any) {
+        data[name] = getter($dialog.find<HTMLInputElement>(`[name="${name}"]`))
     }
 
-    function writeNumericData(name) {
+    function writeNumericData(name: string) {
         writeData(name, f => Number(f.val()))
     }
 
-    function writeBoolArrayData(name) {
+    function writeBoolArrayData(name: string) {
         writeData(name, f => f.filter(':checked').toArray().map(e => e.value))
     }
 
@@ -99,8 +107,8 @@ function generate(oracleEndpoint: string, compendiumContentEndpoint: string) {
 $.ready.then(() => 
 {
     addSpecification()
-    $('.duplicate').on('click', event => duplicateSpecification($(event.target.closest('.specification'))))
-    $('.edit').on('click', event => editSpecification($(event.target.closest('.specification'))))
+    $('.duplicate').on('click', event => duplicateSpecification($(event.target.closest('.specification') as HTMLElement)))
+    $('.edit').on('click', event => editSpecification($(event.target.closest('.specification') as HTMLElement)))
     $('.add').on('click', addSpecification)
     const oracleEndpoint = $('#oracle-endpoint').text().trim()
     const compendiumContentEndpoint = $('#compendium-content-endpoint').text().trim()

@@ -1,41 +1,40 @@
 export {}
 
-function readEmbeddedJson(id) {
-    return JSON.parse(document.getElementById(id).innerText)
-}
-
-const REGIONS = readEmbeddedJson('regions')
-const ALL_RACES = readEmbeddedJson('all_races')
-const ALL_CULTURES = readEmbeddedJson('all_cultures')
+const REGIONS = JSON.parse($('#regions').text())
+const ALL_RACES = JSON.parse($('#all_races').text())
+const ALL_CULTURES = JSON.parse($('#all_cultures').text())
 
 function regionChanged() {
-    const region_selector = document.getElementById('region') as HTMLSelectElement
-    const culture_selector = document.getElementById('culture') as HTMLSelectElement
-    const race_selector = document.getElementById('race') as HTMLSelectElement
+    const regionInput = document.getElementById('region') as HTMLSelectElement
+    const cultureInput = document.getElementById('culture') as HTMLSelectElement
+    const raceInput = document.getElementById('race') as HTMLSelectElement
 
-    culture_selector.replaceChildren(new Option(''))
-    race_selector.replaceChildren(new Option(''))
+    cultureInput.replaceChildren(new Option(''))
+    raceInput.replaceChildren(new Option(''))
 
-    const cultures = region_selector.value === ''
+    const cultures = regionInput.value === ''
         ? Object.keys(ALL_CULTURES)
-        : REGIONS[region_selector.value]['cultures']
+        : REGIONS[regionInput.value]['cultures']
 
     for (const culture of cultures)
-        culture_selector.add(new Option(culture))
+        cultureInput.add(new Option(culture))
 }
 
 function cultureChanged() {
-    const culture_selector = document.getElementById('culture') as HTMLInputElement
-    const race_selector = document.getElementById('race') as HTMLSelectElement
+    const cultureInput = document.getElementById('culture') as HTMLInputElement
+    const raceInput = document.getElementById('race') as HTMLSelectElement
 
-    race_selector.replaceChildren(new Option(''))
+    raceInput.replaceChildren(new Option(''))
 
-    const races = culture_selector.value === ''
+    const races = cultureInput.value === ''
         ? ALL_RACES
-        : ALL_CULTURES[culture_selector.value]['races']
+        : ALL_CULTURES[cultureInput.value]['races']
 
     for (const [race, subraces] of races) {
         if (subraces.length > 0) {
+            const $group = $('<optgroup>', {label: race})
+                .append(new Option(race))
+
             const group = document.createElement('optgroup')
             group.label = race
             group.appendChild(new Option(race))
@@ -44,25 +43,24 @@ function cultureChanged() {
                 option.setAttribute('subrace', subname)
                 group.appendChild(option)
             }
-            race_selector.add(group)
+            raceInput.add(group)
         }
-        else race_selector.add(new Option(race))
+        else raceInput.add(new Option(race))
     }
 }
 
 function raceChanged() {
-    const race_selector = document.getElementById('race') as HTMLSelectElement
-    const subrace_selector = document.getElementById('subrace') as HTMLSelectElement
-    if (race_selector.value === '')
-        subrace_selector.value === ''
+    const raceInput = document.getElementById('race') as HTMLSelectElement
+    const subraceInput = document.getElementById('subrace') as HTMLSelectElement
+    if (raceInput.value === '')
+        subraceInput.value === ''
     else
-        subrace_selector.value = race_selector.selectedOptions[0].getAttribute('subrace')
+        subraceInput.value = raceInput.selectedOptions[0].getAttribute('subrace')
 }
 
 function setFeedback(text, duration) {
-    const feedback = document.getElementById('feedback')
-    feedback.textContent = text
-    setTimeout(() => feedback.textContent = '', duration)
+    const $feedback = $('#feedback').text(text)
+    setTimeout(() => $feedback.text(''), duration)
 }
 
 function reset() {

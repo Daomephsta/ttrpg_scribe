@@ -19,7 +19,9 @@
         {% for sheet in g.assets.stylesheets %}
             <link rel="stylesheet" href="{{ sheet }}"/>
         {% endfor %}
-        <link rel="stylesheet" href="{{ url_for('core.static', filename='base.css') }}"/>
+            {% block base_styles %}
+            <link rel="stylesheet" href="{{ url_for('core.static', filename='base.css') }}"/>
+            {% endblock base_styles %}
         {% for script in g.assets.scripts %}
             <script{{ script | xmlattr }}></script>
         {% endfor %}

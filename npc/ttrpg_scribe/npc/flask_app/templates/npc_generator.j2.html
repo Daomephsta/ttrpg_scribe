@@ -1,3 +1,5 @@
+{% extends 'layout/base.j2.html' %}
+
 {% macro embed_json(id, data) %}
 <script type="application/json" id="{{ id }}">
 {{ data | tojson }}
@@ -13,113 +15,119 @@
 </select>
 {% endmacro %}
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>NPC Generator</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='npc_generator.css')}}"/>
-        {{ embed_json('regions', regions) }}
-        {{ embed_json('all_races', all_races) }}
-        {{ embed_json('all_cultures', all_cultures) }}
-        <script type="module" src="{{ url_for('.static', filename='npc_generator.js') }}"></script>
-        <script type="application/json" id="generate-npc-endpoint">
-        {{ url_for('generate_npc') }}
-        </script>
-        <script type="application/json" id="save-npc-endpoint">
-        {{ url_for('save_npc') }}
-        </script>
-    </head>
-    <body>
-        <div id="controls">
-            <form id="features">
-                <table>
-                    <tr>
-                        <td>Region</td>
-                        <td>
-                            <select name="region" id="region" class="feature-value">
-                                <option value=""></option>
-                                {% for region in config.REGIONS %}
-                                <option>{{ region }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Name</td>
-                        <td><input type="text" name="name" class="feature-value"></td>
-                    </tr>
-                    <tr>
-                        <td>Age</td>
-                        <td>{{ choice_feature('age') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Culture</td>
-                        <td>
-                            <select name="culture" id="culture" class="feature-value">
-                                <option value=""></option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Race</td>
-                        <td>
-                            <select name="race" id="race" class="feature-value">
-                                <option value=""></option>
-                            </select>
-                            <input name="subrace" id="subrace" type="hidden">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Sex</td>
-                        <td>{{ choice_feature('sex') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Height</td>
-                        <td>{{ choice_feature('height') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Weight</td>
-                        <td>{{ choice_feature('weight') }}</td>
-                    </tr>
-                    <tr>
-                        <td>High</td>
-                        <td>{{ choice_feature('high_stat') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Low</td>
-                        <td>{{ choice_feature('low_stat') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Appearance</td>
-                        <td><input type="text" name="appearance" class="feature-value"></td>
-                    </tr>
-                    <tr>
-                        <td>Positive Personality</td>
-                        <td><input type="text" name="positive_personality" class="feature-value"></td>
-                    </tr>
-                    <tr>
-                        <td>Negative Personality</td>
-                        <td><input type="text" name="negative_personality" class="feature-value"></td>
-                    </tr>
-                    <tr>
-                        <td>Mannerism</td>
-                        <td><input type="text" name="mannerism" class="feature-value"></td>
-                    </tr>
-                    <tr>
-                        <td>Notes</td>
-                        <td><textarea name="notes" class="feature-value" style="height: 3.5em;"></textarea></td>
-                    </tr>
-                </table>
-            </form>
-            <button id="generate" class="control-button">Generate</button>
-            <button id="save" class="control-button" disabled>Save</button>
-            <button id="reset" class="control-button">Reset</button>
-            <a href="{{ url_for('list_npcs')}}">
-                <button class="control-button">List</button>
-            </a>
-            <p id="feedback"></p>
-        </div>
-        <iframe name="result-frame" id="result-frame">
-        </iframe>
-    </body>
-</html>
+{% block title %}
+<title>NPC Generator</title>
+{% endblock title %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='npc_generator.css')}}"/>
+{{ embed_json('regions', regions) }}
+{{ embed_json('all_races', all_races) }}
+{{ embed_json('all_cultures', all_cultures) }}
+<script type="module" src="{{ url_for('.static', filename='npc_generator.js') }}"></script>
+<script type="application/json" id="generate-npc-endpoint">
+{{ url_for('generate_npc') }}
+</script>
+<script type="application/json" id="save-npc-endpoint">
+{{ url_for('save_npc') }}
+</script>
+{% endblock head %}
+
+{% block base_styles %}{% endblock %}
+
+{% block main %}
+<div id="controls">
+    <form id="features">
+        <table>
+            <tr>
+                <td>Region</td>
+                <td>
+                    <select name="region" id="region" class="feature-value">
+                        <option value=""></option>
+                        {% for region in config.REGIONS %}
+                        <option>{{ region }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td><input type="text" name="name" class="feature-value"></td>
+            </tr>
+            <tr>
+                <td>Age</td>
+                <td>{{ choice_feature('age') }}</td>
+            </tr>
+            <tr>
+                <td>Culture</td>
+                <td>
+                    <select name="culture" id="culture" class="feature-value">
+                        <option value=""></option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Race</td>
+                <td>
+                    <select name="race" id="race" class="feature-value">
+                        <option value=""></option>
+                    </select>
+                    <input name="subrace" id="subrace" type="hidden">
+                </td>
+            </tr>
+            <tr>
+                <td>Sex</td>
+                <td>{{ choice_feature('sex') }}</td>
+            </tr>
+            <tr>
+                <td>Height</td>
+                <td>{{ choice_feature('height') }}</td>
+            </tr>
+            <tr>
+                <td>Weight</td>
+                <td>{{ choice_feature('weight') }}</td>
+            </tr>
+            <tr>
+                <td>High</td>
+                <td>{{ choice_feature('high_stat') }}</td>
+            </tr>
+            <tr>
+                <td>Low</td>
+                <td>{{ choice_feature('low_stat') }}</td>
+            </tr>
+            <tr>
+                <td>Appearance</td>
+                <td><input type="text" name="appearance" class="feature-value"></td>
+            </tr>
+            <tr>
+                <td>Positive Personality</td>
+                <td><input type="text" name="positive_personality" class="feature-value"></td>
+            </tr>
+            <tr>
+                <td>Negative Personality</td>
+                <td><input type="text" name="negative_personality" class="feature-value"></td>
+            </tr>
+            <tr>
+                <td>Mannerism</td>
+                <td><input type="text" name="mannerism" class="feature-value"></td>
+            </tr>
+            <tr>
+                <td>Notes</td>
+                <td><textarea name="notes" class="feature-value" style="height: 3.5em;"></textarea></td>
+            </tr>
+        </table>
+    </form>
+    <button id="generate" class="control-button">Generate</button>
+    <button id="save" class="control-button" disabled>Save</button>
+    <button id="reset" class="control-button">Reset</button>
+    <a href="{{ url_for('list_npcs')}}">
+        <button class="control-button">List</button>
+    </a>
+    <p id="feedback"></p>
+</div>
+<iframe name="result-frame" id="result-frame">
+</iframe>
+{% endblock main %}
+
+{% block footer %}{% endblock %}

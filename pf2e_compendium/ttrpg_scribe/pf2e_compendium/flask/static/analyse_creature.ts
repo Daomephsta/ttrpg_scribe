@@ -2,7 +2,7 @@ export {}
 
 function analyse(analyseEndpoint: string) {
     function idElementMap(className: string): {[id: string]: HTMLElement} {
-        return Object.fromEntries(Array.from(document.getElementsByClassName(className) as HTMLCollectionOf<HTMLElement>, e => [e.id, e]))
+        return Object.fromEntries($(`.${className}`).toArray().map(e => [e.id, e]))
     }
 
     function elementValueMap(elements: {[id: string]: HTMLElement}, valueFunction: (e: HTMLElement) => any) {
