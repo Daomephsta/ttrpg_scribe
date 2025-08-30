@@ -1,3 +1,5 @@
+export {}
+
 function getRound(): number
 {
     return Number(sessionStorage.getItem('current_round') || 1)
@@ -42,7 +44,7 @@ function updateDeadStatus(damageInput: HTMLInputElement)
 
 function updateReinforcementControls()
 {
-    for (const input of $('#reinforcements input[type="radio"][name="reinforcement_type"]') as JQuery<HTMLInputElement>)
+    for (const input of $<HTMLInputElement>('.reinforcement-type-option'))
     {
         $(`${input.id}_controls`).toggleClass('collapsed', !input.checked)
     }
@@ -154,4 +156,14 @@ window.addEventListener('beforeunload', (event) =>
     // except if all enemies are dead
     if ($('.enemy.dead').length < $('.enemy').length)
         event.preventDefault();
+})
+
+$.ready.then(() => 
+{
+    $<HTMLInputElement>('.damage').on('input', event => updateDeadStatus(event.target))
+    $('#sort-initiative').on('click', sortInitiative)
+    $('#next-turn').on('click', nextTurn)
+    $('#save').on('click', save)
+    $('#load').on('click', load)
+    $('.reinforcement-type-option').on('input', updateReinforcementControls)
 })

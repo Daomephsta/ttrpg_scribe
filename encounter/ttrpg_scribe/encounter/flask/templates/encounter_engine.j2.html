@@ -7,7 +7,7 @@
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('.static', filename='encounter_engine.css') }}"/>
     <link rel="stylesheet" href="{{ url_for(system.compendium_blueprint.name + '.static', filename='stat_block.css') }}">
-    <script src="{{ url_for('.static', filename='encounter_engine.js') }}"></script>
+    <script type="module" src="{{ url_for('.static', filename='encounter_engine.js') }}"></script>
 {% endblock head %}
 {% block main %}
 <dialog id="health_dialog">
@@ -44,7 +44,7 @@
                     <tr class="enemy">
                         <td class="name">{{ npc.name }}</td>
                         <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
-                        <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
+                        <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}"/></td>
                         <td class="max_hp">{{ npc.initial_hp if npc.initial_hp }}</td>
                         <td><input class="notes" type="text"/></td>
                     </tr>
@@ -53,7 +53,7 @@
                     <tr class="ally">
                         <td class="name">{{ npc.name }}</td>
                         <td><input class="initiative" type="number" value="{{ npc.initiative }}"/></td>
-                        <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}" oninput="updateDeadStatus(event.target)"/></td>
+                        <td><input class="damage" type="number" value="0" min="0" max="{{ npc.initial_hp }}"/></td>
                         <td class="max_hp">{{ npc.initial_hp if npc.initial_hp }}</td>
                         <td><input class="notes" type="text"/></td>
                     </tr>
@@ -62,26 +62,26 @@
             </table>
         </fieldset>
         <div id="buttons">
-            <button onclick="sortInitiative()" id="sort-initiative">Sort</button>
-            <button onclick="nextTurn()" id="next-turn">Next Turn</button>
-            <button onclick="save()" id="save">Save</button>
+            <button id="sort-initiative">Sort</button>
+            <button id="next-turn">Next Turn</button>
+            <button id="save">Save</button>
             <dialog id="load_dialog">
                 <form method="dialog" enctype="multipart/form-data" id="load_dialog_form">
                     <input type="file" name="file_picker" accept="application/json">
                     <input type="submit" value="Load">
                 </form>
             </dialog>
-            <button onclick="load()" id="load">Load</button>
+            <button id="load">Load</button>
         </div>
         <fieldset id="reinforcements">
             <legend>Reinforce With</legend>
             <label>
                 New
-                <input type="radio" oninput="updateReinforcementControls()" name="reinforcement_type" id="reinforce_with_new">
+                <input type="radio" class="reinforcement-type-option" name="reinforcement_type" id="reinforce_with_new">
             </label>
             <label>
                 Existing
-                <input type="radio" oninput="updateReinforcementControls()" checked="true" name="reinforcement_type" id="reinforce_with_existing">
+                <input type="radio" class="reinforcement-type-option" checked="true" name="reinforcement_type" id="reinforce_with_existing">
             </label>
             <form method="post" id="reinforce_with_new_controls" class="collapsed">
                 <input type="hidden" name="reinforcement_type" value="with_new">

@@ -20,24 +20,7 @@
             width: 5em;
         }
         </style>
-        <script>
-        function addCharacter()
-        {
-            const party = document.getElementById("party")
-            const addCharacterName = document.getElementById("add_character_name")
-
-            const label = document.createElement('label')
-            const name = label.appendChild(document.createElement('span'))
-            name.className = "character"
-            name.textContent = addCharacterName.value
-            const checkbox = label.appendChild(document.createElement('input'))
-            checkbox.type = "checkbox"
-            checkbox.name = addCharacterName.value
-            checkbox.checked = true
-
-            party.insertBefore(label, addCharacterName.parentNode)
-        }
-        </script>
+        <script type="module" src="{{ url_for('.static', filename='configure_party.js') }}"></script>
     </head>
     <div id="centered">
         <h1>Configure Party</h1>
@@ -48,8 +31,8 @@
             </label>
         {% endfor %}
             <div>
-                <input type="text" class="character" id="add_character_name">
-                <input type="button" value="+" onclick="addCharacter()">
+                <input type="text" class="character" id="add-character-name">
+                <input type="button" value="+" id="add-character">
             </div>
             <input type="submit" value="Set Party" style="margin-top: 5px;">
         </form>

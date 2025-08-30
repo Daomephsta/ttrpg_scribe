@@ -167,97 +167,10 @@
 <head>
     <title>{{ data.name | title }}</title>
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
-    <script src="{{ url_for('core.static', filename='popup.js') }}" defer></script>
-    <script>
-    const ANALYSE_URL = "{{ url_for('.analyse', doc_type=request.view_args.doc_type) }}"
-
-    function analyse() {
-        function idElementMap(className) {
-            return Object.fromEntries(Array.from(document.getElementsByClassName(className), e => [e.id, e]))
-        }
-
-        function elementValueMap(elements, valueFunction) {
-            return Object.fromEntries(Object.entries(elements).map(([id, e]) => [id, valueFunction(e)]))
-        }
-
-        function elementNumberMap(elements) {
-            return elementValueMap(elements, v => Number(v.textContent))
-        }
-
-        function elementDamageMap(elements) {
-            return elementValueMap(elements,
-                v => Array.from(v.getElementsByClassName('statistic-damage-dice')).map(e => e.textContent))
-        }
-
-        function applyClassification(element, classification) {
-            element.classList.add(`${classification.name.toLowerCase()}-statistic`)
-            element.title = classification.human
-        }
-
-        function applyClassifications(elements, classifications) {
-            for (const [id, classification] of Object.entries(classifications)) {
-                applyClassification(elements[id], classification)
-            }
-        }
-
-        const level = document.getElementById('statistic-level')
-        const perception = document.getElementById('statistic-perception')
-        const skills = idElementMap('statistic-skill-mod')
-        const attributes = idElementMap('statistic-attribute')
-        const saves = idElementMap('statistic-save')
-        const ac = document.getElementById('statistic-armour-class')
-        const hp = document.getElementById('statistic-hit-points')
-        const resistances = idElementMap('statistic-resistance')
-        const weaknesses = idElementMap('statistic-weakness')
-        const strikes = {
-            bonuses: idElementMap('statistic-strike-bonus'),
-            damage: idElementMap('statistic-strike-damage')
-        }
-        const dcs = idElementMap('statistic-dc')
-        const spellAttackBonuses = idElementMap('statistic-spell-attack')
-        const otherDamage = idElementMap('statistic-damage')
-
-        window.fetch(ANALYSE_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                level: Number(level.textContent),
-                perception: Number(perception.textContent),
-                skills: elementNumberMap(skills),
-                attributes: elementNumberMap(attributes),
-                saves: elementNumberMap(saves),
-                ac: Number(ac.textContent),
-                hp: Number(hp.textContent),
-                resistances: elementNumberMap(resistances),
-                weaknesses: elementNumberMap(weaknesses),
-                strikes: {
-                    bonuses: elementNumberMap(strikes.bonuses),
-                    damage: elementDamageMap(strikes.damage)
-                },
-                dcs: elementNumberMap(dcs),
-                spell_attack_bonuses: elementNumberMap(spellAttackBonuses),
-                damage: elementDamageMap(otherDamage)
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then((r) => r.json())
-        .then((json) => {
-            applyClassification(perception, json['perception'])
-            applyClassifications(skills, json['skills'])
-            applyClassifications(attributes, json['attributes'])
-            applyClassifications(saves, json['saves'])
-            applyClassification(ac, json['ac'])
-            applyClassification(hp, json['hp'])
-            applyClassifications(resistances, json['resistances'])
-            applyClassifications(weaknesses, json['weaknesses'])
-            applyClassifications(strikes.bonuses, json['strikes']['bonuses'])
-            applyClassifications(strikes.damage, json['strikes']['damage'])
-            applyClassifications(dcs, json['dcs'])
-            applyClassifications(spellAttackBonuses, json['spell_attack_bonuses'])
-            applyClassifications(otherDamage, json['damage'])
-        })
-    }
+    <script src="{{ url_for('core.static', filename='popup.js') }}"></script>
+    <script type="module" src="{{ url_for('.static', filename='analyse_creature.js') }}"></script>
+    <script type="application/json" id="analyse-endpoint">
+    {{ url_for('.analyse', doc_type=request.view_args.doc_type) }}
     </script>
 </head>
 <body>
@@ -269,7 +182,7 @@
     {{ creature(data, collapsible=False) }}
     <footer>
         <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a>
-        <button onclick="analyse()">
+        <button id="analyse">
             Analyse 
             <span>
                 (

@@ -47,108 +47,12 @@
         height: 50vh;
     }
     </style>
-    <script>
-    const ORACLE = "{{ url_for('oracle.encounter') }}"
-
-    function toTitleCase(str) {
-        return str.replace(/(?:^|\s)\w/g, m => m.toUpperCase());
-    }
-
-    function rarityLetter(rarity) {
-        return rarity == 'unique' ? 'Q' : rarity[0].toUpperCase()
-    }
-
-    function updateSpecification($specification) {
-        const data = JSON.parse($specification.find('.data').val())
-        $specification.find('.quantity').text(data['quantity'])
-        $specification.find('.level').text(data['level-min'] == data['level-max']
-            ? data['level-min']
-            : `${data['level-min']} to ${data['level-max']}`
-        )
-        $specification.find('.rarity').empty()
-            .attr('title', data['rarity'].map(toTitleCase).join(', '))
-            .text(data['rarity'].map(rarityLetter).join(''))
-        $specification.find('.size')
-            .attr('title', data['size'].map(toTitleCase).join(', '))
-            .text(data['size'].map(s => s[0].toUpperCase()).join(''))
-        traits = data['traits'].map(toTitleCase).join(', ')
-        $specification.find('.traits')
-            .attr('title', traits)
-            .text(traits)
-        return $specification
-    }
-
-    function addSpecification() {
-        const $specification = $($('#specification-template').html())
-        updateSpecification($specification)
-        return $specification.appendTo($('#specifications tbody'))
-    }
-    
-    function duplicateSpecification($specification) {
-        const $duplicate = updateSpecification($specification.clone())
-        return $duplicate.appendTo($('#specifications tbody'))
-    }
-    
-    function editSpecification($specification) {
-        const $dialog = $('#specification-dialog')
-        const dialog = $dialog[0]
-        const $data = $specification.find('.data');
-        const data = JSON.parse($data.val())
-
-        function writeData(name, getter) {
-            data[name] = getter($dialog.find(`[name="${name}"]`))
-        }
-
-        function writeNumericData(name) {
-            writeData(name, f => Number(f.val()))
-        }
-
-        function writeBoolArrayData(name) {
-            writeData(name, f => f.filter(':checked').toArray().map(e => e.value))
-        }
-
-        for (const key in data) {
-            $dialog.find(`[name="${key}"]`).val(data[key])
-        }
-        dialog.querySelector('form').addEventListener('submit', (_) => {
-            writeNumericData('quantity')
-            writeNumericData('level-min')
-            writeNumericData('level-max')
-            writeBoolArrayData('rarity')
-            writeBoolArrayData('size')
-            writeData('traits', f => f.val().split(',').map(s => s.toLowerCase().trim()))
-            $data.val(JSON.stringify(data))
-            updateSpecification($specification)
-        }, {once: true})
-        dialog.showModal()
-    }
-
-    function generate() {
-        const specifications = $('.specification .data').toArray()
-            .map(data => JSON.parse(data.value))
-        fetch(ORACLE, {
-            method: 'POST',
-            body: JSON.stringify(specifications),
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        }).then(r => r.json()).then(results => {
-            $('#results tbody').empty().append(results.map(r => {
-                const url = "{{ url_for('pf2e_compendium.content', doc_type='npc', id='ID') }}".replace('ID', r._id)
-                return $(`<tr></tr>`)
-                    .append($(`<td>`, {'class': 'quantity'}).text(r.quantity))
-                    .append($(`<td>`, {'class': 'name'})
-                        .append($('<a>', {href: url, target: 'preview'}).text(r.name)))
-                    .append($(`<td>`, {'class': 'level'}).text(r.level))
-                    .append($(`<td>`, {'class': 'rarity'}).text(toTitleCase(r.rarity)))
-                [0]
-            }))
-        })
-    }
-
-    $(() => {
-        addSpecification()
-    })
+    <script type="module" src="{{ url_for('.static', filename='encounter.js') }}"></script>
+    <script type="application/json" id="oracle-endpoint">
+    {{ url_for('oracle.encounter') }}
+    </script>
+    <script type="application/json" id="compendium-content-endpoint">
+    {{ url_for('pf2e_compendium.content', doc_type='npc', id='ID') }}
     </script>
 {% endblock head %}
 {% block main %}
@@ -208,8 +112,8 @@
             <td class="size"></td>
             <td class="traits"></td>
             <td>
-                <button onclick="duplicateSpecification($(event.target.closest('.specification')))">Duplicate</button>
-                <button onclick="editSpecification($(event.target.closest('.specification')))">Edit</button>
+                <button class="duplicate">Duplicate</button>
+                <button class="edit">Edit</button>
                 <textarea hidden class="data">{{ {
                     "quantity": 1,
                     "level-min": LEVEL_MIN,
@@ -237,7 +141,7 @@
                 </tbody>
             </table>
         </form>
-        <button onclick="addSpecification()" style="width: 100%;">+</button>
+        <button id="add" style="width: 100%;">+</button>
     </fieldset>
 
     <fieldset id="results">
@@ -252,7 +156,7 @@
             <tbody>
             </tbody>
         </table>
-        <button style="width: 100%;" onclick="generate()">Generate</button>
+        <button style="width: 100%;" id="generate">Generate</button>
     </fieldset>
 
     <iframe name="preview">

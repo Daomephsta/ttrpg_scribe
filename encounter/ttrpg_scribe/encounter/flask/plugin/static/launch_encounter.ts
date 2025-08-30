@@ -1,3 +1,5 @@
+export {}
+
 function launchEncounter(event: JQuery.ClickEvent) 
 {
     // Send POST request to /encounter endpoint (see ttrpg_scribe.server)
@@ -15,7 +17,6 @@ function launchEncounter(event: JQuery.ClickEvent)
         initiative.sessionStorage.clear()
     });
 }
-$('.launch-encounter').on('click', launchEncounter)
 
 const DICE = /(?:(?<dice_count>\d+)d(?<dice_size>\d+) \+ )?(?<base>\d+)/
 var randomInteger = (min, max) => Math.floor(min + Math.random() * (max - min))
@@ -42,4 +43,8 @@ function launchRandomEncounter(event: JQuery.ClickEvent)
     })
     .then(r => window.open(r.url, 'initiative'));
 }
-$('.launch-random-encounter').on('click', launchRandomEncounter)
+
+$.ready.then(() => {
+    $('.launch-encounter').on('click', launchEncounter)
+    $('.launch-random-encounter').on('click', launchRandomEncounter)
+})
