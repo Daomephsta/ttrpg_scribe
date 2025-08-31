@@ -46,7 +46,7 @@ function updateReinforcementControls()
 {
     for (const input of $<HTMLInputElement>('.reinforcement-type-option'))
     {
-        $(`${input.id}_controls`).toggleClass('collapsed', !input.checked)
+        $(`#${input.id}_controls`).toggleClass('collapsed', !input.checked)
     }
 }
 
