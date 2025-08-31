@@ -53,16 +53,15 @@ def static_javascript_patch(scaffold: flask.Blueprint | flask.Flask):
     if scaffold.static_folder is None:
         return
 
-    assert __file__.endswith('core/ttrpg_scribe/core/typescript.py')
-    root_project = Path(__file__.removesuffix('core/ttrpg_scribe/core/typescript.py'))
-    root_relative = Path(scaffold.static_folder).relative_to(root_project)
-
     @scaffold.get('/static/<path:filename>.js')
     def static_javascript(filename: str):
         assert scaffold.static_folder is not None
         if not filename.endswith('.js'):
             filename = f'{filename}.js'
         if flask.current_app.debug:
+            assert __file__.endswith('core/ttrpg_scribe/core/typescript.py')
+            root_project = Path(__file__.removesuffix('core/ttrpg_scribe/core/typescript.py'))
+            root_relative = Path(scaffold.static_folder).relative_to(root_project)
             try:
                 return flask.send_from_directory(
                     Path(flask.current_app.instance_path)/'_build'/root_relative,
