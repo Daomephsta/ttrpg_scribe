@@ -1,26 +1,36 @@
-[tool.poetry]
+[project]
 name = "ttrpg_scribe_pf2e_compendium"
 version = "0.1.0"
 description = ""
-authors = ["Daomephsta <dtnilfisk@gmail.com>"]
+authors = [
+    {name = "Daomephsta", email = "dtnilfisk@gmail.com"},
+]
+dependencies = [
+    "flask<3.0.0,>=2.3.2",
+    "ttrpg-scribe-core",
+    "ttrpg-scribe-encounter",
+    "platformdirs<5.0.0,>=4.1.0",
+    "pymongo[srv]<5.0.0,>=4.11.3",
+    "bs4<1.0.0,>=0.0.2",
+]
+requires-python = "<4.0,>=3.11"
 readme = "README.md"
-packages = [{include = "ttrpg_scribe/pf2e_compendium"}]
+license = {text = "MIT"}
 
-[tool.poetry.dependencies]
-python = "^3.11"
-flask = "^2.3.2"
-ttrpg_scribe_core = { path = "../core", develop = true }
-ttrpg_scribe_encounter = { path = "../encounter", develop = true }
-platformdirs = "^4.1.0"
-pymongo = {extras = ["srv"], version = "^4.11.3"}
-bs4 = "^0.0.2"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.4.1"
+[dependency-groups]
+dev = [
+    "pytest<9.0.0,>=8.4.1",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.build]
+includes = ["ttrpg_scribe/pf2e_compendium"]
 
 [tool.pytest.ini_options]
 addopts = [

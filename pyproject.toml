@@ -9,6 +9,12 @@ requires-python = ">=3.11"
 dependencies = [
     "argcomplete>=3.1.2,<4",
     "waitress>=3,<4",
+    "ttrpg-scribe-core @ file:///${PROJECT_ROOT}/core",
+    "ttrpg-scribe-dnd-bestiary @ file:///${PROJECT_ROOT}/dnd_bestiary",
+    "ttrpg-scribe-encounter @ file:///${PROJECT_ROOT}/encounter",
+    "ttrpg-scribe-notes @ file:///${PROJECT_ROOT}/notes",
+    "ttrpg-scribe-npc @ file:///${PROJECT_ROOT}/npc",
+    "ttrpg-scribe-pf2e-compendium @ file:///${PROJECT_ROOT}/pf2e_compendium",
 ]
 dynamic = ["version"]
 license = {text = "MIT"}

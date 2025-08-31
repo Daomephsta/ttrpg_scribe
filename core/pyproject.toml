@@ -1,19 +1,24 @@
-[tool.poetry]
+[project]
+authors = [
+    {name = "Daomephsta", email = "dtnilfisk@gmail.com"},
+]
+requires-python = "<4.0,>=3.11"
+dependencies = [
+    "flask<3.0.0,>=2.3.2",
+    "markdown<4.0.0,>=3.4.3",
+    "python-frontmatter<2.0.0,>=1.0.0",
+    "pluralizer<2.0.0,>=1.2.0",
+]
 name = "ttrpg_scribe_core"
 version = "0.1.0"
 description = ""
-authors = ["Daomephsta <dtnilfisk@gmail.com>"]
 readme = "README.md"
-packages = [{include = "ttrpg_scribe/core"}]
-
-[tool.poetry.dependencies]
-python = "^3.11"
-flask = "^2.3.2"
-markdown = "^3.4.3"
-python-frontmatter = "^1.0.0"
-pluralizer = "^1.2.0"
-
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.build]
+includes = [
+    "ttrpg_scribe/core",
+]

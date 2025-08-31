@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:8ebab090fcde81f09c9a52c9b87f927d61f33b26ef3da93d1d444b056d478743"
+content_hash = "sha256:14a660b3bf184eaa67ee23aefd73ea3035f166009699c766f73560df5358b3ec"
 
 [[metadata.targets]]
 requires_python = ">=3.11"
@@ -37,7 +37,7 @@ name = "beautifulsoup4"
 version = "4.13.5"
 requires_python = ">=3.7.0"
 summary = "Screen-scraping library"
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "soupsieve>1.2",
     "typing-extensions>=4.0.0",
@@ -52,7 +52,7 @@ name = "blinker"
 version = "1.9.0"
 requires_python = ">=3.9"
 summary = "Fast, simple object-to-object and broadcast signaling"
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc"},
     {file = "blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf"},
@@ -62,7 +62,7 @@ files = [
 name = "bs4"
 version = "0.0.2"
 summary = "Dummy package for Beautiful Soup (beautifulsoup4)"
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "beautifulsoup4",
 ]
@@ -169,7 +169,7 @@ name = "click"
 version = "8.2.1"
 requires_python = ">=3.10"
 summary = "Composable command line interface toolkit"
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "colorama; platform_system == \"Windows\"",
 ]
@@ -183,7 +183,7 @@ name = "colorama"
 version = "0.4.6"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 summary = "Cross-platform colored terminal text."
-groups = ["dev"]
+groups = ["default", "dev"]
 marker = "sys_platform == \"win32\" or platform_system == \"Windows\""
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
@@ -206,7 +206,7 @@ name = "dnspython"
 version = "2.7.0"
 requires_python = ">=3.9"
 summary = "DNS toolkit"
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "dnspython-2.7.0-py3-none-any.whl", hash = "sha256:b4c34b7d10b51bcc3a5071e7b8dee77939f1e878477eeecc965e9835f63c6c86"},
     {file = "dnspython-2.7.0.tar.gz", hash = "sha256:ce9c432eda0dc91cf618a5cedf1a4e142651196bbcd2c80e89ed5a907e5cfaf1"},
@@ -217,7 +217,7 @@ name = "flask"
 version = "2.3.3"
 requires_python = ">=3.8"
 summary = "A simple framework for building complex web applications."
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "Jinja2>=3.1.2",
     "Werkzeug>=2.3.7",
@@ -274,7 +274,7 @@ name = "itsdangerous"
 version = "2.2.0"
 requires_python = ">=3.8"
 summary = "Safely pass data to untrusted environments and back."
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "itsdangerous-2.2.0-py3-none-any.whl", hash = "sha256:c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef"},
     {file = "itsdangerous-2.2.0.tar.gz", hash = "sha256:e0050c0b7da1eea53ffaf149c0cfbb5c6e2e2b69c4bef22c81fa6eb73e5f6173"},
@@ -285,7 +285,7 @@ name = "jinja2"
 version = "3.1.6"
 requires_python = ">=3.7"
 summary = "A very fast and expressive template engine."
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "MarkupSafe>=2.0",
 ]
@@ -299,7 +299,7 @@ name = "markdown"
 version = "3.8.2"
 requires_python = ">=3.9"
 summary = "Python implementation of John Gruber's Markdown."
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "importlib-metadata>=4.4; python_version < \"3.10\"",
 ]
@@ -313,7 +313,7 @@ name = "markupsafe"
 version = "3.0.2"
 requires_python = ">=3.9"
 summary = "Safely add untrusted strings to HTML/XML markup."
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "MarkupSafe-3.0.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:9025b4018f3a1314059769c7bf15441064b2207cb3f065e6ea1e7359cb46db9d"},
     {file = "MarkupSafe-3.0.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:93335ca3812df2f366e80509ae119189886b0f3c2b81325d39efdb84a1e2ae93"},
@@ -419,7 +419,7 @@ name = "platformdirs"
 version = "4.4.0"
 requires_python = ">=3.9"
 summary = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "platformdirs-4.4.0-py3-none-any.whl", hash = "sha256:abd01743f24e5287cd7a5db3752faf1a2d65353f38ec26d98e25a6db65958c85"},
     {file = "platformdirs-4.4.0.tar.gz", hash = "sha256:ca753cf4d81dc309bc67b0ea38fd15dc97bc30ce419a7f58d13eb3bf14c4febf"},
@@ -441,7 +441,7 @@ name = "pluralizer"
 version = "1.2.0"
 requires_python = ">=3.6"
 summary = "Singularize or pluralize a given word useing a pre-defined list of rules"
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "pluralizer-1.2.0-py3-none-any.whl", hash = "sha256:d8f92ffa787661d9e704d1e0d8abc6c6c4bbaae9e790d7c709707eafbe17ed12"},
     {file = "pluralizer-1.2.0.tar.gz", hash = "sha256:fe3fb8e1e53fabf372e77d8cbebe04b0f8fc7db853aeff50095dbd5628ac39c5"},
@@ -463,7 +463,7 @@ name = "pymongo"
 version = "4.14.1"
 requires_python = ">=3.9"
 summary = "PyMongo - the Official MongoDB Python driver"
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "dnspython<3.0.0,>=1.16.0",
 ]
@@ -513,7 +513,7 @@ version = "4.14.1"
 extras = ["srv"]
 requires_python = ">=3.9"
 summary = "PyMongo - the Official MongoDB Python driver"
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "pymongo==4.14.1",
 ]
@@ -581,7 +581,7 @@ files = [
 name = "python-frontmatter"
 version = "1.1.0"
 summary = "Parse and manage posts with YAML (or other) frontmatter"
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "PyYAML",
 ]
@@ -595,7 +595,7 @@ name = "pyyaml"
 version = "6.0.2"
 requires_python = ">=3.8"
 summary = "YAML parser and emitter for Python"
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "PyYAML-6.0.2-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:cc1c1159b3d456576af7a3e4d1ba7e6924cb39de8f67111c735f6fc832082774"},
     {file = "PyYAML-6.0.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:1e2120ef853f59c7419231f3bf4e7021f1b936f6ebd222406c3b60212205d2ee"},
@@ -668,7 +668,7 @@ name = "soupsieve"
 version = "2.8"
 requires_python = ">=3.9"
 summary = "A modern CSS selector implementation for Beautiful Soup."
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "soupsieve-2.8-py3-none-any.whl", hash = "sha256:0cc76456a30e20f5d7f2e14a98a4ae2ee4e5abdc7c5ea0aafe795f344bc7984c"},
     {file = "soupsieve-2.8.tar.gz", hash = "sha256:e2dd4a40a628cb5f28f6d4b0db8800b8f581b65bb380b97de22ba5ca8d72572f"},
@@ -681,7 +681,7 @@ requires_python = "<4.0,>=3.11"
 editable = true
 path = "./core"
 summary = ""
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "flask<3.0.0,>=2.3.2",
     "markdown<4.0.0,>=3.4.3",
@@ -712,7 +712,7 @@ requires_python = "<4.0,>=3.11"
 editable = true
 path = "./encounter"
 summary = ""
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "flask<3.0.0,>=2.3.2",
     "ttrpg-scribe-core @ file:///${PROJECT_ROOT}/core",
@@ -753,7 +753,7 @@ requires_python = "<4.0,>=3.11"
 editable = true
 path = "./pf2e_compendium"
 summary = ""
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "bs4<1.0.0,>=0.0.2",
     "flask<3.0.0,>=2.3.2",
@@ -768,7 +768,7 @@ name = "typing-extensions"
 version = "4.15.0"
 requires_python = ">=3.9"
 summary = "Backported and Experimental Type Hints for Python 3.9+"
-groups = ["dev"]
+groups = ["default", "dev"]
 files = [
     {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
     {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
@@ -815,7 +815,7 @@ name = "werkzeug"
 version = "3.1.3"
 requires_python = ">=3.9"
 summary = "The comprehensive WSGI web application library."
-groups = ["dev"]
+groups = ["default", "dev"]
 dependencies = [
     "MarkupSafe>=2.1.1",
 ]
