@@ -6,7 +6,7 @@ authors = [
 requires-python = "<4.0,>=3.11"
 dependencies = [
     "flask<3.0.0,>=2.3.2",
-    "ttrpg-scribe-core @ file:///${PROJECT_ROOT}/../core",
+    "ttrpg-scribe-core",
 ]
 name = "ttrpg_scribe_encounter"
 description = ""

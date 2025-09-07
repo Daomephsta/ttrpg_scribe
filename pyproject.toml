@@ -9,12 +9,12 @@ requires-python = ">=3.11"
 dependencies = [
     "argcomplete>=3.1.2,<4",
     "waitress>=3,<4",
-    "ttrpg-scribe-core @ file:///${PROJECT_ROOT}/core",
-    "ttrpg-scribe-dnd-bestiary @ file:///${PROJECT_ROOT}/dnd_bestiary",
-    "ttrpg-scribe-encounter @ file:///${PROJECT_ROOT}/encounter",
-    "ttrpg-scribe-notes @ file:///${PROJECT_ROOT}/notes",
-    "ttrpg-scribe-npc @ file:///${PROJECT_ROOT}/npc",
-    "ttrpg-scribe-pf2e-compendium @ file:///${PROJECT_ROOT}/pf2e_compendium"
+    "ttrpg-scribe-core",
+    "ttrpg-scribe-dnd-bestiary",
+    "ttrpg-scribe-encounter",
+    "ttrpg-scribe-notes",
+    "ttrpg-scribe-npc",
+    "ttrpg-scribe-pf2e-compendium",
 ]
 # Version is set by in-tree ttrpg-scribe-buildscript plugin
 dynamic = ["version"]
@@ -41,7 +41,7 @@ plugins = [
 ]
 
 [tool.pdm.build]
-includes = ["ttrpg_scribe/all_in_one", "core/ttrpg_scribe/core", "dnd_bestiary/ttrpg_scribe/dnd_bestiary", "pf2e_compendium/ttrpg_scribe/pf2e_compendium", "notes/ttrpg_scribe/notes", "encounter/ttrpg_scribe/encounter", "npc/ttrpg_scribe/npc"]
+includes = ["ttrpg_scribe/all_in_one"]
 excludes = ["**/*.ts"]
 
 [tool.pdm.dev-dependencies]
