@@ -36,15 +36,18 @@ function updateSpecification($specification: JQuery) {
     return $specification
 }
 
-function addSpecification() {
-    const $specification = $($('#specification-template').html())
+function addSpecification($specification?: JQuery) {
+    if ($specification == undefined) {
+        $specification = $($('#specification-template').html())
+    }
+    $specification.find('.duplicate').on('click', event => duplicateSpecification($(event.target.closest('.specification') as HTMLElement)))
+    $specification.find('.edit').on('click', event => editSpecification($(event.target.closest('.specification') as HTMLElement)))
     updateSpecification($specification)
     return $specification.appendTo($('#specifications tbody'))
 }
 
 function duplicateSpecification($specification: JQuery) {
-    const $duplicate = updateSpecification($specification.clone())
-    return $duplicate.appendTo($('#specifications tbody'))
+    return addSpecification($specification.clone())
 }
 
 function editSpecification($specification: JQuery) {
@@ -107,9 +110,7 @@ function generate(oracleEndpoint: string, compendiumContentEndpoint: string) {
 $.ready.then(() => 
 {
     addSpecification()
-    $('.duplicate').on('click', event => duplicateSpecification($(event.target.closest('.specification') as HTMLElement)))
-    $('.edit').on('click', event => editSpecification($(event.target.closest('.specification') as HTMLElement)))
-    $('#add').on('click', addSpecification)
+    $('#add').on('click', event => addSpecification())
     const oracleEndpoint = $('#oracle-endpoint').text().trim()
     const compendiumContentEndpoint = $('#compendium-content-endpoint').text().trim()
     $('#generate').on('click', _ => generate(oracleEndpoint, compendiumContentEndpoint))
