@@ -14,8 +14,9 @@ dependencies = [
     "ttrpg-scribe-encounter @ file:///${PROJECT_ROOT}/encounter",
     "ttrpg-scribe-notes @ file:///${PROJECT_ROOT}/notes",
     "ttrpg-scribe-npc @ file:///${PROJECT_ROOT}/npc",
-    "ttrpg-scribe-pf2e-compendium @ file:///${PROJECT_ROOT}/pf2e_compendium",
+    "ttrpg-scribe-pf2e-compendium @ file:///${PROJECT_ROOT}/pf2e_compendium"
 ]
+# Version is set by in-tree ttrpg-scribe-buildscript plugin
 dynamic = ["version"]
 license = {text = "MIT"}
 
@@ -30,12 +31,14 @@ runtime = [
 ttrpg_scribe = "ttrpg_scribe.all_in_one:main"
 
 [build-system]
-requires = ["pdm-backend"]
+requires = ["pdm-backend", "file:///${PROJECT_ROOT}/ttrpg-scribe-buildscript"]
 build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
-version = {source = "scm", version_format = "pdm_build:format_version"}
+plugins = [
+    "file:///${PROJECT_ROOT}/ttrpg-scribe-buildscript"
+]
 
 [tool.pdm.build]
 includes = ["ttrpg_scribe/all_in_one", "core/ttrpg_scribe/core", "dnd_bestiary/ttrpg_scribe/dnd_bestiary", "pf2e_compendium/ttrpg_scribe/pf2e_compendium", "notes/ttrpg_scribe/notes", "encounter/ttrpg_scribe/encounter", "npc/ttrpg_scribe/npc"]
@@ -48,11 +51,10 @@ dev = [
     "-e file:///${PROJECT_ROOT}/encounter#egg=ttrpg-scribe-encounter",
     "-e file:///${PROJECT_ROOT}/notes#egg=ttrpg-scribe-notes",
     "-e file:///${PROJECT_ROOT}/npc#egg=ttrpg-scribe-npc",
-    "-e file:///${PROJECT_ROOT}/pf2e_compendium#egg=ttrpg-scribe-pf2e-compendium",
+    "-e file:///${PROJECT_ROOT}/pf2e_compendium#egg=ttrpg-scribe-pf2e-compendium"
 ]
 
 [dependency-groups]
 dev = [
-    "pytest<9.0.0,>=8.4.1",
-    "pdm-backend>=2.4.5",
+    "pytest<9.0.0,>=8.4.1"
 ]

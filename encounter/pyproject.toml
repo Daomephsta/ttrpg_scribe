@@ -6,18 +6,30 @@ authors = [
 requires-python = "<4.0,>=3.11"
 dependencies = [
     "flask<3.0.0,>=2.3.2",
-    "ttrpg-scribe-core",
+    "ttrpg-scribe-core @ file:///${PROJECT_ROOT}/../core",
 ]
 name = "ttrpg_scribe_encounter"
-version = "0.1.0"
 description = ""
 readme = "README.md"
+# Version is set by in-tree ttrpg-scribe-buildscript plugin
+dynamic = ["version"]
 
 [build-system]
-requires = ["pdm-backend"]
+requires = ["pdm-backend", "ttrpg-scribe-buildscript @ file:///${PROJECT_ROOT}/../ttrpg-scribe-buildscript"]
 build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
+plugins = [
+    "file:///${PROJECT_ROOT}/../ttrpg-scribe-buildscript"
+]
 
 [tool.pdm.build]
 includes = [
     "ttrpg_scribe/encounter",
+]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "-e file:///${PROJECT_ROOT}/../core#egg=ttrpg-scribe-core",
 ]

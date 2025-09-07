@@ -1,0 +1,22 @@
+[project]
+name = "ttrpg-scribe-buildscript"
+description = "Buildscript for TTRPG Scribe"
+authors = [
+    {name = "Daomephsta", email = "dtnilfisk@gmail.com"},
+]
+requires-python = ">=3.11"
+dependencies = [
+    "pdm-backend>=2.4.5",
+]
+version = "0.0.4"
+license = {text = "MIT"}
+
+[project.entry-points."pdm.build.hook"]
+build_hooks = "ttrpg_scribe_buildscript"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
