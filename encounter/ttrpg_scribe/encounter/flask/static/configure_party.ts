@@ -4,9 +4,9 @@ function addCharacter()
 {
     const $addCharacterName = $('#add-character-name')
     $('<label>')
-        .append($('<span>', {'className': 'character', 'textContent': $addCharacterName.val()}))
+        .append($('<span>', {'class': 'character'}).text($addCharacterName.val() as string))
         .append($('<input>', {type: 'checkbox', name: $addCharacterName.val(), checked: true}))
-        .insertBefore($addCharacterName)
+        .insertBefore($addCharacterName.parent())
 }
 
 $.ready.then(() => 
