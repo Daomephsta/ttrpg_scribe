@@ -8,6 +8,7 @@ _LOGGER = logging.getLogger(__name__)
 def make_app(project_dir: str | Path, config: Path | None = None):
     from http import HTTPStatus
 
+    import ttrpg_scribe.core.typescript
     import ttrpg_scribe.dnd_bestiary.flask
     import ttrpg_scribe.encounter.flask.plugin
     import ttrpg_scribe.notes
@@ -41,6 +42,9 @@ def make_app(project_dir: str | Path, config: Path | None = None):
             plugin_apps[f'/{id}'] = plugin_app
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, plugin_apps)
 
+    if app.debug:
+        ttrpg_scribe.core.typescript.ensure_compiled(Path(app.instance_path))
+
     @app.post('/clean', endpoint='clean')
     def clean_endpoint():
         clean(project_dir)
@@ -66,7 +70,6 @@ def check_structure(project_dir: Path) -> bool:
 
 
 def start(args):
-    import ttrpg_scribe.core.typescript
     import waitress
 
     if not check_structure(args.project):
@@ -89,7 +92,6 @@ def start(args):
 
     host, port = '127.0.0.1', 48164
     if args.debug:
-        ttrpg_scribe.core.typescript.ensure_compiled(Path(app.instance_path))
         app.jinja_env.auto_reload = True
         app.run(host, port, debug=True)
     else:
