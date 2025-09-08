@@ -42,6 +42,7 @@ plugins = [
 
 [tool.pdm.build]
 includes = ["ttrpg_scribe/all_in_one"]
+excludes = ["ttrpg_scribe/all_in_one/test"]
 
 [tool.pdm.dev-dependencies]
 dev = [
