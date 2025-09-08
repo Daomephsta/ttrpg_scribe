@@ -9,7 +9,7 @@ dependencies = [
     "ttrpg-scribe-core",
     "ttrpg-scribe-encounter",
     "platformdirs<5.0.0,>=4.1.0",
-    "pymongo[srv]<5.0.0,>=4.11.3",
+    "pymongo<5.0.0,>=4.11.3",
     "bs4<1.0.0,>=0.0.2",
 ]
 requires-python = "<4.0,>=3.11"
