@@ -3,20 +3,27 @@ root=$(pwd)
 dest="$root/dist/assemble"
 
 # Clean
+echo "Cleaning"
 pdm cache remove ttrpg_scribe_buildscript*
 mkdir -p $dest
 rm -r $dest
 rm -f $root/dist/ttrpg_scribe-*.zip
 
-# Build artifacts
-for project in . core dnd_bestiary encounter notes npc pf2e_compendium;
-do echo "Building $project";
+# Build wheels
+echo "Building wheels"
+build_artifact() {
+    local project=$1;
     cd $project;
     rm -rf .pdm-plugins
     pdm install --plugins;
     pdm build --no-clean -d $dest;
     cd $root
+}
+
+for project in . core dnd_bestiary encounter notes npc pf2e_compendium;
+do build_artifact $project & # Fork multiple build shells
 done
+wait # Wait for build shells to finish
 
 # Assemble
 base=$(basename -s .whl $dest/ttrpg_scribe-*.whl)
