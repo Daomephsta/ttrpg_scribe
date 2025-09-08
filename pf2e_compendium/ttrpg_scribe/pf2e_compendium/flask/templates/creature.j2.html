@@ -163,10 +163,12 @@
 {% endmacro %}
 
 {% if render | default(False) %}
+{% import 'dependencies.j2.html' as dependencies %}
 <!DOCTYPE html>
 <head>
     <title>{{ data.name | title }}</title>
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
+    {{ dependencies.JQUERY }}
     <script src="{{ url_for('core.static', filename='popup.js') }}"></script>
     <script type="module" src="{{ url_for('.static', filename='analyse_creature.js') }}"></script>
     <script type="application/json" id="analyse-endpoint">
