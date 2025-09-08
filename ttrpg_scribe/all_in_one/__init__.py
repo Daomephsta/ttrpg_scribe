@@ -140,6 +140,49 @@ def pf2e_foundry(args):
                 sys.exit(130)
 
 
+def update(new_version: Path):
+    import shutil
+    import zipfile
+    import tempfile
+    import subprocess
+
+    # Preconditions
+    if not new_version.exists():
+        raise ValueError(f'{new_version.as_posix()} does not exist')
+
+    def is_wheel_zip(new_version: Path) -> bool:
+        if new_version.suffix != '.zip':
+            return False
+        with zipfile.ZipFile(new_version) as zip:
+            return any(f.startswith('ttrpg_scribe') and f.endswith('.whl') for f in zip.namelist())
+
+    def is_source(new_version: Path):
+        return (new_version/'assemble.sh').exists()
+
+    # Locate or make zip
+    if is_source(new_version):
+        assemble = new_version/'assemble.sh'
+        if (assemble := subprocess.call(assemble.as_posix(), cwd=new_version)) != 0:
+            raise ValueError(f'assemble.sh exited with code {assemble}')
+        [zip_path] = (new_version/'dist').glob('ttrpg_scribe-*.zip')
+    elif is_wheel_zip(new_version):
+        zip_path = new_version
+    else:
+        raise ValueError('Expected ttrpg_scribe source directory or a zip of ttrpg_scribe wheels')\
+            from None
+
+    # Installation
+    with tempfile.TemporaryDirectory() as extracted:
+        with zipfile.ZipFile(zip_path) as zip:
+            zip.extractall(extracted)
+
+        pip = shutil.which('pip')
+        assert pip is not None, 'pip is not installed'
+        wheels = Path(extracted).glob('ttrpg_scribe*.whl')
+        subprocess.call([pip, 'install', '--upgrade', '--force-reinstall',
+                         *(f.as_posix() for f in wheels)])
+
+
 def main():
     from argparse import ArgumentParser
 
@@ -165,6 +208,10 @@ def main():
     foundry_parser = subcommands.add_parser('pf2e_foundry')
     foundry_parser.add_argument('foundry_command', choices=['dir', 'mongo'])
     foundry_parser.set_defaults(subcommand=pf2e_foundry)
+
+    update_parser = subcommands.add_parser('update')
+    update_parser.add_argument('new_version', type=Path)
+    update_parser.set_defaults(subcommand=lambda args: update(args.new_version))
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
