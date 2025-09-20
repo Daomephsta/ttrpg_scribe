@@ -5,7 +5,7 @@ _LOGGER = logging.getLogger(__name__)
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
-def make_app(project_dir: str | Path, config: Path | None = None, debug: bool | None = None):
+def make_app(project_dir: str | Path, debug: bool | None = None):
     from http import HTTPStatus
 
     import ttrpg_scribe.core.typescript
@@ -18,7 +18,7 @@ def make_app(project_dir: str | Path, config: Path | None = None, debug: bool | 
     from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
     project_dir = Path(project_dir)
-    app = ttrpg_scribe.notes.create_app(config or project_dir/'config.py', project_dir)
+    app = ttrpg_scribe.notes.create_app(project_dir)
     if debug is not None:
         app.debug = debug
     app.jinja_options.update(
@@ -71,7 +71,7 @@ def check_structure(project_dir: Path) -> bool:
     return True
 
 
-def start(project: Path, config: str | None, debug: bool):
+def start(project: Path, debug: bool):
     import waitress
 
     if not check_structure(project):
@@ -81,17 +81,7 @@ def start(project: Path, config: str | None, debug: bool):
                         format='%(name)s @ %(levelname)s: %(message)s')
 
     force_debug = True if debug else None
-    config_dir: Path = project/'config'
-    if config_dir.exists():
-        if config is not None:
-            app = make_app(project, config_dir/f'{config}.py', debug=force_debug)
-        else:
-            configs = ', '.join(path.stem for path in config_dir.glob('*.py'))
-            _LOGGER.error('Multiconfig projects must specify --config\n'
-                          f'Available configs: {configs}')
-            return
-    else:
-        app = make_app(project, debug=force_debug)
+    app = make_app(project, debug=force_debug)
 
     host, port = '127.0.0.1', 48164
     if debug:
@@ -197,8 +187,7 @@ def main():
 
     start_parser = subcommands.add_parser('start')
     start_parser.add_argument('--debug', action='store_true')
-    start_parser.add_argument('-c', '--config', type=str)
-    start_parser.set_defaults(subcommand=lambda args: start(args.project, args.config, args.debug))
+    start_parser.set_defaults(subcommand=lambda args: start(args.project, args.debug))
 
     clean_parser = subcommands.add_parser('clean')
     clean_parser.set_defaults(subcommand=lambda args: clean(args.project))

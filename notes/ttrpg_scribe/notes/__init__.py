@@ -18,7 +18,7 @@ from ttrpg_scribe.notes import (content_tree, data_script, paths,
 
 
 class Notes(flask.Flask):
-    def __init__(self, project_dir: Path, config: Path):
+    def __init__(self, project_dir: Path):
         super().__init__('ttrpg_scribe.notes',
             instance_path=project_dir.absolute().as_posix(),
             instance_relative_config=True)
@@ -39,7 +39,7 @@ class Notes(flask.Flask):
         setting_config = project_dir/'setting/config.py'
         if setting_config.exists():
             exec_pyfile(setting_config, config_obj)
-        exec_pyfile(config, config_obj)
+        exec_pyfile(project_dir/'config.py', config_obj)
         self.config.from_mapping(config_obj)
         if 'TOOLS' not in self.config:
             self.config['TOOLS'] = []
@@ -55,8 +55,8 @@ class Notes(flask.Flask):
         ])
 
 
-def create_app(config: Path, project_dir: str | Path | None = None):
-    app = Notes(Path(project_dir) if project_dir else Path.cwd(), config)
+def create_app(project_dir: str | Path | None = None):
+    app = Notes(Path(project_dir) if project_dir else Path.cwd())
     tools: list[tuple[str, str, dict]] = app.config['TOOLS']
     tools.append(('/clean', 'Clean _build', {'method': 'post'}))
     ttrpg_scribe.core.flask.extend(app)
