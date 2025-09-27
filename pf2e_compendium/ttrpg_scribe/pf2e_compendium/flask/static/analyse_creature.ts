@@ -78,7 +78,12 @@ function analyse(analyseEndpoint: string) {
             'Content-Type': 'application/json'
         }
     })
-    .then((r) => r.json())
+    .then(r => {
+        if (r.ok) {
+            return r.json()
+        }
+        throw new Error(`${analyseEndpoint} returned ${r.status} ${r.statusText}`)
+    })
     .then((json: {[k: string]: any}) => {
         applyClassification(perception, json['perception'])
         applyClassifications(skills, json['skills'])

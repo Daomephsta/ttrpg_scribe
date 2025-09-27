@@ -89,6 +89,14 @@ function editSpecification($specification: JQuery) {
     dialog.showModal()
 }
 
+interface GenerateResult {
+    _id: string,
+    quantity: number,
+    name: string,
+    level: number,
+    rarity: string
+}
+
 function generate(oracleEndpoint: string, compendiumContentEndpoint: string) {
     const specifications = $<HTMLTextAreaElement>('.specification .data').toArray()
         .map(data => JSON.parse(data.value))
@@ -98,7 +106,14 @@ function generate(oracleEndpoint: string, compendiumContentEndpoint: string) {
         headers: {
             'Content-Type': 'application/json',
         }
-    }).then(r => r.json()).then(results => {
+    })
+    .then(r => {
+        if (r.ok) {
+            return r.json() as Promise<Array<GenerateResult>>
+        }
+        throw new Error(`${oracleEndpoint} returned ${r.status} ${r.statusText}`)
+    })
+    .then(results => {
         $('#results tbody').empty().append(results.map(r => {
             const url = compendiumContentEndpoint.replace('ID', r._id)
             return $(`<tr></tr>`)
