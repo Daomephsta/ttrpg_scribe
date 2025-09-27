@@ -9,27 +9,28 @@ function rarityLetter(rarity: string) {
 }
 
 interface SpecificationJson {
+    quantity: number,
     'level-min': number,
     'level-max': number,
-    'rarity': Array<string>,
-    'size': Array<string>,
-    'traits': Array<string>
+    rarity: Array<string>,
+    size: Array<string>,
+    traits: Array<string>
 }
 
 function updateSpecification($specification: JQuery) {
     const data: SpecificationJson = JSON.parse($specification.find('.data').val() as string)
-    $specification.find('.quantity').text(data['quantity'])
+    $specification.find('.quantity').text(data.quantity)
     $specification.find('.level').text(data['level-min'] == data['level-max']
         ? data['level-min']
         : `${data['level-min']} to ${data['level-max']}`
     )
     $specification.find('.rarity').empty()
-        .attr('title', data['rarity'].map(toTitleCase).join(', '))
-        .text(data['rarity'].map(rarityLetter).join(''))
+        .attr('title', data.rarity.map(toTitleCase).join(', '))
+        .text(data.rarity.map(rarityLetter).join(''))
     $specification.find('.size')
-        .attr('title', data['size'].map(toTitleCase).join(', '))
-        .text(data['size'].map(s => s[0].toUpperCase()).join(''))
-    const traits = data['traits'].map(toTitleCase).join(', ')
+        .attr('title', data.size.map(toTitleCase).join(', '))
+        .text(data.size.map(s => s[0].toUpperCase()).join(''))
+    const traits = data.traits.map(toTitleCase).join(', ')
     $specification.find('.traits')
         .attr('title', traits)
         .text(traits)
@@ -56,28 +57,32 @@ function editSpecification($specification: JQuery) {
     const $data = $specification.find('.data');
     const data: SpecificationJson = JSON.parse($data.val() as string)
 
-    function writeData(name: string, getter: (inputElement: JQuery<HTMLInputElement>) => any) {
+    function writeData<K extends keyof SpecificationJson>(name: K, getter: (inputElement: JQuery<HTMLInputElement>) => SpecificationJson[K]) {
         data[name] = getter($dialog.find<HTMLInputElement>(`[name="${name}"]`))
     }
 
-    function writeNumericData(name: string) {
+    type DataKey<T> = {
+        [K in keyof SpecificationJson]: SpecificationJson[K] extends T ? K : never
+    }[keyof SpecificationJson]
+
+    function writeNumericData(name: DataKey<number>) {
         writeData(name, f => Number(f.val()))
     }
 
-    function writeBoolArrayData(name: string) {
+    function writeBoolArrayData(name: DataKey<Array<any>>) {
         writeData(name, f => f.filter(':checked').toArray().map(e => e.value))
     }
 
-    for (const key in data) {
+    for (const key of Object.keys(data) as Array<keyof SpecificationJson>) {
         $dialog.find(`[name="${key}"]`).val(data[key])
     }
-    dialog.querySelector('form').addEventListener('submit', (_) => {
+    dialog.querySelector('form')!.addEventListener('submit', (_) => {
         writeNumericData('quantity')
         writeNumericData('level-min')
         writeNumericData('level-max')
         writeBoolArrayData('rarity')
         writeBoolArrayData('size')
-        writeData('traits', f => f.val().split(',').map(s => s.toLowerCase().trim()))
+        writeData('traits', f => f.val()!.split(',').map(s => s.toLowerCase().trim()))
         $data.val(JSON.stringify(data))
         updateSpecification($specification)
     }, { once: true })

@@ -37,13 +37,13 @@ function analyse(analyseEndpoint: string) {
         }
     }
 
-    const level = document.getElementById('statistic-level')
-    const perception = document.getElementById('statistic-perception')
+    const level = document.getElementById('statistic-level')!
+    const perception = document.getElementById('statistic-perception')!
     const skills = idElementMap('statistic-skill-mod')
     const attributes = idElementMap('statistic-attribute')
     const saves = idElementMap('statistic-save')
-    const ac = document.getElementById('statistic-armour-class')
-    const hp = document.getElementById('statistic-hit-points')
+    const ac = document.getElementById('statistic-armour-class')!
+    const hp = document.getElementById('statistic-hit-points')!
     const resistances = idElementMap('statistic-resistance')
     const weaknesses = idElementMap('statistic-weakness')
     const strikes = {
