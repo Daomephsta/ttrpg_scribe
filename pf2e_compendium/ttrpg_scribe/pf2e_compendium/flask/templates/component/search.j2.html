@@ -1,0 +1,31 @@
+{% macro widget(doc_type = None) %}
+<div class="search-controls">
+    <fieldset class="search-query-type">
+        <legend>Search Type</legend>
+        <label>
+            Simple
+            <input type="radio" name="query_type" value="simple" checked>
+        </label>
+        <label>
+            Complex
+            <input type="radio" name="query_type" value="complex">
+        </label>
+    </fieldset>
+    {% if doc_type %}
+    <input type="hidden" name="doc_type" value="{{ doc_type }}">
+    {% endif %}
+    <input type="search" id="simple_query" class="search-query" >
+    <textarea id="complex_query" class="search-query" hidden disabled>{&#10;  &#10;}</textarea>
+    <button class="search-button">Search</button>
+</div>
+{% endmacro %}
+
+{% set HEAD %}
+<script type="module" src="{{ url_for('.static', filename='search.js') }}"></script>
+<script type="application/json" id="search-js-endpoints">
+{{ {
+    "search": url_for('pf2e_compendium.search'),
+    "compendiumContent": url_for('pf2e_compendium.content', doc_type='DOC_TYPE', id='ID')
+} | tojson }}
+</script>
+{% endset %}

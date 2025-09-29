@@ -1,9 +1,16 @@
-{% extends 'list.j2.html' %}
-{% set title = 'Compendium Collections' %}
-{% block content %}
-<ul>
-{% for type in types | sort %}
-    <li><a href="/compendium/list/{{ type }}">{{ type }}</a></li>
-{% endfor %}
-</ul>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Compendium Collections</title>
+    </head>
+    <body>
+        <h1>Compendium Collections</h1>
+        <main>
+            {% for type in types | sort %}
+                <li><a href="/compendium/list/{{ type }}">{{ type }}</a></li>
+            {% endfor %}
+            <hr>
+            <a href="{{ url_for('.search_ui') }}">Search</a>
+        </main>
+    </body>
+</html>

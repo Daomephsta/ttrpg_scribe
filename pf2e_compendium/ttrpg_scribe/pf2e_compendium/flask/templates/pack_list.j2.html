@@ -6,4 +6,6 @@
     <li><a href="/compendium/list/{{ type }}/{{ pack }}">{{ pack }}</a></li>
 {% endfor %}
 </ul>
+<hr>
+<a href="{{ url_for('.search_ui', doc_type=type) }}">Search</a>
 {% endblock %}

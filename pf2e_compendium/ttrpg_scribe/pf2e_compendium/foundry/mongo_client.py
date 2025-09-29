@@ -1,11 +1,9 @@
 import json
 import logging
-import re
 from typing import Any, overload
 
 import pymongo
 from pymongo import IndexModel, MongoClient
-
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 
@@ -54,12 +52,15 @@ def get_collection_content(name: str):
     return db[name].find()
 
 
-def search_by_name(query: str, doc_types: list[str] = []):
-    pattern = re.compile(query, re.IGNORECASE)
-    if len(doc_types) == 0:
-        doc_types = get_collection_names()
-    for doc_type in doc_types:
-        yield from db[doc_type].find({'name': pattern}, {'name': True, 'doc_type': doc_type})
+def unionOf(collections: list[str]):
+    yield {'$documents': []}
+    for c in collections:
+        yield {
+            '$unionWith': {
+                'coll': c,
+                'pipeline': [{'$addFields': {'doc_type': c}}]
+            }
+        }
 
 
 def update():

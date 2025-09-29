@@ -1,4 +1,5 @@
 import math
+import re
 from typing import Any, Iterable
 
 import flask
@@ -99,13 +100,44 @@ def _apply_adjustments(content):
                 content.apply(templates.weak)
 
 
-@blueprint.post('/search')
 @blueprint.get('/search')
+@blueprint.get('/search/<doc_type>')
+def search_ui(doc_type: str | None = None):
+    return flask.render_template('search_results.j2.html', doc_type=doc_type)
+
+
+@blueprint.post('/search')
 def search():
-    query = request.args.get('query', '')
-    doc_types = request.args.getlist('doc-type')
-    return render_template('search_results.j2.html',
-                           content=mongo_client.search_by_name(query, doc_types))
+    doc_types = request.args.getlist('doc_type')
+    if len(doc_types) == 0:
+        doc_types = mongo_client.get_collection_names()
+    query_type = request.args.get('query_type', 'simple')
+
+    def create_match_args():
+        match query_type:
+            case 'simple':
+                query = request.args.get('query', '')
+                pattern = re.compile(query, re.IGNORECASE)
+                return {'name': pattern}
+            case 'complex':
+                return request.get_json()
+            case _:
+                raise ValueError(query_type)
+
+    return list(mongo_client.db.aggregate([
+        *mongo_client.unionOf(doc_types),
+        {'$match': create_match_args()},
+        {
+            '$project': {
+                'doc_type': True,
+                'name': True,
+                'level': {
+                    '$ifNull': ['$system.level.value', '$system.details.level.value']
+                },
+                'rarity': '$system.traits.rarity',
+            }
+        }
+    ]))
 
 
 @blueprint.app_template_filter()
