@@ -29,6 +29,7 @@ function search() {
             throw new Error(`${endpoint} returned ${r.status} ${r.statusText}`)
         })
         return resultsJson.then(results => {
+            $('#results legend').text(`Results (${results.length})`)
             $('#results tbody').empty().append(results.map(r => {
                 const url = endpoints.compendiumContent.replace('DOC_TYPE', r.doc_type).replace('ID', r._id)
                 return $(`<tr></tr>`)
