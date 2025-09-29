@@ -132,47 +132,61 @@ def pf2e_foundry(args):
                 sys.exit(130)
 
 
-def update(new_version: Path):
+def update(update_package: Path | None):
     import shutil
     import zipfile
     import tempfile
     import subprocess
 
-    # Preconditions
-    if not new_version.exists():
-        raise ValueError(f'{new_version.as_posix()} does not exist')
-
-    def is_wheel_zip(new_version: Path) -> bool:
-        if new_version.suffix != '.zip':
+    def is_wheel_zip(update_package: Path) -> bool:
+        if update_package.suffix != '.zip':
             return False
-        with zipfile.ZipFile(new_version) as zip:
+        with zipfile.ZipFile(update_package) as zip:
             return any(f.startswith('ttrpg_scribe') and f.endswith('.whl') for f in zip.namelist())
 
-    def is_source(new_version: Path):
-        return (new_version/'assemble.sh').exists()
+    def is_source(update_package: Path):
+        return (update_package/'assemble.sh').exists()
 
-    # Locate or make zip
-    if is_source(new_version):
-        assemble = new_version/'assemble.sh'
-        if (assemble := subprocess.call(assemble.as_posix(), cwd=new_version)) != 0:
-            raise ValueError(f'assemble.sh exited with code {assemble}')
-        [zip_path] = (new_version/'dist').glob('ttrpg_scribe-*.zip')
-    elif is_wheel_zip(new_version):
-        zip_path = new_version
+    def install(update_package: Path):
+        # Locate or make zip
+        if is_source(update_package):
+            assemble = update_package/'assemble.sh'
+            if (assemble := subprocess.call(assemble.as_posix(), cwd=update_package)) != 0:
+                raise ValueError(f'assemble.sh exited with code {assemble}')
+            [zip_path] = (update_package/'dist').glob('ttrpg_scribe-*.zip')
+        elif is_wheel_zip(update_package):
+            zip_path = update_package
+        else:
+            raise ValueError('Expected ttrpg_scribe source directory or '
+                'a zip of ttrpg_scribe wheels')\
+                from None
+
+        # Installation
+        with tempfile.TemporaryDirectory() as extracted:
+            with zipfile.ZipFile(zip_path) as zip:
+                zip.extractall(extracted)
+
+            pip = shutil.which('pip')
+            assert pip is not None, 'pip is not installed'
+            wheels = Path(extracted).glob('ttrpg_scribe*.whl')
+            subprocess.call([pip, 'install', '--upgrade', '--force-reinstall',
+                             *(f.as_posix() for f in wheels)])
+
+    if update_package is None:
+        with tempfile.TemporaryDirectory() as clone_destination:
+            git = shutil.which('git')
+            assert git is not None, 'git is not installed'
+            subprocess.call([
+                git, 'clone',
+                '--depth', '1',
+                'https://github.com/Daomephsta/ttrpg_scribe',
+                clone_destination
+            ])
+            install(Path(clone_destination))
     else:
-        raise ValueError('Expected ttrpg_scribe source directory or a zip of ttrpg_scribe wheels')\
-            from None
-
-    # Installation
-    with tempfile.TemporaryDirectory() as extracted:
-        with zipfile.ZipFile(zip_path) as zip:
-            zip.extractall(extracted)
-
-        pip = shutil.which('pip')
-        assert pip is not None, 'pip is not installed'
-        wheels = Path(extracted).glob('ttrpg_scribe*.whl')
-        subprocess.call([pip, 'install', '--upgrade', '--force-reinstall',
-                         *(f.as_posix() for f in wheels)])
+        if not update_package.exists():
+            raise ValueError(f'{update_package.as_posix()} does not exist')
+        install(update_package)
 
 
 def main():
@@ -201,7 +215,7 @@ def main():
     foundry_parser.set_defaults(subcommand=pf2e_foundry)
 
     update_parser = subcommands.add_parser('update')
-    update_parser.add_argument('new_version', type=Path)
+    update_parser.add_argument('new_version', type=Path, nargs='?')
     update_parser.set_defaults(subcommand=lambda args: update(args.new_version))
 
     argcomplete.autocomplete(parser)
