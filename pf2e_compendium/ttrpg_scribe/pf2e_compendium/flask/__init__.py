@@ -136,6 +136,12 @@ def search():
                 },
                 'rarity': '$system.traits.rarity',
             }
+        },
+        {
+            '$sort': {
+                'level': 1,
+                'name': 1
+            }
         }
     ]))
 
