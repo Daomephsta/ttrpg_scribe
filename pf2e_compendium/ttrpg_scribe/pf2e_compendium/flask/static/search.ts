@@ -5,7 +5,9 @@ const endpoints = JSON.parse($('#search-js-endpoints').text())
 function updateQueryType() {
     const queryType = $('input[name="query_type"]:checked').val()
     $(`.search-query`).prop('hidden', true).prop('disabled', true)
-    $(`#${queryType}_query`).prop('hidden', false).prop('disabled', false)
+    $(`#${queryType}_query`)
+        .prop('hidden', false).prop('disabled', false)
+        .trigger('focus')
 }
 
 interface SearchResult {
