@@ -7,29 +7,69 @@
         {{ dependencies.JQUERY }}
         {{ search.HEAD }}
         <style>
+        main {
+            display: grid;
+            height: 90vh;
+            grid-template-rows: min-content 1fr;
+            grid-template-columns: 1fr 2fr;
+            grid-template-areas:
+                "controls controls"
+                "results preview";
+        }
+        .search-controls {
+            grid-area: controls;
+            display: grid;
+            grid-template-columns: auto min-content;
+            grid-template-areas:
+                "search-query-type search-query-type"
+                "search-query search-button";
+
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+            border-bottom: 2px solid grey;
+        }
+        .search-query-type {
+            grid-area: search-query-type;
+        }
+        .search-query {
+            grid-area: search-query;
+        }   
+        #complex_query {
+            height: 4em;
+        }
+        .search-button {
+            grid-area: search-button;
+            height: 100%;
+        }
+        #results {
+            grid-area: results;
+        }
         iframe[name="preview"] {
+            grid-area: preview;
             width: 100%;
-            height: 50vh;
+            height: 100%;
         }
         </style>
     </head>
     <body>
         <h1>Search</h1>
-        {{ search.widget(doc_type) }}
-        <fieldset id="results">
-            <legend>Results</legend>
-            <table>
-                <thead>
-                    <th>Name</th>
-                    <th>Level</th>
-                    <th>Rarity</th>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </fieldset>
-        <iframe name="preview">
-        
-        </iframe>
+        <main>
+            {{ search.widget(doc_type) }}
+            <fieldset id="results">
+                <legend>Results</legend>
+                <table>
+                    <thead>
+                        <th>Name</th>
+                        <th>Level</th>
+                        <th>Rarity</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </fieldset>
+            <iframe name="preview">
+            
+            </iframe>
+        </main>
     </body>
 </html>
