@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 import subprocess
 from typing import MutableMapping
 
@@ -14,7 +15,19 @@ def pdm_build_initialize(context: Context):
     context.config.metadata['version'] = get_version(context)
     # Compile typescript
     build = context.ensure_build_dir()
-    subprocess.call(['npx', 'tsc', '--outDir', build.as_posix()])
+    tsc = shutil.which('tsc')
+    if tsc is None:
+        npx = shutil.which('npx')
+        if npx is None:
+            raise RuntimeError('npm not installed')
+        if subprocess.check_output(['npm', 'list', 'typescript', '--parseable']).strip() == '':
+            raise RuntimeError('Neither tsc or npx tsc installed')
+            return
+        else:
+            tsc = ['npx', 'tsc']
+    else:
+        tsc = ['tsc']
+    subprocess.call([*tsc, '--outDir', build.as_posix()])
 
 
 def pdm_build_update_files(context, files: MutableMapping[str, Path]):
