@@ -9,6 +9,9 @@ mkdir -p $dest
 rm -r $dest
 rm -f $root/dist/ttrpg_scribe-*.zip
 
+# Install node modules
+npm install
+
 # Build wheels
 echo "Building wheels"
 build_artifact() {
