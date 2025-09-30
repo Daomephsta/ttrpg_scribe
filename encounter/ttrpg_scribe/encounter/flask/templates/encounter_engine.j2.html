@@ -86,11 +86,11 @@
             <form method="post" id="reinforce_with_new_controls" class="collapsed">
                 <input type="hidden" name="reinforcement_type" value="with_new">
                 <input type="submit" value="Add" class="add-reinforcements">
-                <input type="number" name="quantity" value="1" min="1">
+                <input type="number" name="quantity" value="1" min="1" title="Quantity">
                 &#x00D7;
                 <input type="text" name="name" placeholder="Name" required="true">
-                <input type="number" name="initiative_mod" placeholder="DEX" required="true">
-                <input type="number" name="max_hp" placeholder="&#x2764;" min="0" required="true">
+                <input type="number" name="initiative_mod" placeholder="&#x23E9;" title="Initiative modifier" required="true">
+                <input type="number" name="max_hp" placeholder="&#x2764;" title="Maximum HP" min="0" required="true">
                 <select name="side" class="feature-value" required="true">
                     <option value="enemy">Enemy</option>
                     <option value="ally">Ally</option>
