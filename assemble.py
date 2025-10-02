@@ -28,7 +28,7 @@ def clean():
 
 
 def setup_build_dependencies():
-    subprocess.run(['npm', 'install'], check=True)
+    subprocess.run(['npm', 'ci'], check=True)
     # Install plugins sequentially to avoid contention over ttrpg-scribe-buildscript/.pdm-build
     for project in subprojects:
         if (plugins := project/'.pdm-plugin').exists():
