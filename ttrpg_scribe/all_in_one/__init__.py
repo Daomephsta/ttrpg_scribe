@@ -145,14 +145,14 @@ def update(update_package: Path | None):
             return any(f.startswith('ttrpg_scribe') and f.endswith('.whl') for f in zip.namelist())
 
     def is_source(update_package: Path):
-        return (update_package/'assemble.sh').exists()
+        return (update_package/'assemble.py').exists()
 
     def install(update_package: Path):
         # Locate or make zip
         if is_source(update_package):
-            assemble = update_package/'assemble.sh'
+            assemble = update_package/'assemble.py'
             if (assemble := subprocess.call(assemble.as_posix(), cwd=update_package)) != 0:
-                raise ValueError(f'assemble.sh exited with code {assemble}')
+                raise ValueError(f'assemble.py exited with code {assemble}')
             [zip_path] = (update_package/'dist').glob('ttrpg_scribe-*.zip')
         elif is_wheel_zip(update_package):
             zip_path = update_package
