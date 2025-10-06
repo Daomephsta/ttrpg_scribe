@@ -195,6 +195,7 @@
                 )
             </span>
         </button>
+        <button id="copy-id" title="Copy {{ request.view_args.id }}" onclick="navigator.clipboard.writeText('{{ request.view_args.id }}')">Copy ID</button>
     </footer>
 </body>
 {% endif %}

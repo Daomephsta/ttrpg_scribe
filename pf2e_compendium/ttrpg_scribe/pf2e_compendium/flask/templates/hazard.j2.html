@@ -63,5 +63,6 @@
 <body>{{ hazard(data) }}</body>
 <footer>
     <a href="{{ request.base_url }}.json">View JSON</a>
+    <button id="copy-id" title="Copy {{ request.view_args.id }}" onclick="navigator.clipboard.writeText('{{ request.view_args.id }}')">Copy ID</button>
 </footer>
 {% endif %}
