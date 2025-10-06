@@ -56,6 +56,7 @@ function search() {
         }
         case 'complex':
         {
+            try {
             const query = JSON.parse($<HTMLTextAreaElement>('#complex_query').val()!)
             doSearch(endpoints.search, {query_type: 'complex', ...docTypeParam}, {
                 method: 'POST',
@@ -64,6 +65,12 @@ function search() {
                     'Content-Type': 'application/json'
                 }
             })
+            } 
+            catch (error) {
+                if (error instanceof SyntaxError) {
+                    alert(error.message)
+                }
+            }
             break
         }
         
