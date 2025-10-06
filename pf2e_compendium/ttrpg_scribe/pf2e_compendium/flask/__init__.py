@@ -196,12 +196,21 @@ class Pf2ePlugin(SystemPlugin):
         foundry.check_for_updates()
 
     @classmethod
-    def read_participant(cls, json) -> InitiativeParticipant:
-        match json['kind']:
-            case 'PF2Creature':
+    def participant_from_id(cls, mongo_id: str) -> InitiativeParticipant:
+        _, data = foundry_packs.read_doc('all', mongo_id)
+        assert isinstance(data, InitiativeParticipant), \
+            f'{mongo_id} does not resolve to an InitiativeParticipant'
+        return data
+
+    @classmethod
+    def read_participant(cls, data: dict[str, Any] | str) -> InitiativeParticipant:
+        match data:
+            case {'kind': 'PF2Creature', **json}:
                 return PF2Creature.from_json(json)
-            case 'PF2Hazard':
+            case {'kind': 'PF2Hazard', **json}:
                 return PF2Hazard.from_json(json)
+            case str() as mongo_id:
+                return cls.participant_from_id(mongo_id)
             case unknown:
                 raise ValueError(f'Unknown participant kind {unknown}')
 
@@ -209,10 +218,19 @@ class Pf2ePlugin(SystemPlugin):
     def encounter_xp(cls, enemies: list[tuple[int, PF2Creature]],
                      allies: list[tuple[int, PF2Creature]],
                      party: dict[str, dict[str, Any]]) -> str:
+        def resolve_level(participant) -> int:
+            match participant:
+                case PF2Creature() | PF2Hazard():
+                    return participant.level
+                case str():
+                    return resolve_level(cls.participant_from_id(participant))
+                case unknown:
+                    raise ValueError(unknown)
+
         party_level: int = flask.current_app.config['PARTY_LEVEL']
         return cls.compute_xp(
-            ((count, creature.level) for count, creature in enemies),
-            ((count, creature.level) for count, creature in allies),
+            ((count, resolve_level(creature)) for count, creature in enemies),
+            ((count, resolve_level(creature)) for count, creature in allies),
             party_level, len(party))
 
     @classmethod

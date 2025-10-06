@@ -1,8 +1,13 @@
 {% macro _combatant(count, data) %}
-{% if count > 0 %}
-    <li>{{ data.name | plural(count, inclusive=True) }}</li>
+{% if data is string %}
+    {% set name = data.split('/') | last | replace('-', ' ') %}
 {% else %}
-    <li>{{ data.name }} (Optional)</li>
+    {% set name = data.name %}
+{% endif %}
+{% if count > 0 %}
+    <li>{{ name | plural(count, inclusive=True) }}</li>
+{% else %}
+    <li>{{ name }} (Optional)</li>
 {% endif %}
 {% endmacro %}
 

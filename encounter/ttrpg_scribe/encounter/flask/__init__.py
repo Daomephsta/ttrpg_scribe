@@ -43,7 +43,7 @@ class SystemPlugin(Plugin):
         main_app.register_blueprint(cls.compendium_blueprint)
 
     @classmethod
-    def read_participant(cls, json) -> InitiativeParticipant:
+    def read_participant(cls, data: dict[str, Any] | str) -> InitiativeParticipant:
         raise NotImplementedError()
 
     @classmethod
