@@ -46,7 +46,6 @@ function search() {
     const queryType = $('input[name="query_type"]:checked').val()
     const $docType = $<HTMLInputElement>('input[name="doc_type"]')
     const docTypeParam: {doc_type?: string} = $docType.length > 0 ? {doc_type: $docType.val()} : {}
-    let request: Promise<SearchResult[]> = Promise.all([])
     switch (queryType) {
         case 'simple':
         {
