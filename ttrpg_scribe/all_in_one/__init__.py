@@ -1,3 +1,4 @@
+import importlib
 import logging
 from pathlib import Path
 
@@ -9,11 +10,7 @@ def make_app(project_dir: str | Path, debug: bool | None = None):
     from http import HTTPStatus
 
     import ttrpg_scribe.core.typescript
-    import ttrpg_scribe.dnd_bestiary.flask
-    import ttrpg_scribe.encounter.flask.plugin
     import ttrpg_scribe.notes
-    import ttrpg_scribe.npc.flask_app.plugin
-    import ttrpg_scribe.pf2e_compendium.flask
     from ttrpg_scribe.core.plugin import Plugin
     from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
@@ -26,13 +23,19 @@ def make_app(project_dir: str | Path, debug: bool | None = None):
         trim_blocks=True
     )
 
-    PLUGIN_FACTORIES: dict[str, type[Plugin]] = {
-        'dnd_5e': ttrpg_scribe.dnd_bestiary.flask.Dnd5ePlugin,
-        'pf2e': ttrpg_scribe.pf2e_compendium.flask.Pf2ePlugin,
-        'encounter': ttrpg_scribe.encounter.flask.plugin.EncounterPlugin,
-        'npc': ttrpg_scribe.npc.flask_app.plugin.NpcPlugin,
+    PLUGIN_FACTORIES: dict[str, tuple[str, str]] = {
+        'dnd_5e': ('ttrpg_scribe.dnd_bestiary.flask', 'Dnd5ePlugin'),
+        'pf2e': ('ttrpg_scribe.pf2e_compendium.flask', 'Pf2ePlugin'),
+        'encounter': ('ttrpg_scribe.encounter.flask.plugin', 'EncounterPlugin'),
+        'npc': ('ttrpg_scribe.npc.flask_app.plugin', 'NpcPlugin'),
     }
-    active_plugins: list[tuple[str, type[Plugin]]] = [(id, PLUGIN_FACTORIES[id])
+
+    def create_plugin(plugin_id: str) -> type[Plugin]:
+        package, type = PLUGIN_FACTORIES[plugin_id]
+        module = importlib.import_module(package)
+        return getattr(module, type)
+
+    active_plugins: list[tuple[str, type[Plugin]]] = [(id, create_plugin(id))
                                                       for id in app.config['PLUGINS']]
 
     plugin_apps = {}
