@@ -5,7 +5,6 @@ authors = [
 requires-python = "<4.0,>=3.11"
 dependencies = [
     "flask<3.0.0,>=2.3.2",
-    "ttrpg-scribe-core",
     "flask-session<1.0.0,>=0.5.0",
 ]
 name = "ttrpg_scribe_npc"
@@ -15,16 +14,21 @@ readme = "README.md"
 dynamic = ["version"]
 
 [build-system]
-requires = ["pdm-backend", "ttrpg-scribe-buildscript @ file:///${PROJECT_ROOT}/../ttrpg-scribe-buildscript"]
+requires = ["pdm-backend", "ttrpg-scribe-buildscript @ file:///${PROJECT_ROOT}/../../ttrpg-scribe-buildscript"]
 build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
 plugins = [
-    "file:///${PROJECT_ROOT}/../ttrpg-scribe-buildscript"
+    "file:///${PROJECT_ROOT}/../../ttrpg-scribe-buildscript"
 ]
 
 [tool.pdm.build]
 includes = [
     "ttrpg_scribe/npc",
+]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "-e file:///${PROJECT_ROOT}/../core#egg=ttrpg-scribe-core",
 ]

@@ -4,13 +4,7 @@
         "rootDir": "."
     },
     "include": [
-        "ttrpg_scribe/**/*.ts",
-        "core/ttrpg_scribe/**/*.ts",
-        "dnd_bestiary/ttrpg_scribe/**/*.ts",
-        "encounter/ttrpg_scribe/**/*.ts",
-        "notes/ttrpg_scribe/**/*.ts",
-        "npc/ttrpg_scribe/**/*.ts",
-        "pf2e_compendium/ttrpg_scribe/**/*.ts"
+        "subprojects/**/*.ts"
     ]
 }
 

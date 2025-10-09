@@ -6,8 +6,6 @@ authors = [
 ]
 dependencies = [
     "flask<3.0.0,>=2.3.2",
-    "ttrpg-scribe-core",
-    "ttrpg-scribe-encounter",
     "platformdirs<5.0.0,>=4.1.0",
     "pymongo<5.0.0,>=4.11.3",
     "bs4<1.0.0,>=0.0.2",
@@ -24,17 +22,23 @@ dev = [
 ]
 
 [build-system]
-requires = ["pdm-backend", "ttrpg-scribe-buildscript @ file:///${PROJECT_ROOT}/../ttrpg-scribe-buildscript"]
+requires = ["pdm-backend", "ttrpg-scribe-buildscript @ file:///${PROJECT_ROOT}/../../ttrpg-scribe-buildscript"]
 build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
 plugins = [
-    "file:///${PROJECT_ROOT}/../ttrpg-scribe-buildscript"
+    "file:///${PROJECT_ROOT}/../../ttrpg-scribe-buildscript"
 ]
 
 [tool.pdm.build]
 includes = ["ttrpg_scribe/pf2e_compendium"]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "-e file:///${PROJECT_ROOT}/../core#egg=ttrpg-scribe-core",
+    "-e file:///${PROJECT_ROOT}/../encounter#egg=ttrpg-scribe-encounter",
+]
 
 [tool.pytest.ini_options]
 addopts = [

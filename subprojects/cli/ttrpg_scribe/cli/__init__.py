@@ -111,7 +111,7 @@ def new(project_dir: Path, system: str):
 
     try:
         with importlib.resources.as_file(importlib.resources.files(
-                f'ttrpg_scribe.all_in_one.project_templates.{system}')) as template:
+                f'ttrpg_scribe.cli.project_templates.{system}')) as template:
             shutil.copytree(template, project_dir, dirs_exist_ok=project_dir == Path.cwd())
     except ModuleNotFoundError:
         raise ValueError(f'No project template for {system} game system') from None

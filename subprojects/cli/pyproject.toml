@@ -1,0 +1,54 @@
+[project]
+name = "ttrpg_scribe_cli"
+description = "Personal adhoc tool for building my TTRPG GM notes"
+authors = [
+    {name = "Daomephsta", email = "dtnilfisk@gmail.com"},
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "argcomplete>=3.1.2,<4",
+    "waitress>=3,<4"
+]
+# Version is set by in-tree ttrpg-scribe-buildscript plugin
+dynamic = ["version"]
+license = {text = "MIT"}
+
+[project.optional-dependencies]
+runtime = [
+    "matplotlib>=3.7.2,<4",
+    "pandas>=2.0.3,<3",
+    "tabulate>=0.9.0,<1",
+]
+
+[project.scripts]
+ttrpg_scribe = "ttrpg_scribe.cli:main"
+
+[build-system]
+requires = ["pdm-backend", "file:///${PROJECT_ROOT}/../../ttrpg-scribe-buildscript"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
+plugins = [
+    "file:///${PROJECT_ROOT}/../../ttrpg-scribe-buildscript"
+]
+
+[tool.pdm.build]
+includes = ["ttrpg_scribe/cli"]
+excludes = ["ttrpg_scribe/cli/test"]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "-e file:///${PROJECT_ROOT}/../core#egg=ttrpg-scribe-core",
+    "-e file:///${PROJECT_ROOT}/../dnd_bestiary#egg=ttrpg-scribe-dnd-bestiary",
+    "-e file:///${PROJECT_ROOT}/../encounter#egg=ttrpg-scribe-encounter",
+    "-e file:///${PROJECT_ROOT}/../notes#egg=ttrpg-scribe-notes",
+    "-e file:///${PROJECT_ROOT}/../npc#egg=ttrpg-scribe-npc",
+    "-e file:///${PROJECT_ROOT}/../pf2e_compendium#egg=ttrpg-scribe-pf2e-compendium"
+]
+
+[dependency-groups]
+dev = [
+    "pytest<9.0.0,>=8.4.1"
+]

@@ -6,10 +6,7 @@ import zipfile
 
 
 root = Path.cwd()
-subprojects = [
-    root/path for path in
-    ['.', 'core', 'dnd_bestiary', 'encounter', 'notes', 'npc', 'pf2e_compendium']
-]
+subprojects = list((root/'subprojects').iterdir())
 dest = root/'dist/assemble'
 
 
@@ -67,7 +64,7 @@ def build_wheels():
 
 
 def assemble():
-    [version] = [p.stem.removeprefix('ttrpg_scribe-') for p in dest.glob('ttrpg_scribe-*.whl')]
+    version = next(dest.glob('ttrpg_scribe_core-*.whl')).stem.removeprefix('ttrpg_scribe_core-')
     with zipfile.ZipFile(root/f'dist/ttrpg_scribe-{version}.zip', 'w') as zip:
         print(f'Assembling {zip.filename}')
         for wheel in dest.glob('*.whl'):
