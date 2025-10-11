@@ -12,7 +12,7 @@ def pdm_build_hook_enabled(context: Context):
 
 
 def pdm_build_initialize(context: Context):
-    context.config.metadata['version'] = get_version(context.root)
+    context.config.metadata['version'] = get_version(context)
     # Compile typescript
     build = context.ensure_build_dir()
     tsc = shutil.which('tsc')
@@ -36,8 +36,8 @@ def pdm_build_update_files(context, files: MutableMapping[str, Path]):
         del files[file]
 
 
-def get_version(root: Path):
-    version = scm.get_version_from_scm(root)
+def get_version(context: Context):
+    version = scm.get_version_from_scm(context.root)
     assert version is not None
     [timestamp, commit] = subprocess.check_output(
         ['git', 'log', '-1', r'--format=%at %h'], text=True)\

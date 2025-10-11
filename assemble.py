@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 import shutil
 import zipfile
-import ttrpg_scribe_buildscript
+
 
 root = Path.cwd()
 subprojects = list((root/'subprojects').iterdir())
@@ -36,36 +36,27 @@ def setup_build_dependencies():
         )
 
 
-class BuildTask:
-    def __init__(self, project: Path) -> None:
-        self.project = project
-        self._process = subprocess.Popen(
+def build_wheels():
+    print('Building wheels')
+    build_tasks = [
+        subprocess.Popen(
             ['pdm', 'build', '--no-clean', '-d', dest],
             cwd=project
-        )
+        ) for project in subprojects
+    ]
 
-    def is_running(self):
-        match self._process.poll():
+    def is_running(task: subprocess.Popen):
+        match task.poll():
             case None:
                 return True
             case 0:
                 return False
             case err:
-                e = subprocess.CalledProcessError(err, self._process.args)
-                e.add_note(f'project={self.project.as_posix()}')
-                raise e
-
-    def terminate(self):
-        self._process.terminate()
-
-
-def build_wheels():
-    print('Building wheels')
-    build_tasks = [BuildTask(project) for project in subprojects]
+                raise subprocess.CalledProcessError(err, task.args)
 
     while len(build_tasks) > 0:
         try:
-            build_tasks = [task for task in build_tasks if task.is_running()]
+            build_tasks = [task for task in build_tasks if is_running(task)]
         except subprocess.CalledProcessError as e:
             for task in build_tasks:
                 task.terminate()
@@ -73,7 +64,7 @@ def build_wheels():
 
 
 def assemble():
-    version = ttrpg_scribe_buildscript.get_version(root)
+    version = next(dest.glob('ttrpg_scribe_core-*.whl')).stem.removeprefix('ttrpg_scribe_core-')
     with zipfile.ZipFile(root/f'dist/ttrpg_scribe-{version}.zip', 'w') as zip:
         print(f'Assembling {zip.filename}')
         for wheel in dest.glob('*.whl'):
