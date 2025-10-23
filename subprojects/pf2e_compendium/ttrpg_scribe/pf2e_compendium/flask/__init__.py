@@ -100,7 +100,7 @@ def _apply_adjustments(content):
                 content.apply(templates.weak)
 
 
-@blueprint.get('/search')
+@blueprint.get('/search/')
 @blueprint.get('/search/<doc_type>')
 def search_ui(doc_type: str | None = None):
     return flask.render_template('search_results.j2.html', doc_type=doc_type)
