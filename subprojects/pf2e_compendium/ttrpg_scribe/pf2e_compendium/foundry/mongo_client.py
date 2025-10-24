@@ -120,9 +120,11 @@ def load_world_content(world: Path):
         folders: dict[str, Document] = {doc['_id']: doc for _, doc in db_iter(folders_db)}
 
         def resolve_folder_path(doc: Document) -> str:
-            if doc['folder'] is None:
-                return doc['name']
-            return f'{resolve_folder_path(folders[doc['folder']])}/{doc['name']}'
+            segments = []
+            while doc['folder'] is not None:
+                segments.insert(0, doc['name'])
+                doc = folders[doc['folder']]
+            return '/'.join(segments)
 
         folder_paths = {key: resolve_folder_path(doc) for key, doc in folders.items()}
 
@@ -143,13 +145,10 @@ def load_world_content(world: Path):
                         continue  # Ignore nested documents
                     resolve_nested_documents(content_db, doc)
                     doc['volatile'] = True
-                    doc_id = slug('/'.join([
-                        prefix,
-                        *(folder_paths[folder] for folder in [doc['folder']]
-                          if folder is not None),
-                        doc['name']
-                    ]))
-                    yield _import_doc(doc_id, doc)
+                    id_parts = [prefix, doc['name']]
+                    if doc['folder'] is not None and (path := folder_paths[doc['folder']]) != '':
+                        id_parts.insert(1, path)
+                    yield _import_doc(doc_id=slug('/'.join(id_parts)), doc=doc)
 
     bulk_write(build_ops_batch())
 
