@@ -8,7 +8,8 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "argcomplete>=3.1.2,<4",
-    "waitress>=3,<4"
+    "waitress>=3,<4",
+    "dotenv>=0.9.9"
 ]
 # Version is set by in-tree ttrpg-scribe-buildscript plugin
 dynamic = ["version"]

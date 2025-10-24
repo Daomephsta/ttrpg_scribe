@@ -5,7 +5,7 @@ from ttrpg_scribe.pf2e_compendium.foundry import packs
 
 @pytest.fixture(scope='session')
 def setup_mongo():
-    foundry.check_for_updates()
+    foundry.initialise()
 
 
 _BUGS: dict[str, tuple[type[Exception], str]] = {

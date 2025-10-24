@@ -193,7 +193,7 @@ class Pf2ePlugin(SystemPlugin):
         ttrpg_scribe.pf2e_compendium.oracle.extend(main_app)
         main_app.config['TOOLS'].insert(-1, (blueprint.url_prefix, 'Compendium', {}))
         main_app.config['TOOLS'].append(('/oracle/encounter', 'Encounter Oracle', {}))
-        foundry.check_for_updates()
+        foundry.initialise()
 
     @classmethod
     def participant_from_id(cls, mongo_id: str) -> InitiativeParticipant:

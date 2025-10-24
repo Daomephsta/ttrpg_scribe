@@ -9,6 +9,7 @@ dependencies = [
     "platformdirs<5.0.0,>=4.1.0",
     "pymongo<5.0.0,>=4.11.3",
     "bs4<1.0.0,>=0.0.2",
+    "plyvel>=1.5.1",
 ]
 requires-python = "<4.0,>=3.11"
 readme = "README.md"

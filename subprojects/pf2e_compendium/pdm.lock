@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:ee68edbaed64ef6cbb4fa3df44c83f015006c15049c34d0104b99a34ce4d75a2"
+content_hash = "sha256:00cd3793d150b069a2091249eabc231b9ad0372f495ba93e62d26cdcf71cd832"
 
 [[metadata.targets]]
 requires_python = "~=3.11"
@@ -273,6 +273,17 @@ groups = ["dev"]
 files = [
     {file = "pluralizer-1.2.0-py3-none-any.whl", hash = "sha256:d8f92ffa787661d9e704d1e0d8abc6c6c4bbaae9e790d7c709707eafbe17ed12"},
     {file = "pluralizer-1.2.0.tar.gz", hash = "sha256:fe3fb8e1e53fabf372e77d8cbebe04b0f8fc7db853aeff50095dbd5628ac39c5"},
+]
+
+[[package]]
+name = "plyvel"
+version = "1.5.1"
+summary = "Plyvel, a fast and feature-rich Python interface to LevelDB"
+groups = ["default"]
+files = [
+    {file = "plyvel-1.5.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:54f364f566470f5acaed0a00fea8860736120a711214190a17ee73dcbe1a2261"},
+    {file = "plyvel-1.5.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8b26b09d6ae9c679c877153aa4bd7f763e5e983a61b7c0c955653e7a494b6126"},
+    {file = "plyvel-1.5.1.tar.gz", hash = "sha256:3caf6009e4fc24fbf8712d3f5ef3da7e56495c26a488df2161218fc34e46019c"},
 ]
 
 [[package]]

@@ -76,6 +76,9 @@ def check_structure(project_dir: Path) -> bool:
 
 def start(project: Path, debug: bool):
     import waitress
+    import dotenv
+
+    dotenv.load_dotenv(project/'local.env')
 
     if not check_structure(project):
         return
