@@ -1,16 +1,16 @@
 import json
 import logging
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any, Iterable, cast, overload
 
 import pymongo
 from pymongo import IndexModel, MongoClient
+from pymongo.synchronous.collection import _WriteOp
 
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
-from pymongo.synchronous.collection import _WriteOp
 
 Document = dict[str, Any]
 client: MongoClient[Document] = MongoClient(*mongo_server.start())
@@ -102,6 +102,20 @@ def load_world_content(world: Path):
             doc = json.loads(doc)
             yield key, doc
 
+    def resolve_id(content_db: plyvel.DB, prefix: str, content_id: str):
+        return json.loads(content_db.get(f'!{prefix}!{content_id}'.encode()))
+
+    def resolve_id_list(content_db: plyvel.DB, prefix: str,
+                        parent_id: str, content_ids: list[str]):
+        return [resolve_id(content_db, prefix, f'{parent_id}.{content_id}')
+                for content_id in content_ids]
+
+    def resolve_nested_documents(content_db: plyvel.DB, doc: Document):
+        match doc['type']:
+            case 'npc':
+                doc['items'] = resolve_id_list(content_db, 'actors.items',
+                                               doc['_id'], doc['items'])
+
     with plyvel.DB((world/'data/folders').as_posix()) as folders_db:
         folders: dict[str, Document] = {doc['_id']: doc for _, doc in db_iter(folders_db)}
 
@@ -123,12 +137,11 @@ def load_world_content(world: Path):
                 continue
             prefix = f'{world.stem}/{content_type.stem}'
             with plyvel.DB(content_type.as_posix()) as content_db:
-                for key, doc in cast(Iterable[tuple[bytes, bytes]], content_db):
-                    key = key.decode()
+                for key, doc in db_iter(content_db):
                     _, kind, _ = key.split('!')
                     if '.' in kind:
                         continue  # Ignore nested documents
-                    doc = json.loads(doc)
+                    resolve_nested_documents(content_db, doc)
                     doc['volatile'] = True
                     doc_id = slug('/'.join([
                         prefix,
