@@ -120,10 +120,10 @@ def load_world_content(world: Path):
         folders: dict[str, Document] = {doc['_id']: doc for _, doc in db_iter(folders_db)}
 
         def resolve_folder_path(doc: Document) -> str:
-            segments = []
+            segments = [doc['name']]
             while doc['folder'] is not None:
-                segments.insert(0, doc['name'])
                 doc = folders[doc['folder']]
+                segments.insert(0, doc['name'])
             return '/'.join(segments)
 
         folder_paths = {key: resolve_folder_path(doc) for key, doc in folders.items()}
@@ -137,7 +137,6 @@ def load_world_content(world: Path):
         for content_type in (world/'data').iterdir():
             if content_type.stem not in ['actors', 'items']:
                 continue
-            prefix = f'{world.stem}/{content_type.stem}'
             with plyvel.DB(content_type.as_posix()) as content_db:
                 for key, doc in db_iter(content_db):
                     _, kind, _ = key.split('!')
@@ -145,9 +144,9 @@ def load_world_content(world: Path):
                         continue  # Ignore nested documents
                     resolve_nested_documents(content_db, doc)
                     doc['volatile'] = True
-                    id_parts = [prefix, doc['name']]
-                    if doc['folder'] is not None and (path := folder_paths[doc['folder']]) != '':
-                        id_parts.insert(1, path)
+                    id_parts = [world.stem, doc['name']]
+                    if doc['folder'] is not None:
+                        id_parts.insert(1, folder_paths[doc['folder']])
                     yield _import_doc(doc_id=slug('/'.join(id_parts)), doc=doc)
 
     bulk_write(build_ops_batch())
