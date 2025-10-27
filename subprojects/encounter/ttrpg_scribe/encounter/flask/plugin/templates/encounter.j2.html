@@ -1,13 +1,8 @@
-{% macro _combatant(count, data) %}
-{% if data is string %}
-    {% set name = data.split('/') | last | replace('-', ' ') %}
-{% else %}
-    {% set name = data.name %}
-{% endif %}
+{% macro _combatant(count, participant) %}
 {% if count > 0 %}
-    <li>{{ name | plural(count, inclusive=True) }}</li>
+    <li>{{ participant.name | plural(count, inclusive=True) }}</li>
 {% else %}
-    <li>{{ name }} (Optional)</li>
+    <li>{{ participant.name }} (Optional)</li>
 {% endif %}
 {% endmacro %}
 
@@ -17,19 +12,28 @@
     {%- set _ = g.assets.scripts.append({
         'src': url_for('encounter_plugin.static', filename='launch_encounter.js'),
         'type': 'module'}) -%}
+    {%- 
+        set encounter = system.encounter(description=caller() if caller else '') 
+    -%}
+    {% for participant in enemies %}
+        {% set _ = encounter.add_from_spec('enemy', *participant) %}
+    {% endfor %}
+    {% for participant in allies %}
+        {% set _ = encounter.add_from_spec('ally', *participant) %}
+    {% endfor %}
     <ul>
-        {% for count, participant in enemies %}
-            {{ _combatant(count, participant) }}
+        {% for participant in encounter.enemies %}
+            <li>{{ _combatant(*participant) }}</li>
         {% endfor %}
-        {% if allies %}<li><i>Allies:</i></li>{% endif%}
-        {% for count, participant in allies %}
-            {{ _combatant(count, participant) }}
+        {% if encounter.allies %}<li><i>Allies:</i></li>{% endif%}
+        {% for participant in encounter.allies %}
+            <li>{{ _combatant(*participant) }}</li>
         {% endfor %}
         {% if show_xp %}
             <li><hr/></li>
             <li>
             <strong>XP Reward</strong>
-            {{ system.encounter_xp(enemies, allies, config.PARTY) }}
+            {{ system.encounter_xp(encounter) }}
             </li>
         {% endif %}
     </ul>
@@ -37,8 +41,7 @@
     launch_encounter.js adds a click listener to this,
     it sends data-encounter as the body of a POST request to /encounter
     -->
-    <button data-encounter="{{ dict(pcs=config.PARTY, enemies=enemies, allies=allies, description=caller() if caller else '') | tojson | forceescape }}"
-        class="launch-encounter">Launch</button>
+    <button data-encounter="{{ encounter | tojson | forceescape }}" class="launch-encounter">Launch</button>
 </section>
 {% endmacro %}
 

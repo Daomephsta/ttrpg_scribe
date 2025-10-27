@@ -3,13 +3,16 @@ import re
 from typing import Any, Iterable
 
 import flask
+from flask import Blueprint, Flask, json, render_template, request
+from markupsafe import Markup
+from werkzeug.exceptions import BadRequest
+
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.core.typescript
 import ttrpg_scribe.pf2e_compendium.foundry.enrich
 import ttrpg_scribe.pf2e_compendium.oracle
-from flask import Blueprint, Flask, json, render_template, request
-from markupsafe import Markup
-from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
+from ttrpg_scribe.encounter.flask import (EncounterSpec, InitiativeParticipant,
+                                          SystemPlugin)
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
@@ -17,7 +20,6 @@ from ttrpg_scribe.pf2e_compendium.creature import templates
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
-from werkzeug.exceptions import BadRequest
 
 blueprint = Blueprint('pf2e_compendium', __name__,
     static_folder='static',
@@ -196,41 +198,71 @@ class Pf2ePlugin(SystemPlugin):
         foundry.initialise()
 
     @classmethod
-    def participant_from_id(cls, mongo_id: str) -> InitiativeParticipant:
+    def participant_from_id(cls, mongo_id: str) -> PF2Creature | PF2Hazard:
         _, data = foundry_packs.read_doc('all', mongo_id)
-        assert isinstance(data, InitiativeParticipant), \
-            f'{mongo_id} does not resolve to an InitiativeParticipant'
+        assert isinstance(data, PF2Creature | PF2Hazard), \
+            f'{mongo_id} does not resolve to PF2Creature | PF2Hazard'
         return data
 
     @classmethod
-    def read_participant(cls, data: dict[str, Any] | str) -> InitiativeParticipant:
-        match data:
-            case {'kind': 'PF2Creature', **json}:
-                return PF2Creature.from_json(json)
-            case {'kind': 'PF2Hazard', **json}:
-                return PF2Hazard.from_json(json)
-            case str() as mongo_id:
-                return cls.participant_from_id(mongo_id)
-            case unknown:
-                raise ValueError(f'Unknown participant kind {unknown}')
+    def read_participant(cls, data: dict[str, Any] | InitiativeParticipant | str,
+                         extra: dict[str, Any] = {}) -> InitiativeParticipant:
+        def read_base() -> PF2Creature | PF2Hazard:
+            match data:
+                case {'kind': 'PF2Creature', **json}:
+                    return PF2Creature.from_json(json)
+                case PF2Creature() | PF2Hazard():
+                    return data
+                case {'kind': 'PF2Hazard', **json}:
+                    return PF2Hazard.from_json(json)
+                case str() as mongo_id:
+                    return cls.participant_from_id(mongo_id)
+                case dict():
+                    raise ValueError(f'Unknown participant kind {data.get('kind')}')
+                case unknown:
+                    raise ValueError(f'Unknown participant kind {type(unknown)}')
+
+        participant = read_base()
+
+        from ttrpg_scribe.pf2e_compendium.creature.templates import \
+            elite as elite_creature
+        from ttrpg_scribe.pf2e_compendium.creature.templates import rename
+        from ttrpg_scribe.pf2e_compendium.creature.templates import \
+            weak as weak_creature
+        from ttrpg_scribe.pf2e_compendium.hazard import elite as elite_hazard
+        from ttrpg_scribe.pf2e_compendium.hazard import weak as weak_hazard
+        match participant, extra.get('adjustment'):
+            case PF2Creature(), 'weak':
+                participant = participant.apply(weak_creature)
+            case PF2Creature(), 'elite':
+                participant = participant.apply(elite_creature)
+            case PF2Hazard(), 'weak':
+                participant = participant.apply(weak_hazard)
+            case PF2Hazard(), 'elite':
+                participant = participant.apply(elite_hazard)
+
+        match participant, extra.get('name'):
+            case _, None:
+                pass
+            case PF2Creature(), name:
+                participant = participant.apply(rename(name))
+
+        return participant
 
     @classmethod
-    def encounter_xp(cls, enemies: list[tuple[int, PF2Creature]],
-                     allies: list[tuple[int, PF2Creature]],
-                     party: dict[str, dict[str, Any]]) -> str:
-        def resolve_level(participant) -> int:
+    def encounter_xp(cls, encounter: EncounterSpec) -> str:
+        def resolve_level(participant: InitiativeParticipant) -> int:
             match participant:
                 case PF2Creature() | PF2Hazard():
                     return participant.level
-                case str():
-                    return resolve_level(cls.participant_from_id(participant))
                 case unknown:
                     raise ValueError(unknown)
 
+        party: dict[str, dict[str, Any]] = flask.current_app.config['PARTY']
         party_level: int = flask.current_app.config['PARTY_LEVEL']
         return cls.compute_xp(
-            ((count, resolve_level(creature)) for count, creature in enemies),
-            ((count, resolve_level(creature)) for count, creature in allies),
+            ((count, resolve_level(creature)) for count, creature in encounter.enemies),
+            ((count, resolve_level(creature)) for count, creature in encounter.allies),
             party_level, len(party))
 
     @classmethod

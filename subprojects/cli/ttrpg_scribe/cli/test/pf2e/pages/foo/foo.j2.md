@@ -6,5 +6,9 @@ layout: article
 {% from 'npc_link.j2.html' import npc_link %}
 # Foo
 {{ npc_link('Silifrey Buckman') }}
-{{ encounter([(10, script.CHICKEN)]) }}
+{{ encounter([
+    (3, 'pathfinder-monster-core/eagle'),
+    (1, 'pathfinder-monster-core/eagle', {'name': 'Super Chicken', 'adjustment': 'elite'}),
+    (2, script.CHICKEN)])
+}}
 {{ creature(script.CHICKEN, collapsible=True) }}

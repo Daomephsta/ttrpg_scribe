@@ -1,10 +1,13 @@
-from typing import Any
+from typing import Any, cast
+
+import flask
+from flask import Blueprint, Flask, render_template
 
 import ttrpg_scribe.core.typescript
-from flask import Blueprint, Flask, render_template
 from ttrpg_scribe.dnd_bestiary import apis
 from ttrpg_scribe.dnd_bestiary.creature import DndCreature as DndCreature
-from ttrpg_scribe.encounter.flask import InitiativeParticipant, SystemPlugin
+from ttrpg_scribe.encounter.flask import (EncounterSpec, InitiativeParticipant,
+                                          SystemPlugin)
 
 blueprint = Blueprint('dnd_bestiary', __name__,
     static_folder='static',
@@ -30,12 +33,12 @@ class Dnd5ePlugin(SystemPlugin):
     compendium_blueprint = blueprint
 
     @classmethod
-    def read_participant(cls, json) -> InitiativeParticipant:
-        return DndCreature.from_json(json)
+    def read_participant(cls, data, extra={}) -> InitiativeParticipant:
+        return DndCreature.from_json(data)
 
     @classmethod
-    def encounter_xp(cls, enemies: list[tuple[int, DndCreature]],
-                     allies: list[tuple[int, DndCreature]],
-                     party: dict[str, dict[str, Any]]) -> str:
-        total = sum(count * creature.xp for count, creature in enemies)
+    def encounter_xp(cls, encounter: EncounterSpec) -> str:
+        party: dict[str, dict[str, Any]] = flask.current_app.config['PARTY']
+        total = sum(count * cast(DndCreature, creature).xp
+                    for count, creature in encounter.enemies)
         return f'{total} ({total // len(party)} per player)'

@@ -1,13 +1,15 @@
+import dataclasses
 import itertools
 import random
 from abc import ABC, abstractmethod
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import flask
-import ttrpg_scribe.core.flask
 from flask import Flask
+
+import ttrpg_scribe.core.flask
 from ttrpg_scribe.core.plugin import Plugin
 
 
@@ -32,6 +34,33 @@ class InitiativeParticipant(ABC):
     def default_hp(self) -> int: ...
 
 
+@dataclasses.dataclass
+class EncounterSpec:
+    description: str
+    allies: list[tuple[int, InitiativeParticipant]] = dataclasses.field(default_factory=list)
+    enemies: list[tuple[int, InitiativeParticipant]] = dataclasses.field(default_factory=list)
+
+    def add_from_spec(self, side: Literal['ally', 'enemy'], count: int,
+                      participant: InitiativeParticipant | str, extra: dict[str, Any] = {}):
+        system: SystemPlugin = flask.current_app.config['SYSTEM']
+        participant = system.read_participant(participant, extra)
+
+        match side:
+            case 'ally':
+                self.allies.append((count, participant))
+            case 'enemy':
+                self.enemies.append((count, participant))
+
+        return self
+
+    def to_json(self):
+        return dict(
+            allies=self.allies,
+            enemies=self.enemies,
+            description=self.description,
+        )
+
+
 class SystemPlugin(Plugin):
     compendium_blueprint: flask.Blueprint
 
@@ -43,11 +72,16 @@ class SystemPlugin(Plugin):
         main_app.register_blueprint(cls.compendium_blueprint)
 
     @classmethod
-    def read_participant(cls, data: dict[str, Any] | str) -> InitiativeParticipant:
+    def read_participant(cls, data: dict[str, Any] | InitiativeParticipant | str,
+                         extra: dict[str, Any] = {}) -> InitiativeParticipant:
         raise NotImplementedError()
 
     @classmethod
-    def encounter_xp(cls, enemies, allies, party) -> str:
+    def encounter(cls, description: str):
+        return EncounterSpec(description)
+
+    @classmethod
+    def encounter_xp(cls, encounter: EncounterSpec) -> str:
         raise NotImplementedError()
 
 
@@ -73,7 +107,7 @@ def create_app(instance_path: str | Path, system: SystemPlugin, config: flask.Co
     @app.post('/')
     def create_encounter():
         encounter = Encounter.from_json(flask.request.json) if flask.request.is_json\
-            else Encounter([], [], flask.current_app.config['PARTY'], '')
+            else Encounter([], [], description='')
         return flask.redirect(flask.url_for('view_encounter',
             id=Encounter.add(encounter),
             code=HTTPStatus.SEE_OTHER))
@@ -141,12 +175,12 @@ def create_app(instance_path: str | Path, system: SystemPlugin, config: flask.Co
 
         def __init__(self, enemies: list[tuple[int, InitiativeParticipant]],
                      allies: list[tuple[int, InitiativeParticipant]],
-                     pcs: list[str], description: str):
+                     description: str):
             self.enemies = []
             self.allies = []
             self.stat_block_data = {participant.name: participant
                                     for _, participant in itertools.chain(enemies, allies)}
-            self.pcs = pcs
+            self.pcs: list[str] = flask.current_app.config['PARTY']
             self.description = description
             self.npc_ids = itertools.chain(Encounter.SHAPES,
                                            itertools.count(start=len(Encounter.SHAPES) + 1))
@@ -163,7 +197,7 @@ def create_app(instance_path: str | Path, system: SystemPlugin, config: flask.Co
                 return [(count, system.read_participant(participant))
                         for [count, participant] in json[key]]
             return Encounter(read_participants('enemies'), read_participants('allies'),
-                             json['pcs'], json['description'])
+                             json['description'])
 
         def add_simple_npc(self, name: str, initiative_mod: int, initial_hp, side: str):
             side_npcs = self.allies if side == 'ally' else self.enemies
@@ -173,7 +207,7 @@ def create_app(instance_path: str | Path, system: SystemPlugin, config: flask.Co
                 initial_hp=initial_hp))
 
         def add_npc(self, participant: InitiativeParticipant, side: str):
-            self.add_simple_npc(
+            return self.add_simple_npc(
                 name=participant.name,
                 initiative_mod=participant.initiative_mod(),
                 initial_hp=participant.default_hp(),
