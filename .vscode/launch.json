@@ -8,15 +8,12 @@
             "name": "Debug D&DScribe All-in-One",
             "type": "debugpy",
             "request": "launch",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "ttrpg_scribe.cli:make_app('./subprojects/cli/ttrpg_scribe/cli/test/dnd_5e')",
-                "FLASK_DEBUG": "True"
-            },
+            "module": "ttrpg_scribe.cli",
             "args": [
-                "run",
+                "start",
                 "--debug"
             ],
+            "cwd": "./subprojects/cli/ttrpg_scribe/cli/test/dnd_5e",
             "jinja": true,
             "justMyCode": false
         },
@@ -24,15 +21,12 @@
             "name": "Debug PF2eScribe All-in-One",
             "type": "debugpy",
             "request": "launch",
-            "module": "flask",
-            "env": {
-                "FLASK_APP": "ttrpg_scribe.cli:make_app('./subprojects/cli/ttrpg_scribe/cli/test/pf2e')",
-                "FLASK_DEBUG": "True"
-            },
+            "module": "ttrpg_scribe.cli",
             "args": [
-                "run",
+                "start",
                 "--debug"
             ],
+            "cwd": "./subprojects/cli/ttrpg_scribe/cli/test/pf2e",
             "jinja": true,
             "justMyCode": false
         },
