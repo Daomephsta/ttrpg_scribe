@@ -193,7 +193,7 @@ class PF2Creature(InitiativeParticipant):
             initiative_source=data.get('initiative_source', 'perception'),
             languages=data['languages'],
             senses=[Sense.from_json(sense) for sense in data['senses']],
-            skills={skill['name']: Skill.from_json(skill) for skill in data['skills']},
+            skills={name: Skill.from_json(skill) for name, skill in data['skills'].items()},
             inventory=data['inventory'],
             abilities=data['abilities'],
             interactions=data['interactions'],
