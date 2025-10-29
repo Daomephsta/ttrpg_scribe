@@ -145,7 +145,14 @@ class CreatureBuilder:
     def update_append(self, **kwargs: Unpack['CreatureBuilder._UpdateAppendArgs']):
         for field, value in kwargs.items():
             current = getattr(self, field)
-            setattr(self, field, current + value)
+            match current, value:
+                case list(), list():
+                    current.extend(value)
+                case dict(), dict():
+                    current.update(value)
+                case _, _:
+                    raise TypeError(f"Can't append {type(value).__name__} to "
+                                    "{type(current).__name__}")
         return self
 
     class _UpdateArgs(TypedDict, total=False):
