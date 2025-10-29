@@ -130,7 +130,7 @@ class PF2Creature(InitiativeParticipant):
                                 'paralyzed', 'sickened', 'unconscious ',]
 
     def initiative_mod(self) -> int:
-        return self.abilities['dex']
+        return self.perception
 
     def default_hp(self) -> int:
         return self.max_hp
