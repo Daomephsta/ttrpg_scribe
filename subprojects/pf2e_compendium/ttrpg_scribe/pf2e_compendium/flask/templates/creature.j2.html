@@ -25,7 +25,7 @@
 <p>
     <b>Skills</b>
     {% set skill_joiner = joiner(', ') %}
-    {%- for skill in data.skills -%}
+    {%- for skill in data.skills.values() -%}
         {{ skill_joiner() }}{{ skill.name | title }} <span id="statistic-skill-{{ skill.name | kebab }}" class="statistic-skill-mod">{{ '{:+d}'.format(skill.mod) }}</span>
         {%- if skill.special %} 
         (
