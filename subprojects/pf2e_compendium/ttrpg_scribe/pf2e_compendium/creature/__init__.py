@@ -1,6 +1,6 @@
 import collections
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Literal
+from typing import Any, Callable, ClassVar, Iterable, Literal
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
@@ -54,11 +54,35 @@ def zip_with(mappers: Iterable[Callable[[Any], Any] | None], data: Iterable[Any]
 
 @dataclass
 class Skill:
+    @dataclass
+    class Spec:
+        ability: Literal['str', 'dex', 'con', 'int', 'wis', 'cha']
+
+    SKILLS: ClassVar[dict[str, Spec]] = {
+        'acrobatics': Spec('dex'),
+        'arcana': Spec('int'),
+        'athletics': Spec('str'),
+        'crafting': Spec('int'),
+        'deception': Spec('cha'),
+        'diplomacy': Spec('cha'),
+        'intimidation': Spec('cha'),
+        'medicine': Spec('wis'),
+        'nature': Spec('wis'),
+        'occultism': Spec('int'),
+        'performance': Spec('cha'),
+        'religion': Spec('wis'),
+        'society': Spec('int'),
+        'stealth': Spec('dex'),
+        'survival': Spec('wis'),
+        'thievery': Spec('dex')
+    }
     name: str
     mod: int
     special: dict[str, int]
 
     def __init__(self, name: str, mod: int, special: dict[str, int] | list[str] = []):
+        if name not in Skill.SKILLS:
+            raise ValueError(f'Unknown skill {name}')
         self.name = name
         self.mod = mod
         match special:
@@ -69,6 +93,12 @@ class Skill:
                 for e in special:
                     [bonus, condition] = e.split(' ', maxsplit=1)
                     self.special[condition] = int(bonus)
+
+    @staticmethod
+    def spec(skill: str):
+        if 'lore' in skill:
+            return Skill.Spec('int')
+        return Skill.SKILLS[skill]
 
     @staticmethod
     def from_json(data: dict):
@@ -130,11 +160,17 @@ class PF2Creature(InitiativeParticipant):
                                 'nonlethal attacks', 'poison', 'doomed', 'drained', 'fatigued',
                                 'paralyzed', 'sickened', 'unconscious ',]
 
+    def skill_mod(self, skill: str) -> int:
+        if skill in self.skills:
+            return self.skills[skill].mod
+        else:
+            return self.abilities[Skill.spec(skill).ability]
+
     def initiative_mod(self) -> int:
         if self.initiative_source == 'perception':
             return self.perception
         else:
-            return self.skills[self.initiative_source].mod
+            return self.skill_mod(self.initiative_source)
 
     def default_hp(self) -> int:
         return self.max_hp
