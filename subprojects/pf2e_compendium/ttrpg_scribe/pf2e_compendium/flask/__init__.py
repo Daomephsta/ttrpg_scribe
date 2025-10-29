@@ -247,6 +247,11 @@ class Pf2ePlugin(SystemPlugin):
             case PF2Creature(), name:
                 participant = participant.apply(rename(name))
 
+        if 'initiative' in extra:
+            if isinstance(participant, PF2Hazard):
+                raise TypeError(f'Cannot set initiative source for {participant}')
+            participant.initiative_source = extra['initiative']
+
         return participant
 
     @classmethod

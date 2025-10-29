@@ -98,7 +98,7 @@ def elite(creature: PF2Creature):
     for save in creature.saves:
         creature.saves[save] += 2
     creature.perception += 2
-    for skill in creature.skills:
+    for skill in creature.skills.values():
         skill.mod += 2
     if starting_level <= 1:
         creature.max_hp += 10
@@ -127,7 +127,7 @@ def weak(creature: PF2Creature):
     for save in creature.saves:
         creature.saves[save] -= 2
     creature.perception -= 2
-    for skill in creature.skills:
+    for skill in creature.skills.values():
         skill.mod -= 2
     if starting_level <= 2:
         creature.max_hp -= 10

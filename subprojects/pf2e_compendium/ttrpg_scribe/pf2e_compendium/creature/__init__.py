@@ -106,9 +106,10 @@ class PF2Creature(InitiativeParticipant):
     rarity: str
     traits: list[str]
     perception: int
+    initiative_source: str
     languages: list[str]
     senses: list[Sense]
-    skills: list[Skill]
+    skills: dict[str, Skill]
     inventory: dict[str, int]
     abilities: Abilities[int]
     interactions: list[tuple[str, str]]
@@ -130,7 +131,10 @@ class PF2Creature(InitiativeParticipant):
                                 'paralyzed', 'sickened', 'unconscious ',]
 
     def initiative_mod(self) -> int:
-        return self.perception
+        if self.initiative_source == 'perception':
+            return self.perception
+        else:
+            return self.skills[self.initiative_source].mod
 
     def default_hp(self) -> int:
         return self.max_hp
@@ -158,6 +162,7 @@ class PF2Creature(InitiativeParticipant):
             size=self.size,
             traits=self.traits,
             perception=self.perception,
+            initiative_source=self.initiative_source,
             languages=self.languages,
             senses=self.senses,
             skills=self.skills,
@@ -185,9 +190,10 @@ class PF2Creature(InitiativeParticipant):
             size=data['size'],
             traits=data['traits'],
             perception=data['perception'],
+            initiative_source=data.get('initiative_source', 'perception'),
             languages=data['languages'],
             senses=[Sense.from_json(sense) for sense in data['senses']],
-            skills=[Skill.from_json(skill) for skill in data['skills']],
+            skills={skill['name']: Skill.from_json(skill) for skill in data['skills']},
             inventory=data['inventory'],
             abilities=data['abilities'],
             interactions=data['interactions'],
@@ -229,7 +235,8 @@ class PF2Creature(InitiativeParticipant):
             size=size,
             traits=traits,
             perception=perception,
-            skills=skills(lambda bracket: statistics.SKILLS[level, bracket]),
+            skills={skill.name: skill for skill in
+                    skills(lambda bracket: statistics.SKILLS[level, bracket])},
             inventory=inventory,
             abilities=dict(abilities.items()),
             ac=ac,

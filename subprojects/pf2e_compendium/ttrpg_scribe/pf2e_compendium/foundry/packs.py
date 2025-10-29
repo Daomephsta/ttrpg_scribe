@@ -44,8 +44,8 @@ def _read_creature(json: Json) -> PF2Creature:
         special: dict[str, int] = {note['label']: note['base'] for note in info.get('special', [])}
         return Skill(name, info['base'], special)
 
-    skills: list[Skill] = [read_skill(name, info)
-                           for name, info in system.skills(json, _or={}).items()]
+    skills: dict[str, Skill] = {name: read_skill(name, info)
+                           for name, info in system.skills(json, _or={}).items()}
     interactions: list[tuple[str, str]] = []
     defenses: list[SimpleAction] = []
     actions: list[Action] = []
@@ -99,11 +99,11 @@ def _read_creature(json: Json) -> PF2Creature:
                         case 'offensive':
                             actions.append(_read_simple_action(item, item_roll_data))
                 case 'lore':
-                    skills.append(Skill(
+                    skills[item['name']] = Skill(
                         item['name'],
                         system.mod.value(item),
                         [x['label'] for x in system.variants(item, _or={}).values()]
-                    ))
+                    )
                 case 'melee':
                     actions.append(_read_strike(item))
                 case 'weapon' | 'armor' | 'consumable' | 'equipment' |\
@@ -162,6 +162,7 @@ def _read_creature(json: Json) -> PF2Creature:
         # Filter out legacy alignment traits
         traits=[t for t in system.traits.value(json) if t not in ALIGNMENTS],
         perception=system.perception.mod(json),
+        initiative_source=system.initiative.statistic(json),
         languages=system.details.languages.value(json),
         senses=senses,
         skills=skills,

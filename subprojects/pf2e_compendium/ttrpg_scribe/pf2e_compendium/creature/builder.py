@@ -55,9 +55,10 @@ class CreatureBuilder:
     rarity: str
     traits: list[str]
     perception: _Statistic[int]
+    initiative_source: str
     languages: list[str]
     senses: list[Sense]
-    skills: list[Skill]
+    skills: dict[str, Skill]
     inventory: dict[str, int]
     abilities: Abilities[_Statistic[int]]
     interactions: list[tuple[str, str]]
@@ -81,9 +82,10 @@ class CreatureBuilder:
         self.size = 'medium'
         self.traits = []
         self.perception = _Statistic(PERCEPTION, level, MODERATE)
+        self.initiative_source = 'perception'
         self.languages = []
         self.senses = []
-        self.skills = []
+        self.skills = {}
         self.inventory = {}
         self.abilities = {
             'str': _Statistic(ATTRIBUTE_MODIFIERS, level, MODERATE),
@@ -162,9 +164,10 @@ class CreatureBuilder:
         rarity: str
         traits: list[str]
         perception: StatisticBracket | int
+        initiative_source: str
         languages: list[str]
         senses: list[Sense]
-        skills: list[Skill]
+        skills: dict[str, Skill]
         inventory: dict[str, int]
         abilities: Abilities[StatisticBracket | int]
         interactions: list[tuple[str, str]]
@@ -213,6 +216,7 @@ class CreatureBuilder:
             size=self.size,
             traits=self.traits,
             perception=self.perception.resolve(),
+            initiative_source=self.initiative_source,
             languages=self.languages,
             senses=self.senses,
             skills=self.skills,
