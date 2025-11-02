@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+from slugify import slugify
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
 
@@ -99,8 +100,12 @@ def _read_creature(json: Json) -> PF2Creature:
                         case 'offensive':
                             actions.append(_read_simple_action(item, item_roll_data))
                 case 'lore':
-                    skills[item['name']] = Skill(
-                        item['name'],
+                    # Coerce to proper skill slug
+                    name = slugify(item['name'])
+                    if 'lore' not in name:
+                        name = f'{name}-lore'
+                    skills[name] = Skill(
+                        name,
                         system.mod.value(item),
                         [x['label'] for x in system.variants(item, _or={}).values()]
                     )

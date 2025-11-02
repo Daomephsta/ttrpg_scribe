@@ -81,8 +81,8 @@ class Skill:
     special: dict[str, int]
 
     def __init__(self, name: str, mod: int, special: dict[str, int] | list[str] = []):
-        if name not in Skill.SKILLS:
-            raise ValueError(f'Unknown skill {name}')
+        if name not in Skill.SKILLS and 'lore' not in name:
+            raise ValueError(f"Unknown skill '{name}'")
         self.name = name
         self.mod = mod
         match special:
