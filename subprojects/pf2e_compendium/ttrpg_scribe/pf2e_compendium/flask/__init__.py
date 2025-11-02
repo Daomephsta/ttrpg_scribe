@@ -137,6 +137,7 @@ def search():
                     '$ifNull': ['$system.level.value', '$system.details.level.value']
                 },
                 'rarity': '$system.traits.rarity',
+                'worldContent': '$volatile'
             }
         },
         {

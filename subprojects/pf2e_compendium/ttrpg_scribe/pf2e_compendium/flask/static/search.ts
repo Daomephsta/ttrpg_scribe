@@ -16,6 +16,7 @@ interface SearchResult {
     name: string
     level?: number
     rarity?: string
+    worldContent?: boolean
 }
 
 function search() {
@@ -34,9 +35,12 @@ function search() {
             $('#results legend').text(`Results (${results.length})`)
             $('#results tbody').empty().append(results.map(r => {
                 const url = endpoints.compendiumContent.replace('DOC_TYPE', r.doc_type).replace('ID', r._id)
+                const name = $('<span>').append($('<a>', { href: url, target: 'preview' }).text(r.name))
+                if (r.worldContent)
+                    name.append($('<span>', {'title': 'World Content'}).text('🌐'))
                 return $(`<tr></tr>`)
                     .append($(`<td>`, { 'class': 'name' })
-                        .append($('<a>', { href: url, target: 'preview' }).text(r.name)))
+                        .append(name))
                     .append($(`<td>`, { 'class': 'level' }).text(r.level != undefined ? r.level : ''))
                     .append($(`<td>`, { 'class': 'rarity' }).text(r.rarity || ''))[0]
             }))
