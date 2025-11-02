@@ -313,10 +313,11 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
         with Args(raw_args, arg_sep=' ', key_value_sep='=', error_context=f'[[/{name}]]') as args:
             match name:
                 case 'r' | 'pr' | 'gmr' | 'br' | 'sr':
+                    args.ignore('options', 'traits')
                     amount = ' '.join(args.consume_positional())
                     return f'{amount} {tag}' if tag else amount
                 case 'act':
-                    args.ignore('options')
+                    args.ignore('options', 'traits')
                     action = args.consume_index(0).replace('-', ' ').title()
                     dc = args.consume_str('dc')
                     statistic = args.consume_str('statistic') or args.consume_str('skill')
