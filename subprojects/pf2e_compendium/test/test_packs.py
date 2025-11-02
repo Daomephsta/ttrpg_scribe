@@ -11,7 +11,16 @@ def setup_mongo():
 _BUGS: dict[str, tuple[type[Exception], str]] = {
     'lost-omens-bestiary/shining-kingdoms/lamp-blighter': (
         KeyError, 'rituals'
-    )
+    ),
+    **{key: (ValueError, r'^Unknown skill') for key in [
+        'revenge-of-the-runelords-bestiary/book-1-lord-of-the-trinity-star/risen-runelord-envy',
+        'revenge-of-the-runelords-bestiary/book-1-lord-of-the-trinity-star/risen-runelord-wrath',
+        'revenge-of-the-runelords-bestiary/book-1-lord-of-the-trinity-star/risen-runelord-pride',
+        'revenge-of-the-runelords-bestiary/book-1-lord-of-the-trinity-star/risen-runelord-lust',
+        'revenge-of-the-runelords-bestiary/book-1-lord-of-the-trinity-star/risen-runelord-greed',
+        'revenge-of-the-runelords-bestiary/book-1-lord-of-the-trinity-star/risen-runelord-gluttony',  # noqa: E501
+        'revenge-of-the-runelords-bestiary/book-1-lord-of-the-trinity-star/risen-runelord-sloth',
+    ]}
 }
 
 
