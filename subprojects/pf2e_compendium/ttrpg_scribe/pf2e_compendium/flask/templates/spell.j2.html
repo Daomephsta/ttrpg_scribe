@@ -80,7 +80,7 @@
         {% if data.system.time.value not in ['reaction'] %}
         <hr/>
         {% endif %}
-        {{ data.system.description.value | enrich | safe }}
+        {{ data.system.description.value | enrich(enrich_ctx) | safe }}
     {% endcall %}
     <footer>
         {# <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a> #}
