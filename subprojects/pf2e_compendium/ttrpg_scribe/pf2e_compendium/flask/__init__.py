@@ -19,7 +19,6 @@ from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
 from ttrpg_scribe.pf2e_compendium.creature import templates
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
-from ttrpg_scribe.pf2e_compendium.foundry import roll_data
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
 blueprint = Blueprint('pf2e_compendium', __name__,
@@ -72,14 +71,9 @@ def _content(type: str, content):
     if type.startswith('raw') and isinstance(content, dict | list):
         return content
     _apply_adjustments(content)
-    enrich_ctx = {}
-    match type:
-        case 'spell':
-            enrich_ctx = roll_data.spell(content)
     return render_template(f'{type}.j2.html', **{
         'data': content,
-        'render': True,
-        'enrich_ctx': enrich_ctx
+        'render': True
     })
 
 

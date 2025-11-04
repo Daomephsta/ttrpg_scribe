@@ -1,4 +1,4 @@
-{% from 'stat_block.j2.html' import stat_block %}
+{% from 'stat_block.j2.html' import detailed_value, stat_block %}
 
 <!DOCTYPE html>
 <head>
@@ -6,81 +6,51 @@
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
 </head>
 <body>
-    {% set data_type = 'cantrip' if 'cantrip' in data.system.traits.value 
-       else 'focus' if 'focus' in data.system.traits.value
-       else 'spell'
-    %}
-    {% if 'location' in data.system and 'heightenedLevel' in data.system.location %}
-        {% set level = data.system.location.heightenedLevel %}
-    {% else %}
-        {% set level = data.system.level.value %}
-    {% endif %}
-    {% call stat_block(data.name, data_type, level, rarity=data.system.traits.rarity, traits=data.system.traits.value) %}
+    {% call stat_block(data.name, data.spell_type, data.rank, rarity=data.rarity, traits=data.traits) %}
         <ul class="field-list">
-            {% if data.system.traits.traditions %}
-            <li><b>Traditions</b> {{ data.system.traits.traditions | join(', ') }}</li>
+            {% if data.traditions %}
+            <li><b>Traditions</b> {{ data.traditions | join(', ') }}</li>
             {% endif %}
             <li>
                 {% set semicolon = joiner('; ') %}
-                {{ semicolon() }}<b>Cast</b> {{ data.system.time.value | action }}
-                {%- if data.system.cost.value -%}
-                {{ semicolon() }}<b>Cost</b> {{ data.system.cost.value }}
+                {{ semicolon() }}<b>Cast</b> {{ data.time | action }}
+                {%- if data.cost -%}
+                {{ semicolon() }}<b>Cost</b> {{ data.cost }}
                 {%- endif -%}
-                {%- if data.system.requirements -%}
-                {{ semicolon() }}<b>Requirements</b> {{ data.system.requirements }}
+                {%- if data.requirements -%}
+                {{ semicolon() }}<b>Requirements</b> {{ data.requirements }}
                 {%- endif -%}
             </li>
-            {%- if data.system.range.value or data.system.area or data.system.target.value -%}
+            {%- if data.range or data.area or data.target -%}
             <li>
                 {% set semicolon = joiner('; ') %}
-                {%- if data.system.range.value -%}
-                {{ semicolon() }}<b>Range</b> {{ data.system.range.value }}
+                {%- if data.range -%}
+                {{ semicolon() }}<b>Range</b> {{ data.range }}
                 {%- endif -%}
-                {%- if data.system.area -%}
-                {{ semicolon() }}<b>Area</b>
-                    {% if data.system.area.details -%}
-                    {{ data.system.area.details }}
-                    {%- else -%}
-                    {{ data.system.area.value }}-foot {{ data.system.area.type }}
-                    {%- endif -%}
+                {%- if data.area -%}
+                {{ semicolon() }}<b>Area</b> {{ detailed_value(data.area) }}
                 {%- endif -%}
-                {%- if data.system.target.value -%}
-                {{ semicolon() }}<b>Targets</b> {{ data.system.target.value }}
+                {%- if data.targets -%}
+                {{ semicolon() }}<b>Targets</b> {{ data.targets }}
                 {%- endif -%}
             </li>
             {%- endif -%}
-            {%- if data.system.defense or data.system.duration -%}
+            {%- if data.defense or data.duration -%}
             <li>
                 {% set semicolon = joiner('; ') %}
-                {%- if data.system.defense -%}
-                    {{ semicolon() }}<b>Defense</b>
-                    {% if data.system.defense.passive -%}
-                    {{ data.system.area.passive.statistic }}
-                    {%- elif data.system.defense.save -%}
-                        {%- if data.system.defense.save.basic -%}
-                        basic {{ data.system.defense.save.statistic | title }}
-                        {%- else -%}
-                        {{ data.system.defense.save.statistic | title }}
-                        {%- endif -%}
-                    {%- endif -%}
+                {%- if data.defense -%}
+                    {{ semicolon() }}<b>Defense</b> {{ data.defense }}
                 {%- endif -%}
-                {%- if data.system.duration.value or data.system.duration.sustained -%}
-                {{ semicolon() }}<b>Duration</b>
-                    {% if data.system.duration.sustained and data.system.duration.value -%}
-                    sustained up to {{ data.system.duration.value }}
-                    {%- elif data.system.duration.sustained and not data.system.duration.value -%}
-                    sustained
-                    {%- else -%}
-                    {{ data.system.duration.value }}
-                    {%- endif -%}
+                {%- if data.duration -%}
+                    {{ semicolon() }}<b>Duration</b> {{ data.duration }}
                 {%- endif -%}
             </li>
             {%- endif -%}
         </ul>
-        {% if data.system.time.value not in ['reaction'] %}
+        {% if data.time.value not in ['reaction'] %}
         <hr/>
         {% endif %}
-        {{ data.system.description.value | enrich(enrich_ctx) | safe }}
+        {{ data.description | safe }}
     {% endcall %}
     <footer>
         {# <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a> #}

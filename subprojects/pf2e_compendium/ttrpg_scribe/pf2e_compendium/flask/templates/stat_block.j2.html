@@ -31,7 +31,7 @@
 {%- if details -%}
 {{ ';' if '(' not in details }}
 {{ details | safe}}
-{% endif %}
+{%- endif -%}
 {% endmacro %}
 
 {% macro detailed_value(data) %}

@@ -2,9 +2,9 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from slugify import slugify
+
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
-
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.actor import DetailedValue
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
@@ -12,16 +12,13 @@ from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, roll_data
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
+from ttrpg_scribe.pf2e_compendium.spell import PF2Spell
 
 type Json = dict[str, Any]
 
 
-def creature(id: str):
-    try:
-        return _read_creature(mongo_client.get_document('npc', id))
-    except Exception as e:
-        e.add_note(f'Reading creature {id}')
-        raise
+def creature(id: str) -> PF2Creature:
+    return _try_read(_read_creature, id, 'npc', 'creature')
 
 
 def creatures(*ids: str):
@@ -189,13 +186,8 @@ def _read_creature(json: Json) -> PF2Creature:
     )
 
 
-def hazard(id: str):
-    try:
-        doc = mongo_client.get_document('hazard', id)
-        return _read_hazard(doc)
-    except Exception as e:
-        e.add_note(f'Reading hazard {id}')
-        raise
+def hazard(id: str) -> PF2Hazard:
+    return _try_read(_read_hazard, id, 'hazard')
 
 
 def hazards(*ids: str):
@@ -244,6 +236,80 @@ def _read_hazard(json: Json) -> PF2Hazard:
         reset=enrich(details.reset(json)),
         description=enrich(system.details.description(json))
     )
+
+
+def spell(id: str) -> PF2Spell:
+    return _try_read(_read_spell, id, 'spell')
+
+
+def _read_spell(json: Json):
+    system = JsonPath('system')
+    spell_roll_data = roll_data.spell(json)
+
+    name: str = json['name']
+    rank: int = system.location.heightenedLevel(json, _or=system.level.value(json))
+    traits: list[str] = system.traits.value(json)
+    rarity: str = system.traits.rarity(json)
+    traditions: list[str] = system.traits.traditions(json, _or=[])
+    time: str = system.time.value(json)
+    cost: str | None = system.cost.value(json, _or=None)
+    requirements: str | None = system.requirements(json, _or=None)
+    range: str | None = system.range.value(json, _or=None)
+    area: DetailedValue[str] | None = system.area.map(json, lambda json: DetailedValue(
+            f'{json['value']}-foot {json['type']}',
+            json.get('details')
+        ))
+    targets: str | None = system.target.value(json, _or=None)
+
+    def read_defense(defense: dict[str, Any]) -> str | None:
+        if (passive := defense.get('passive')) is not None:
+            return passive['statistic']
+        elif (save := defense.get('save')) is not None:
+            if save['basic']:
+                return f'basic {save['statistic'].title()}'
+            else:
+                return save['statistic'].title()
+        return None
+
+    defense: str | None = system.defense.map(json, read_defense)
+
+    def read_duration(duration: dict[str, Any]) -> str | None:
+        if duration.get('sustained', False):
+            if (value := duration.get('value')) is not None:
+                return f'sustained up to {value}'
+            else:
+                return 'sustained'
+        return duration.get('value')
+
+    duration: str | None = system.duration.map(json, read_duration)
+    description: str = enrich(system.description.value(json), spell_roll_data)
+
+    return PF2Spell(
+        name=name,
+        rank=rank,
+        rarity=rarity,
+        traits=traits,
+        traditions=traditions,
+        time=time,
+        cost=cost,
+        requirements=requirements,
+        range=range,
+        area=area,
+        targets=targets,
+        defense=defense,
+        duration=duration,
+        description=description
+    )
+
+
+def _try_read[T](f: Callable[[Json], T], id: str, collection: str, data_type: str | None = None):
+    if data_type is None:
+        data_type = collection
+    try:
+        return f(mongo_client.get_document(collection, id))
+    except Exception as e:
+        e.add_note(f'Reading {data_type} {id}')
+        raise
 
 
 def _read_simple_action(item, item_roll_data):
@@ -309,7 +375,7 @@ def read(data: dict[str, Any]):
             case 'hazard':
                 return (type, _read_hazard(data))
             case 'spell':
-                return (type, data)
+                return (type, _read_spell(data))
             case _:
                 return (f'raw-{type}', data)
     except Exception as e:
