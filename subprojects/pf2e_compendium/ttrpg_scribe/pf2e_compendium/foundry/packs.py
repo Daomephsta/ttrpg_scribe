@@ -162,7 +162,7 @@ def _read_creature(json: Json) -> PF2Creature:
 
     match system.attributes.adjustment(json, _or=None):
         case 'elite':
-            templates = [elite_creature]
+            templates = [elite_creature(rename=False)]
         case 'weak':
             templates = [weak_creature]
         case _:
