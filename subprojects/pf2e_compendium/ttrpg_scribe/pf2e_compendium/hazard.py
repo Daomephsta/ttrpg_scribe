@@ -65,7 +65,7 @@ class PF2Hazard(InitiativeParticipant):
             rarity=data['rarity'],
             traits=data['traits'],
             complex=data['complex'],
-            stealth=data['stealth'],
+            stealth=DetailedValue(data['stealth']['value'], data['stealth']['details']),
             disable=data['disable'],
             ac=data['ac'],
             saves=data['saves'],
