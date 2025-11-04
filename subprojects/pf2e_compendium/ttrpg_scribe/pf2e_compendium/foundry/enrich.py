@@ -217,6 +217,8 @@ def _damage_roll(args: Args, context: dict[str, Any]) -> str:
                             return max(*resolved_args)
                         case 'floor':
                             return math.floor(*resolved_args)
+                        case 'ceil':
+                            return math.ceil(*resolved_args)
                         case unknown:
                             raise SyntaxError(f'Unknown function {unknown}')
                 case Name(id):
