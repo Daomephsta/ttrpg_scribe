@@ -2,6 +2,8 @@ import itertools
 import re
 from typing import Any, overload
 
+from requests_cache import Callable
+
 _or_sentinel = object()
 
 
@@ -29,6 +31,9 @@ class JsonPath:
         return JsonPath(self.__path + [key])
 
     def __call__(self, json_obj: dict[str, Any], _or: Any = _or_sentinel) -> Any:
+        return self.get(json_obj, _or)
+
+    def get(self, json_obj: dict[str, Any], _or: Any = _or_sentinel) -> Any:
         json = json_obj
         for part in self.__path:
             match json, part:
@@ -43,6 +48,11 @@ class JsonPath:
                 case _:
                     raise TypeError(f'Expected {str(self)} to be a dict or list')
         return json
+
+    def map[T](self, json_obj: dict[str, Any], f: Callable[[Any], T], _or: T = None):
+        if (result := self.get(json_obj, _or=None)) is not None:
+            return f(result)
+        return _or
 
     def __str__(self) -> str:
         def parts():
