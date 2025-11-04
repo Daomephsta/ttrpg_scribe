@@ -1,4 +1,3 @@
-import math
 from typing import Any
 
 from ttrpg_scribe.core.json_path import JsonPath
@@ -40,6 +39,5 @@ def item(data: dict[str, Any]):
 
 def spell(data: dict[str, Any]):
     r = item(data)
-    data['level'] = __SYSTEM.level.value(data, _or=None)
-    data['rank'] = math.ceil(data['level'] / 2)
+    data['rank'] = data['level'] = __SYSTEM.level.value(data, _or=None)
     return r
