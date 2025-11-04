@@ -26,7 +26,7 @@
 </div>
 {% endmacro %}
 
-{% macro detailed_value(value, details) %}
+{% macro _detailed_value(value, details) %}
 {{ value }}
 {%- if details -%}
 {{ ';' if '(' not in details }}
@@ -34,10 +34,14 @@
 {% endif %}
 {% endmacro %}
 
+{% macro detailed_value(data) %}
+{{ _detailed_value(data.value, data.details) }}
+{% endmacro %}
+
 {% macro detailed_int(data) %}
-{{ detailed_value('%+d' | format(data.value), data.details) }}
+{{ _detailed_value('%+d' | format(data.value), data.details) }}
 {% endmacro %}
 
 {% macro detailed_dc(data, from_modifier=False) %}
-DC {{ detailed_value('%d' | format(10 + data.value), data.details) }}
+DC {{ _detailed_value('%d' | format(10 + data.value), data.details) }}
 {% endmacro %}
