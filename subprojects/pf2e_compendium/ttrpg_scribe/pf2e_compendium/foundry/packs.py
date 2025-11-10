@@ -113,7 +113,7 @@ def _read_creature(json: Json) -> PF2Creature:
                 case 'melee':
                     actions.append(_read_strike(item))
                 case 'weapon' | 'armor' | 'consumable' | 'equipment' |\
-                     'treasure' | 'shield' | 'backpack':
+                     'treasure' | 'shield' | 'backpack' | 'ammo':
                     inventory[item['name']] = system.quantity(item)
                 case 'spellcastingEntry':
                     casting_type = system.prepared.value(item)
