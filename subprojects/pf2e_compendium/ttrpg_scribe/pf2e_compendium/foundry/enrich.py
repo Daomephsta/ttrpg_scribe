@@ -219,6 +219,13 @@ def _damage_roll(args: Args, context: dict[str, Any]) -> str:
                             return math.floor(*resolved_args)
                         case 'ceil':
                             return math.ceil(*resolved_args)
+                        case 'ternary':
+                            cond, if_true, if_false = resolved_args
+                            return if_true if cond else if_false
+                        case 'gte':
+                            return operator.ge(*resolved_args)
+                        case 'lte':
+                            return operator.le(*resolved_args)
                         case unknown:
                             raise SyntaxError(f'Unknown function {unknown}')
                 case Name(id):
