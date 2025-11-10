@@ -206,7 +206,12 @@ def _damage_roll(args: Args, context: dict[str, Any]) -> str:
                     instance.add_category(resolve(damage_type))
                     return instance
                 case ast.Call(Name(func), args):
-                    resolved_args = (resolve(arg) for arg in args)
+                    resolved_args: list[Any] = [resolve(arg) for arg in args]
+                    # Account for edgecase where resolved args end up in a tuple
+                    # in a singleton list for some reaosn
+                    match resolved_args:
+                        case [tuple() as a]:
+                            resolved_args = list(a)
                     match func:
                         case 'd':
                             count, size = resolved_args
