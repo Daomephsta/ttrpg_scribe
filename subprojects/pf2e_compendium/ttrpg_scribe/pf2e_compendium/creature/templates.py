@@ -104,9 +104,11 @@ def elite(*args, **kwargs) -> PF2Creature.Template | None:
             match action:
                 case Strike():
                     action.bonus += 2
-                    # Only boost the main/first damage type
-                    amount, damage_type = action.damage[0]
-                    action.damage[0] = amount + 2, damage_type
+                    # Some strikes do no damage
+                    if len(action.damage) > 0:
+                        # Only boost the main/first damage type
+                        amount, damage_type = action.damage[0]
+                        action.damage[0] = amount + 2, damage_type
 
         for save in creature.saves:
             creature.saves[save] += 2
