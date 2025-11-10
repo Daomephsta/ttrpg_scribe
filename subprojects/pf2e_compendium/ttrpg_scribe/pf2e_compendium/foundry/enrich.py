@@ -176,7 +176,7 @@ def _damage_roll(args: Args, context: dict[str, Any]) -> str:
     damage = args.consume_index(0)
     # Transform dice notation to a form parseable as Python code
     damage = re.sub(r'@(actor|item)', lambda m: f'"@{m[1]}"', damage)
-    damage = re.sub(r'(\(.+\)|\d+)?d(\(.+\)|\d+)',
+    damage = re.sub(r'(\w+\(.+\)|\(.+\)|\d+)?d(\(.+\)|\d+)',
                     lambda m: f'd({m[1] or 1}, {m[2]})', damage)
     try:
         expr = ast.parse(damage, mode='eval')
