@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import logging
 from typing import Any, Callable
 
 from slugify import slugify
@@ -19,6 +20,8 @@ from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 from ttrpg_scribe.pf2e_compendium.spell import PF2Spell
 
 type Json = dict[str, Any]
+
+_VALIDATION = logging.getLogger('validation')
 
 
 def creature(id: str) -> PF2Creature:
@@ -42,12 +45,18 @@ def _read_creature(json: Json) -> PF2Creature:
     senses = [Sense(sense['type'], sense.get('range'), sense.get('acuity'))
               for sense in system.perception.senses(json)]
 
-    def read_skill(name: str, info: Json) -> Skill:
-        special: dict[str, int] = {note['label']: note['base'] for note in info.get('special', [])}
-        return Skill(name, info['base'], special)
+    def read_skills():
+        name: str
+        info: Json
+        for name, info in system.skills(json, _or={}).items():
+            if not Skill.is_valid(name):
+                _VALIDATION.warning('Unknown skill %s', name)
+                continue
+            special: dict[str, int] = {note['label']: note['base']
+                                       for note in info.get('special', [])}
+            yield name, Skill(name, info['base'], special)
 
-    skills: dict[str, Skill] = {name: read_skill(name, info)
-                           for name, info in system.skills(json, _or={}).items()}
+    skills: dict[str, Skill] = dict(read_skills())
     interactions: list[tuple[str, str]] = []
     defenses: list[SimpleAction] = []
     actions: list[Action] = []

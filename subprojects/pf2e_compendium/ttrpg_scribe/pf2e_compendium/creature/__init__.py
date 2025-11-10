@@ -81,7 +81,7 @@ class Skill:
     special: dict[str, int]
 
     def __init__(self, name: str, mod: int, special: dict[str, int] | list[str] = []):
-        if name not in Skill.SKILLS and 'lore' not in name:
+        if not self.is_valid(name):
             raise ValueError(f"Unknown skill '{name}'")
         self.name = name
         self.mod = mod
@@ -93,6 +93,10 @@ class Skill:
                 for e in special:
                     [bonus, condition] = e.split(' ', maxsplit=1)
                     self.special[condition] = int(bonus)
+
+    @classmethod
+    def is_valid(cls, name: str) -> bool:
+        return name in cls.SKILLS or 'lore' in name
 
     @staticmethod
     def spec(skill: str):
