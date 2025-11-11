@@ -187,8 +187,3 @@ def update():
 
     [base, *rest] = db.list_collection_names()
     db.command('create', 'all', viewOn=base, pipeline=[{'$unionWith': c} for c in rest])
-
-
-if __name__ == '__main__':
-    _LOGGER.info('Dropping and reconstructing database')
-    update()

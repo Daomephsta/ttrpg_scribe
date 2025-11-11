@@ -1,6 +1,9 @@
 import importlib
 import logging
+import sys
+from argparse import ArgumentParser, Namespace, _SubParsersAction
 from pathlib import Path
+from typing import Callable
 
 _LOGGER = logging.getLogger(__name__)
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
@@ -9,10 +12,11 @@ _LOGGER = logging.getLogger(__name__)
 def make_app(project_dir: str | Path, debug: bool | None = None):
     from http import HTTPStatus
 
+    from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
     import ttrpg_scribe.core.typescript
     import ttrpg_scribe.notes
     from ttrpg_scribe.core.plugin import Plugin
-    from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
     project_dir = Path(project_dir)
     app = ttrpg_scribe.notes.create_app(project_dir)
@@ -75,8 +79,8 @@ def check_structure(project_dir: Path) -> bool:
 
 
 def start(project: Path, debug: bool):
-    import waitress
     import dotenv
+    import waitress
 
     dotenv.load_dotenv(project/'local.env')
 
@@ -120,29 +124,43 @@ def new(project_dir: Path, system: str):
         raise ValueError(f'No project template for {system} game system') from None
 
 
-def pf2e_foundry(args):
-    import sys
+def pf2e_foundry(parent: _SubParsersAction):
+    def start_mongo(rebuild: bool):
+        from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 
-    from ttrpg_scribe.pf2e_compendium import foundry
-    match args.foundry_command:
-        case 'dir':
-            sys.stdout.write(f'{foundry.pf2e_dir.as_posix()}\n')
-        case 'mongo':
-            from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
-            mongo_server.start()
-            try:
-                while True:  # Keep server alive until termination
-                    pass
-            except KeyboardInterrupt:
-                print('Keyboard interrupt recieved')
-                sys.exit(130)
+        logging.basicConfig(level=logging.INFO,
+                            format='%(name)s @ %(levelname)s: %(message)s')
+        mongo_server.start()
+        if rebuild:
+            from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
+            mongo_client.update()
+        logging.info('Mongo server ready')
+        try:
+            while True:  # Keep server alive until termination
+                pass
+        except KeyboardInterrupt:
+            print('Keyboard interrupt recieved')
+            sys.exit(130)
+
+    def print_dir():
+        from ttrpg_scribe.pf2e_compendium import foundry
+        sys.stdout.write(f'{foundry.pf2e_dir.as_posix()}\n')
+
+    parser: ArgumentParser = parent.add_parser('pf2e_foundry')
+    subparsers = parser.add_subparsers()
+
+    add_subcommand(subparsers, 'dir', lambda _: print_dir())
+
+    mongo_parser = add_subcommand(subparsers, 'mongo',
+                                  lambda args: start_mongo(rebuild=args.rebuild))
+    mongo_parser.add_argument('--rebuild', action='store_true')
 
 
 def update(update_package: Path | None):
     import shutil
-    import zipfile
-    import tempfile
     import subprocess
+    import tempfile
+    import zipfile
 
     def is_wheel_zip(update_package: Path) -> bool:
         if update_package.suffix != '.zip':
@@ -196,8 +214,6 @@ def update(update_package: Path | None):
 
 
 def main():
-    from argparse import ArgumentParser
-
     import argcomplete
 
     parser = ArgumentParser('ttrpg_scribe')
@@ -205,25 +221,29 @@ def main():
     parser.set_defaults(subcommand=lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
 
-    start_parser = subcommands.add_parser('start')
+    start_parser = add_subcommand(subcommands, 'start',
+                                  lambda args: start(args.project, args.debug))
     start_parser.add_argument('--debug', action='store_true')
-    start_parser.set_defaults(subcommand=lambda args: start(args.project, args.debug))
 
-    clean_parser = subcommands.add_parser('clean')
-    clean_parser.set_defaults(subcommand=lambda args: clean(args.project))
+    add_subcommand(subcommands, 'clean', lambda args: clean(args.project))
 
-    new_parser = subcommands.add_parser('new')
+    new_parser = add_subcommand(subcommands, 'new',
+                                lambda args: new(args.project, args.system))
     new_parser.add_argument('--system')
-    new_parser.set_defaults(subcommand=lambda args: new(args.project, args.system))
 
-    foundry_parser = subcommands.add_parser('pf2e_foundry')
-    foundry_parser.add_argument('foundry_command', choices=['dir', 'mongo'])
-    foundry_parser.set_defaults(subcommand=pf2e_foundry)
+    pf2e_foundry(subcommands)
 
-    update_parser = subcommands.add_parser('update')
+    update_parser = add_subcommand(subcommands, 'update',
+                                   lambda args: update(args.new_version))
     update_parser.add_argument('new_version', type=Path, nargs='?')
-    update_parser.set_defaults(subcommand=lambda args: update(args.new_version))
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
     args.subcommand(args)
+
+
+def add_subcommand(subcommands: _SubParsersAction, name: str,
+                   subcommand: Callable[[Namespace], None]) -> ArgumentParser:
+    subparser: ArgumentParser = subcommands.add_parser(name)
+    subparser.set_defaults(subcommand=subcommand)
+    return subparser
