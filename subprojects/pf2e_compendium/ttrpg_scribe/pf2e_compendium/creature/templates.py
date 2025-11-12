@@ -80,104 +80,75 @@ def adjust_all_dcs(delta: int):
     return template
 
 
-# Backwards compat so `apply(elite)` is equivalent to `apply(elite())``
-@overload
-def elite(creature: PF2Creature) -> None:
-    ...
+class _Adjustment:
+    def __init__(self, name: str, level_delta: Callable[[int], int], mod_delta: int,
+                 hp_delta: Callable[[int], int]) -> None:
+        self.name = name
+        self.level_delta = level_delta
+        self.mod_delta = mod_delta
+        self.hp_delta = hp_delta
+
+    # Backwards compat so `apply(elite)` is equivalent to `apply(elite())``
+    @overload
+    def __call__(self, creature: PF2Creature) -> None:
+        ...
+
+    @overload
+    def __call__(self, rename: bool) -> PF2Creature.Template:
+        ...
+
+    def __call__(self, *args, **kwargs) -> PF2Creature.Template | None:
+        def template(creature: PF2Creature):
+            if kwargs.get('rename', True):
+                creature.name = f'{self.name.title()} {creature.name}'
+            starting_level = creature.level
+            creature.level += self.level_delta(starting_level)
+            # Increase AC and DCs
+            creature.apply(adjust_all_dcs(self.mod_delta))
+            # Increase attack bonus & damage
+            for action in creature.actions:
+                match action:
+                    case Strike():
+                        action.bonus += self.mod_delta
+                        # Some strikes do no damage
+                        if len(action.damage) > 0:
+                            # Only boost the main/first damage type
+                            amount, damage_type = action.damage[0]
+                            action.damage[0] = amount + self.mod_delta, damage_type
+
+            for save in creature.saves:
+                creature.saves[save] += self.mod_delta
+            creature.perception += self.mod_delta
+            for skill in creature.skills.values():
+                skill.mod += self.mod_delta
+            # Adjust hp
+            creature.max_hp += self.hp_delta(starting_level)
+
+        match args, kwargs:
+            case [creature], {}:
+                return template(creature)
+            case [], {'rename': _}:
+                return template
+            case _:
+                raise ValueError(f'Unexpected {args=} {kwargs=}')
 
 
-@overload
-def elite(rename: bool) -> PF2Creature.Template:
-    ...
+elite = _Adjustment(
+    'elite',
+    level_delta=lambda level: 1 if level > 0 else 2,
+    mod_delta=-2,
+    hp_delta=lambda level: (10 if level <= 1 else
+                            15 if 2 <= level <= 4 else
+                            20 if 5 <= level <= 19 else
+                            30)
+)
 
-
-def elite(*args, **kwargs) -> PF2Creature.Template | None:
-    def template(creature: PF2Creature):
-        if kwargs.get('rename', True):
-            creature.name = f'Elite {creature.name}'
-        starting_level = creature.level
-        creature.level += 1 if creature.level > 0 else 2
-        # Increase AC and DCs
-        creature.apply(adjust_all_dcs(2))
-        # Increase attack bonus & damage
-        for action in creature.actions:
-            match action:
-                case Strike():
-                    action.bonus += 2
-                    # Some strikes do no damage
-                    if len(action.damage) > 0:
-                        # Only boost the main/first damage type
-                        amount, damage_type = action.damage[0]
-                        action.damage[0] = amount + 2, damage_type
-
-        for save in creature.saves:
-            creature.saves[save] += 2
-        creature.perception += 2
-        for skill in creature.skills.values():
-            skill.mod += 2
-        if starting_level <= 1:
-            creature.max_hp += 10
-        elif 2 <= starting_level <= 4:
-            creature.max_hp += 15
-        elif 5 <= starting_level <= 19:
-            creature.max_hp += 20
-        else:
-            creature.max_hp += 30
-
-    match args, kwargs:
-        case [creature], {}:
-            return template(creature)
-        case [], {'rename': _}:
-            return template
-        case _:
-            raise ValueError(f'Unexpected {args=} {kwargs=}')
-
-
-# Backwards compat so `apply(weak)` is equivalent to `apply(weak())``
-@overload
-def weak(creature: PF2Creature) -> None:
-    ...
-
-
-@overload
-def weak(rename: bool) -> PF2Creature.Template:
-    ...
-
-
-def weak(*args, **kwargs) -> PF2Creature.Template | None:
-    def template(creature: PF2Creature):
-        if kwargs.get('rename', True):
-            creature.name = f'Weak {creature.name}'
-        starting_level = creature.level
-        creature.level -= 1 if creature.level != 1 else 2
-        # Decrease AC and DCs
-        creature.apply(adjust_all_dcs(-2))
-        # Decrease attack bonus & damage
-        for action in creature.actions:
-            match action:
-                case Strike():
-                    action.bonus -= 2
-                    # Only reduce the main/first damage type
-                    amount, damage_type = action.damage[0]
-                    action.damage[0] = amount - 2, damage_type
-        for save in creature.saves:
-            creature.saves[save] -= 2
-        creature.perception -= 2
-        for skill in creature.skills.values():
-            skill.mod -= 2
-        if starting_level <= 2:
-            creature.max_hp -= 10
-        elif 3 <= starting_level <= 5:
-            creature.max_hp -= 15
-        elif 6 <= starting_level <= 20:
-            creature.max_hp -= 20
-        else:
-            creature.max_hp -= 30
-
-    match args, kwargs:
-        case [creature], {}:
-            return template(creature)
-        case [], {'rename': _}:
-            return template
-        case _:
-            raise ValueError(f'Unexpected {args=} {kwargs=}')
+weak = _Adjustment(
+    'weak',
+    level_delta=lambda level: -1 if level != 1 else -2,
+    mod_delta=-2,
+    hp_delta=lambda level: (-10 if level <= 2 else
+                            -15 if 3 <= level <= 5 else
+                            -20 if 6 <= level <= 20 else
+                            -30)
+)
