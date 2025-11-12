@@ -124,6 +124,10 @@ class _Adjustment:
             # Adjust hp
             creature.max_hp += self.hp_delta(starting_level)
 
+            for casting in creature.spellcasting:
+                casting.attack += self.mod_delta  # Increase attack bonus
+                casting.dc += self.mod_delta  # Increase DC
+
         match args, kwargs:
             case [creature], {}:
                 return template(creature)
