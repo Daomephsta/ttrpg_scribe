@@ -139,15 +139,19 @@ def load_world_content(world: Path):
                 continue
             with plyvel.DB(content_type.as_posix()) as content_db:
                 for key, doc in db_iter(content_db):
-                    _, kind, _ = key.split('!')
-                    if '.' in kind:
-                        continue  # Ignore nested documents
-                    resolve_nested_documents(content_db, doc)
-                    doc['volatile'] = True
-                    id_parts = [world.stem, doc['name']]
-                    if doc['folder'] is not None:
-                        id_parts.insert(1, folder_paths[doc['folder']])
-                    yield _import_doc(doc_id=slug('/'.join(id_parts)), doc=doc)
+                    try:
+                        _, kind, _ = key.split('!')
+                        if '.' in kind:
+                            continue  # Ignore nested documents
+                        resolve_nested_documents(content_db, doc)
+                        doc['volatile'] = True
+                        id_parts = [world.stem, doc['name']]
+                        if doc['folder'] is not None:
+                            id_parts.insert(1, folder_paths[doc['folder']])
+                        yield _import_doc(doc_id=slug('/'.join(id_parts)), doc=doc)
+                    except Exception as e:
+                        e.add_note(f'{doc['name']=}')
+                        raise e
 
     bulk_write(build_ops_batch())
 
