@@ -5,9 +5,9 @@
     <input type="checkbox" class="header stat-block-collapser" data-name="{{ name }}">
     {% endif %}
     <span class="header name">{{ name }}</span>
-    {% if level %}
-    <span class="header level">{{ type | title }} <span id="statistic-level">{{ level }}</span></span>
-    {% endif %}
+    <span class="header level">{{ type | title }} 
+        {% if level %}<span id="statistic-level">{{ level }}</span>{% endif %}
+    </span>
     <div class="stat-block-content {{ 'closed' if collapsible }}">
         <!-- Traits -->
         <div id="traits-container">
