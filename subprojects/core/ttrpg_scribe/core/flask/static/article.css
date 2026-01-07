@@ -52,7 +52,7 @@ footer {
     }
 }
 @media print {
-    .toc {
+    nav {
         display: none;
     }
 }
