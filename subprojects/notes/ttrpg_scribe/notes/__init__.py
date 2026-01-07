@@ -104,9 +104,9 @@ def create_app(project_dir: str | Path | None = None):
             page_assets['stylesheets'] = page_assets['stylesheets'].union(
                 metadata['extra_stylesheets'])
             page_assets['scripts'] += metadata['extra_scripts']
-            html_fragment, toc = markdown.convert(md)
+            html_fragment = markdown.convert(md)
             return flask.render_template(f"layout/{metadata['layout']}.j2.html",
-                                         content=Markup(html_fragment), toc=toc)
+                                         content=Markup(html_fragment))
         return rendered
 
     @app.get('/assets/<namespace_id>/<path:asset>')

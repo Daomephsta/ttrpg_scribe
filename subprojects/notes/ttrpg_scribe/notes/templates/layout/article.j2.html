@@ -1,20 +1,30 @@
 {% extends "layout/base.j2.html" %}
+{% from 'dependencies.j2.html' import script_dependency %}
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('core.static', filename='article.css') }}"/>
+    {% set TOCBOT_VERSION = '4.32.2' %}
+    {{ script_dependency(version=TOCBOT_VERSION, cors='anonymous',
+        development=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.js', {}),
+        production=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.min.js', {}),
+    ) }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/{{ TOCBOT_VERSION }}/tocbot.css">
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        tocbot.init({
+          tocSelector: '.toc',
+          contentSelector: 'main',
+          headingLabelCallback: text => text.toLowerCase(),
+          hasInnerContainers: true,
+        })
+    })
+    </script>
 {% endblock head %}
 {% block main %}
-<nav class="toc">
-    <ul>
-        <li><a href="/index">Site Index</a></li>
-    {% for element in toc recursive %}
-        {# TocExtension already escapes the name #}
-        <li><a href="#{{ element.id }}">{{ element.name | safe }}</a></li>
-        {% if element.children %}
-        <ul>{{ loop(element.children) }}</ul>
-        {% endif  %}
-    {% endfor %}
-    </ul>
+<nav>
+    <a href="/index">Home</a>
+    <div class="toc">
+    </div>
 </nav>
 {{ super() }}
 {% endblock main %}

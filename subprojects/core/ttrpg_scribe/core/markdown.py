@@ -1,16 +1,12 @@
 import re
-from typing import Any, NamedTuple, TypedDict, cast
+from typing import Any, TypedDict, cast
 
 import frontmatter
 from markdown import Markdown
-from markdown.extensions.toc import TocExtension
 
 MD_HEADER = re.compile('^# (.+)$', flags=re.MULTILINE)
 __renderer = Markdown(extensions=['admonition', 'attr_list', 'def_list',
-    'md_in_html', 'smarty', 'tables',
-    # Empty string marker disables the search to speed up processing
-    TocExtension(marker='')],
-    output_format='html')
+    'md_in_html', 'smarty', 'tables'], output_format='html')
 
 
 def find_title(markdown: str) -> str | None:
@@ -59,13 +55,5 @@ def parse_metadata(metadata: dict[str, Any]) -> Metadata:
     }
 
 
-class RenderResult(NamedTuple):
-    html: str
-    toc: list[dict[str, Any]]
-
-
 def convert(markdown: str):
-    html = __renderer.convert(markdown)
-    toc = getattr(__renderer, 'toc_tokens')
-    __renderer.reset()
-    return RenderResult(html, toc)
+    return __renderer.convert(markdown)
