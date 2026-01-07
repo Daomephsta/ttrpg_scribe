@@ -3,7 +3,7 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('core.static', filename='article.css') }}"/>
-    {% set TOCBOT_VERSION = '4.32.2' %}
+    {% set TOCBOT_VERSION = '4.36.4' %}
     {{ script_dependency(version=TOCBOT_VERSION, cors='anonymous',
         development=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.js', {}),
         production=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.min.js', {}),
