@@ -21,6 +21,12 @@
         {% for script in g.assets.scripts %}
             <script{{ script | xmlattr }}></script>
         {% endfor %}
+        {% set override = request.args.get('gm_info') != None %}
+        {% if (not override and config.GM_INFO) or (override and request.args['gm_info'] != '0')%}
+        <link rel="stylesheet" href="{{ url_for('core.static', filename='gm-info-on.css') }}"/>
+        {% else %}
+        <link rel="stylesheet" href="{{ url_for('core.static', filename='gm-info-off.css') }}"/>
+        {% endif %}
         <script src="{{ url_for('core.static', filename='popup.js') }}" defer></script>
         {{ dependencies.JQUERY }}
         {% endblock head %}
