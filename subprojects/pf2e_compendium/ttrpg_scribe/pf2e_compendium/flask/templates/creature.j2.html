@@ -7,7 +7,7 @@
 {% endmacro %}
 
 {% macro creature(data, collapsible=False) %}
-{% call stat_block_base(data.name, 'creature', data.level, data.size, data.rarity, data.traits, collapsible=collapsible) %}
+{% call stat_block_base(data.name, 'creature', data.level, data.size, data.rarity, data.traits, collapsible=collapsible, **kwargs) %}
 <p>
     <b>Perception</b> <span id='statistic-perception'>{{ '{:+d}'.format(data.perception) }}</span>;
     {% for sense in data.senses %}

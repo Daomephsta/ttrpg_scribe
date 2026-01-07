@@ -3,7 +3,7 @@
 {% macro settlement(name, level, size, government, 
     population, languages, religions, threats, major_npcs, traits=[]) %}
     {% set outer_caller = caller %}
-{% call stat_block(name, 'settlement', level, size, traits=traits) %}
+{% call stat_block(name, 'settlement', level, size, traits=traits, **kwargs) %}
     <p>{{ outer_caller() }}</p>
     <ul class="field-list">
         <li><b>Government</b> {{ government }}</li>
