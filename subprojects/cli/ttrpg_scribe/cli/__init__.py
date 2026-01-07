@@ -78,7 +78,7 @@ def check_structure(project_dir: Path) -> bool:
     return True
 
 
-def start(project: Path, debug: bool):
+def start(project: Path, debug: bool, gm_info: bool):
     import dotenv
     import waitress
 
@@ -92,6 +92,7 @@ def start(project: Path, debug: bool):
 
     force_debug = True if debug else None
     app = make_app(project, debug=force_debug)
+    app.config['GM_INFO'] = gm_info
 
     host, port = '127.0.0.1', 48164
     if debug:
@@ -222,8 +223,10 @@ def main():
     subcommands = parser.add_subparsers()
 
     start_parser = add_subcommand(subcommands, 'start',
-                                  lambda args: start(args.project, args.debug))
+                                  lambda args: start(args.project, args.debug, args.gm_info))
     start_parser.add_argument('--debug', action='store_true')
+    start_parser.add_argument('--gm-info', action='store_true', dest='gm_info', default=True)
+    start_parser.add_argument('--no-gm-info', action='store_false', dest='gm_info')
 
     add_subcommand(subcommands, 'clean', lambda args: clean(args.project))
 

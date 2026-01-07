@@ -29,7 +29,6 @@ def extend(app: flask.Flask):
     app.json = ExtensibleJSONProvider(app)
     app.jinja_env.policies['json.dumps_kwargs'].update(
         default=ExtensibleJSONProvider.encode_json)
-    app.config.update(GM_INFO=False)
     app.register_blueprint(_blueprint)
     ttrpg_scribe.core.typescript.extend(app)
 
