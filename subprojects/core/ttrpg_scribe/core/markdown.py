@@ -1,12 +1,33 @@
 import re
+import xml.etree.ElementTree as etree
 from typing import Any, TypedDict, cast
 
 import frontmatter
 from markdown import Markdown
+from markdown.extensions import Extension
+from markdown.treeprocessors import Treeprocessor
+from slugify import slugify
+
+
+class HeadingIdExtension(Extension):
+    class Processor(Treeprocessor):
+        def run(self, root: etree.Element) -> etree.Element | None:
+            for element in root.iter():
+                match tuple(element.tag):
+                    case 'h', level if level.isdigit():
+                        if 'id' in element.attrib:
+                            continue
+                        assert element.text is not None
+                        element.attrib['id'] = slugify(element.text)
+            return None
+
+    def extendMarkdown(self, md: Markdown):
+        md.treeprocessors.register(self.Processor(), 'heading_ids', 5)
+
 
 MD_HEADER = re.compile('^# (.+)$', flags=re.MULTILINE)
 __renderer = Markdown(extensions=['admonition', 'attr_list', 'def_list',
-    'md_in_html', 'smarty', 'tables'], output_format='html')
+    'md_in_html', 'smarty', 'tables', HeadingIdExtension()], output_format='html')
 
 
 def find_title(markdown: str) -> str | None:
