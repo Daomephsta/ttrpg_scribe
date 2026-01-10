@@ -1,9 +1,6 @@
 {% macro script_dependency(version, cors, development, production) %}
-{% if config.DEBUG %}
-<script src="{{ development[0].format(version=version) }}" {{ development[1] | xmlattr }} crossorigin="{{ cors }}"></script>
-{% else %}
-<script src="{{ production[0].format(version=version) }}" {{ production[1] | xmlattr }} crossorigin="{{ cors }}"></script>
-{% endif %}
+{% set href, attribs = development if config.DEBUG else production %}
+<script src="{{ href.format(version=version) }}" {{ attribs | xmlattr }} crossorigin="{{ cors }}"></script>
 {% endmacro %}
 
 {% set JQUERY = script_dependency(version='3.7.1', cors='anonymous',
