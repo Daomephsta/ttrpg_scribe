@@ -3,10 +3,6 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('core.static', filename='article.css') }}"/>
-    {{ script_dependency(
-        development=('https://vocajs.com/panzerdp/voca/{version}/dist/voca.js', {}),
-        production=('https://vocajs.com/panzerdp/voca/{version}/dist/voca.min.js', {}),
-    )}}
     {{ script_dependency(version='4.36.4', cors='anonymous',
         development=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.js', {}),
         production=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.min.js', {}),
