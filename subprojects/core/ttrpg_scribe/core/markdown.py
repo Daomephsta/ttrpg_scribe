@@ -17,8 +17,8 @@ class HeadingIdExtension(Extension):
                     case 'h', level if level.isdigit():
                         if 'id' in element.attrib:
                             continue
-                        assert element.text is not None
-                        element.attrib['id'] = slugify(element.text)
+                        text = ''.join(element.itertext())
+                        element.attrib['id'] = slugify(text)
             return None
 
     def extendMarkdown(self, md: Markdown):
