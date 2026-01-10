@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:c2c99ecf19aed06d903eb42b5f84a33606db20a410994146adcf7c8d58493ca8"
+content_hash = "sha256:2119b7a59a13c68510db2c3dc64ab23392ccffcc3142ee00c3fb6397d6f7931b"
 
 [[metadata.targets]]
 requires_python = "~=3.11"
@@ -260,6 +260,15 @@ files = [
     {file = "pyyaml-6.0.3-cp314-cp314t-win_amd64.whl", hash = "sha256:4ad1906908f2f5ae4e5a8ddfce73c320c2a1429ec52eafd27138b7f1cbe341c9"},
     {file = "pyyaml-6.0.3-cp314-cp314t-win_arm64.whl", hash = "sha256:ebc55a14a21cb14062aa4162f906cd962b28e2e9ea38f9b4391244cd8de4ae0b"},
     {file = "pyyaml-6.0.3.tar.gz", hash = "sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f"},
+]
+
+[[package]]
+name = "slugify"
+version = "0.0.1"
+summary = "A generic slugifier."
+groups = ["default"]
+files = [
+    {file = "slugify-0.0.1.tar.gz", hash = "sha256:c5703cc11c1a6947536f3ce8bb306766b8bb5a84a53717f5a703ce0f18235e4c"},
 ]
 
 [[package]]

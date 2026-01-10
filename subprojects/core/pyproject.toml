@@ -8,6 +8,7 @@ dependencies = [
     "markdown<4.0.0,>=3.4.3",
     "python-frontmatter<2.0.0,>=1.0.0",
     "pluralizer<2.0.0,>=1.2.0",
+    "slugify>=0.0.1",
 ]
 name = "ttrpg_scribe_core"
 description = ""
