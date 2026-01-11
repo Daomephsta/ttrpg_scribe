@@ -1,11 +1,6 @@
 {
-    "compilerOptions": {
-        "target": "es2024",
-        "rootDir": ".",
-        "strict": true
-    },
+    "extends": "../../tsconfig.base",
     "include": [
-        "ttrpg_scribe/**/*.ts"
+        "ttrpg_scribe/pf2e_compendium/**/*.ts"
     ]
 }
-

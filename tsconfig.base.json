@@ -1,9 +1,10 @@
 {
-    "extends": "./tsconfig.base",
     "compilerOptions": {
-        "rootDir": "./subprojects"
+        "target": "es2024",
+        "rootDir": "."
     },
     "include": [
         "subprojects/**/*.ts"
     ]
 }
+

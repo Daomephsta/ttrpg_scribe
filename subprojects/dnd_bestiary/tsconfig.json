@@ -1,10 +1,6 @@
 {
-    "compilerOptions": {
-        "target": "es2024",
-        "rootDir": "."
-    },
+    "extends": "../../tsconfig.base",
     "include": [
-        "ttrpg_scribe/**/*.ts"
+        "ttrpg_scribe/dnd_bestiary/**/*.ts"
     ]
 }
-
