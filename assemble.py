@@ -2,6 +2,7 @@
 import subprocess
 from pathlib import Path
 import shutil
+import sys
 import zipfile
 
 
@@ -40,7 +41,7 @@ def build_wheels():
     print('Building wheels')
     build_tasks = [
         subprocess.Popen(
-            ['pdm', 'build', '--no-clean', '-d', dest],
+            ['pdm', 'build', '--no-clean', '-d', dest, *(['-v'] if '-v' in sys.argv else [])],
             cwd=project
         ) for project in subprojects
     ]
