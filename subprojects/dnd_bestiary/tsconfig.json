@@ -1,9 +1,10 @@
 {
-    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "composite": true
-},
+        "target": "es2024",
+        "rootDir": "."
+    },
     "include": [
-        "ttrpg_scribe/dnd_bestiary/**/*.ts"
+        "ttrpg_scribe/**/*.ts"
     ]
 }
+
