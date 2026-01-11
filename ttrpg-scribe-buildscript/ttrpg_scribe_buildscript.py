@@ -13,21 +13,14 @@ def pdm_build_hook_enabled(context: Context):
 
 def pdm_build_initialize(context: Context):
     context.config.metadata['version'] = get_version(context)
-    # Compile typescript
+    if not Path('rollup.config.mjs').exists():
+        return
+    # Bundle
     build = context.ensure_build_dir()
-    tsc = shutil.which('tsc')
-    if tsc is None:
-        npx = shutil.which('npx')
-        if npx is None:
-            raise RuntimeError('npm not installed')
-        if subprocess.check_output(['npm', 'list', 'typescript', '--parseable']).strip() == '':
-            raise RuntimeError('Neither tsc or npx tsc installed')
-            return
-        else:
-            tsc = ['npx', 'tsc']
-    else:
-        tsc = ['tsc']
-    subprocess.call([*tsc, '--outDir', build.as_posix()])
+    rollup = shutil.which('rollup')
+    if rollup is None:
+        raise RuntimeError('rollup not installed')
+    subprocess.call([rollup, '-c', '--dir', build.as_posix()])
 
 
 def pdm_build_update_files(context, files: MutableMapping[str, Path]):
