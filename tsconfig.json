@@ -1,10 +1,16 @@
 {
     "compilerOptions": {
         "target": "es2024",
-        "rootDir": "./subprojects"
+        "allowSyntheticDefaultImports": true
     },
-    "include": [
-        "subprojects/**/*.ts"
-    ]
+    "references": [
+        {"path": "./subprojects/core"},
+        {"path": "./subprojects/dnd_bestiary"},
+        {"path": "./subprojects/encounter"},
+        {"path": "./subprojects/notes"},
+        {"path": "./subprojects/npc"},
+        {"path": "./subprojects/pf2e_compendium"},
+    ],
+    "files": []
 }
 
