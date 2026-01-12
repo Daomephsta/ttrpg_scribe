@@ -2,7 +2,7 @@
 {% from 'dependencies.j2.html' import script_dependency %}
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('core.static', filename='article.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('.static', filename='article.css') }}"/>
     {{ script_dependency(version='4.36.4', cors='anonymous',
         development=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.js', {}),
         production=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.min.js', {}),
