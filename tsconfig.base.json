@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "target": "es2024",
-        "rootDir": "."
+        "rootDir": ".",
+        "moduleResolution": "bundler"
     },
     "include": [
         "subprojects/**/*.ts"
