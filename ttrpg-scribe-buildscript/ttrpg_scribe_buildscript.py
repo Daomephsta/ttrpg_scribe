@@ -20,7 +20,7 @@ def pdm_build_initialize(context: Context):
     rollup = shutil.which('rollup')
     if rollup is None:
         raise RuntimeError('rollup not installed')
-    subprocess.call([rollup, '-c', '--dir', build.as_posix()])
+    subprocess.check_call([rollup, '-c', '--dir', build.as_posix()])
 
 
 def pdm_build_update_files(context, files: MutableMapping[str, Path]):
