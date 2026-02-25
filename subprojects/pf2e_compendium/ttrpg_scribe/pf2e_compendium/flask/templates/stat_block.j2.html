@@ -6,7 +6,7 @@
     {% endif %}
     <h{{ h_level }} class="header name" id="{{ name | kebab }}">{{ name }}</h{{ h_level }}>
     <span class="header level">{{ type | title }} 
-        {% if level is not None %}<span id="statistic-level">{{ level }}</span>{% endif %}
+        {% if level != None %}<span id="statistic-level">{{ level }}</span>{% endif %}
     </span>
     <div class="stat-block-content {{ 'closed' if collapsible }}">
         <!-- Traits -->
