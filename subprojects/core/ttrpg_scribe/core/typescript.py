@@ -1,5 +1,6 @@
 import atexit
 import logging
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -17,25 +18,25 @@ def ensure_compiled(instance_dir: Path):
     (logs_dir := instance_dir/'logs').mkdir(parents=True, exist_ok=True)
     (build_dir := instance_dir/'_build').mkdir(parents=True, exist_ok=True)
 
-    tsc = shutil.which('tsc')
-    if tsc is None:
-        npx = shutil.which('npx')
-        if npx is None:
-            logging.warning('npm not installed')
-            return
-        if subprocess.check_output(['npm', 'list', 'typescript', '--parseable']).strip() == '':
-            logging.warning('Neither tsc or npx tsc installed')
-            return
-        else:
-            tsc = ['npx', 'tsc']
-    else:
-        tsc = ['tsc']
-    with (logs_dir/'tsc_watch.log').open('w') as tsc_watch_log:
-        tsc = subprocess.Popen(
-            [*tsc, '--watch', '--outDir', build_dir, '--pretty', 'false'],
-            stdout=tsc_watch_log, stderr=subprocess.STDOUT
+    rollup = shutil.which('rollup')
+    if rollup is None:
+        logging.warning('rollup not installed')
+        return
+    subprojects = Path('/home/david/TTRPGs/ttrpg_scribe/subprojects')
+    for subproject in subprojects.iterdir():
+        if not (subproject/'rollup.config.mjs').exists():
+            continue
+        watch_log = (logs_dir/f'rollup_watch_{subproject.name}.log').open('w')
+        watcher = subprocess.Popen(
+            [
+                rollup, '-c', '--dir', build_dir/subproject.name,
+                '--watch', '--no-watch.clearScreen'
+            ],
+            cwd=subproject,
+            stdout=watch_log, stderr=subprocess.STDOUT,
+            env={**os.environ, 'NO_COLOR': '1'}
         )
-        atexit.register(lambda: tsc.terminate())
+        atexit.register(lambda: watcher.terminate())
 
 
 @overload
