@@ -4,11 +4,13 @@ from functools import reduce
 from typing import Any
 
 import flask
-import ttrpg_scribe.core.markdown
-import ttrpg_scribe.core.typescript
 from jinja2.runtime import Macro
 from markupsafe import Markup
 from pluralizer import Pluralizer
+from slugify import slugify
+
+import ttrpg_scribe.core.markdown
+import ttrpg_scribe.core.typescript
 
 _blueprint = flask.Blueprint('core', __name__, static_folder='static',
                       template_folder='templates', url_prefix='/core')
@@ -88,10 +90,10 @@ def format_as(value: Any, spec: str):
 
 
 @_blueprint.app_template_filter()
-def kebab(value: str | tuple[str, ...]):
+def slug(value: str | tuple[str, ...]):
     if isinstance(value, tuple):
-        value = '-'.join(value)
-    return value.lower().replace(' ', '-')
+        value = '-'.join(slug(v) for v in value)
+    return slugify(value)
 
 
 @_blueprint.app_template_global('DEPRECATED')

@@ -1,10 +1,10 @@
 {% macro stat_block(name, type, level=None, size=None, rarity=None, traits=[], collapsible=False, h_level=2, gm_info=False) %}
 {%- set _ = g.assets.stylesheets.add(url_for('pf2e_compendium.static', filename='stat_block.css')) -%}
-<div class="stat-block pf2e-{{ type | kebab }} {{ 'has-collapser' if collapsible }} {{ 'gm-info' if gm_info }}">
+<div class="stat-block pf2e-{{ type | slug }} {{ 'has-collapser' if collapsible }} {{ 'gm-info' if gm_info }}">
     {% if collapsible %}
     <input type="checkbox" class="header stat-block-collapser" data-name="{{ name }}">
     {% endif %}
-    <h{{ h_level }} class="header name" id="{{ name | kebab }}">{{ name }}</h{{ h_level }}>
+    <h{{ h_level }} class="header name" id="{{ name | slug }}">{{ name }}</h{{ h_level }}>
     <span class="header level">{{ type | title }} 
         {% if level != None %}<span id="statistic-level">{{ level }}</span>{% endif %}
     </span>

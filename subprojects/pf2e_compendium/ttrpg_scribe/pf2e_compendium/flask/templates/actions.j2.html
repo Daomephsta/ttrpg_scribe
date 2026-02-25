@@ -32,7 +32,7 @@
 <b>{{ action.weapon_type | title }}</b>
 {{ action.name }}
 {{ action.cost | action }}
-<span id="statistic-strike-bonus-{{ (action.name, action.weapon_type) | kebab }}" class="statistic-strike-bonus">{{ '%+d' | format(action.bonus) }}</span>
+<span id="statistic-strike-bonus-{{ (action.name, action.weapon_type) | slug }}" class="statistic-strike-bonus">{{ '%+d' | format(action.bonus) }}</span>
 {% for malus in action.attack_maluses() %}
     {% if action.traits.get('reload', '-1') | int > 0 %}
     / reload {{ action.traits['reload'] | action }} /
@@ -44,7 +44,7 @@
 {{ fmt_traits(action.traits) }}
 {% if action.damage %}
     <b>Damage</b>
-    <span id="statistic-strike-damage-{{ (action.name, action.weapon_type) | kebab }}" class="statistic-strike-damage">
+    <span id="statistic-strike-damage-{{ (action.name, action.weapon_type) | slug }}" class="statistic-strike-damage">
     {% set damage_joiner = joiner(' plus ') %}
     {% for amount, damage_type in action.damage -%}
     {{ damage_joiner() }}<span class="statistic-damage-dice">{{ amount }}</span> {{ damage_type }}

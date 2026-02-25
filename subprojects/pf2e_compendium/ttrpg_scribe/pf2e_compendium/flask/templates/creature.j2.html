@@ -26,12 +26,12 @@
     <b>Skills</b>
     {% set skill_joiner = joiner(', ') %}
     {%- for skill in data.skills.values() -%}
-        {{ skill_joiner() }}{{ skill.name | title }} <span id="statistic-skill-{{ skill.name | kebab }}" class="statistic-skill-mod">{{ '{:+d}'.format(skill.mod) }}</span>
+        {{ skill_joiner() }}{{ skill.name | title }} <span id="statistic-skill-{{ skill.name | slug }}" class="statistic-skill-mod">{{ '{:+d}'.format(skill.mod) }}</span>
         {%- if skill.special %} 
         (
         {%- set condition_joiner = joiner(', ') -%}
         {%- for condition, bonus in skill.special.items() -%}
-            {{ condition_joiner() }}<span id="statistic-skill-{{ (skill.name, condition) | kebab }}" class="statistic-skill-mod">{{ '%+d' % bonus }}</span> {{ condition }}
+            {{ condition_joiner() }}<span id="statistic-skill-{{ (skill.name, condition) | slug }}" class="statistic-skill-mod">{{ '%+d' % bonus }}</span> {{ condition }}
         {%- endfor -%}
         ) 
         {%- endif -%}
@@ -78,14 +78,14 @@
         <b>Resistances</b>
         {% set resistance_joiner = joiner(', ') %}
         {% for damage_type, amount in data.resistances.items() -%}
-        {{ resistance_joiner() }}{{ damage_type }} <span id="statistic-resistance-{{ damage_type | kebab }}" class="statistic-resistance">{{ amount }}</span>
+        {{ resistance_joiner() }}{{ damage_type }} <span id="statistic-resistance-{{ damage_type | slug }}" class="statistic-resistance">{{ amount }}</span>
         {%- endfor %}
     {%- endif -%}
     {%- if data.weaknesses %};
         <b>Weaknesses</b>
         {% set weakness_joiner = joiner(', ') %}
         {% for damage_type, amount in data.weaknesses.items() -%}
-        {{ weakness_joiner() }}{{ damage_type }} <span id="statistic-weakness-{{ damage_type | kebab }}" class="statistic-weakness">{{ amount }}</span>
+        {{ weakness_joiner() }}{{ damage_type }} <span id="statistic-weakness-{{ damage_type | slug }}" class="statistic-weakness">{{ amount }}</span>
         {%- endfor %}
     {% endif %}
 </p>
