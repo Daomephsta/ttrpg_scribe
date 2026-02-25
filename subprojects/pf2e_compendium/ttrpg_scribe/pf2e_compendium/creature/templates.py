@@ -140,7 +140,7 @@ class _Adjustment:
 elite = _Adjustment(
     'elite',
     level_delta=lambda level: 1 if level > 0 else 2,
-    mod_delta=-2,
+    mod_delta=2,
     hp_delta=lambda level: (10 if level <= 1 else
                             15 if 2 <= level <= 4 else
                             20 if 5 <= level <= 19 else
