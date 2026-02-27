@@ -3,20 +3,7 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('.static', filename='article.css') }}"/>
-    {{ script_dependency(version='4.36.4', cors='anonymous',
-        development=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.js', {}),
-        production=('https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.min.js', {}),
-        css='https://cdnjs.cloudflare.com/ajax/libs/tocbot/{version}/tocbot.css',
-    ) }}
-    <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        tocbot.init({
-          tocSelector: '.toc',
-          contentSelector: 'main',
-          headingLabelCallback: text => text.toLowerCase(),
-          hasInnerContainers: true,
-        })
-    })
+    <script src="{{ url_for('.static', filename='toc.js') }}" type="module"></script>
     </script>
 {% endblock head %}
 {% block main %}

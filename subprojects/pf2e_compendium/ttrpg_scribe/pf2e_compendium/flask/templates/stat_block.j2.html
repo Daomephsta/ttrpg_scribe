@@ -4,7 +4,7 @@
     {% if collapsible %}
     <input type="checkbox" class="header stat-block-collapser" data-name="{{ name }}">
     {% endif %}
-    <h{{ h_level }} class="header name" id="{{ name | slug }}">{{ name }}</h{{ h_level }}>
+    <h{{ h_level }} class="header name">{{ name }}</h{{ h_level }}>
     <span class="header level">{{ type | title }} 
         {% if level != None %}<span id="statistic-level">{{ level }}</span>{% endif %}
     </span>

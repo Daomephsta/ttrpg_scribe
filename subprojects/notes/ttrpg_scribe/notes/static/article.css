@@ -8,11 +8,12 @@ body {
     top: 10px;
     height: calc(100vh - 20px);
     overflow-y: scroll;
+    width: 20em;
 }
-.toc > ul {
+.toc > ol {
     padding-left: 20px;
 }
-.toc ul {
+.toc ol {
     padding-right: 5px;
     list-style: none;
 }
