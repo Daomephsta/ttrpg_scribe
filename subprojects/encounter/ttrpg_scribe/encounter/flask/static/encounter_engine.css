@@ -1,17 +1,19 @@
+body {
+    width: auto;
+}
 #container {
     display: grid;
     margin-top: 2px;
     grid-template-areas:
         "tracker stat-blocks-pane"
-        "description stat-blocks-pane";
-    flex-direction: row;
-    border-spacing: 1em;
+        "description description";
+    grid-template-columns: 580px 580px;
+    gap: 1em;
 }
 #tracker {
     grid-area: tracker;
     margin-top: 1em;
     margin-right: 1em;
-    max-width: 580px;
 }
 #tracker table {
     border-collapse: collapse;
@@ -83,7 +85,6 @@ input[name="quantity"], input[name="initiative_mod"], input[name="max_hp"] {
 }
 #stat-blocks-pane {
     grid-area: stat-blocks-pane;
-    max-width: 580px;
     overflow-y: scroll;
 }
 #description {
