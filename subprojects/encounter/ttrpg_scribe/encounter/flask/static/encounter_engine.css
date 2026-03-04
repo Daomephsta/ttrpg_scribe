@@ -1,9 +1,14 @@
 #container {
-    display: flex;
+    display: grid;
+    margin-top: 2px;
+    grid-template-areas:
+        "tracker stat-blocks-pane"
+        "description stat-blocks-pane";
     flex-direction: row;
     border-spacing: 1em;
 }
 #tracker {
+    grid-area: tracker;
     margin-top: 1em;
     margin-right: 1em;
     max-width: 580px;
@@ -77,8 +82,12 @@ input[name="quantity"], input[name="initiative_mod"], input[name="max_hp"] {
     width: 4em;
 }
 #stat-blocks-pane {
+    grid-area: stat-blocks-pane;
     max-width: 580px;
     overflow-y: scroll;
+}
+#description {
+    grid-area: description;
 }
 /* Makes input elements follow parent colors */
 input {

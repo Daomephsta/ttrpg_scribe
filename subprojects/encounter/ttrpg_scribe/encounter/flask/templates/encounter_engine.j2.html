@@ -112,12 +112,14 @@
                 </select>
             </form>
         </fieldset>
-        {{ description | block_markdown }}
     </div>
     <div id="stat-blocks-pane">
     {% for stats in stat_block_data %}
         {{ stat_block(stats, collapsible=True) }}
     {% endfor %}
+    </div>
+    <div id="description">
+    {{ description | block_markdown }}
     </div>
 </div>
 {% endblock main %}
