@@ -88,6 +88,11 @@ def _import_doc(doc_id: str, doc: Document):
     return pymongo.InsertOne(doc, namespace=f'pf2e.{collection}')
 
 
+def _purge_world_content():
+    for collection in get_collection_names():
+        yield pymongo.DeleteMany({'volatile': True}, namespace=f'pf2e.{collection}')
+
+
 def load_world_content(world: Path):
     import json
 
@@ -130,8 +135,7 @@ def load_world_content(world: Path):
 
     def build_ops_batch():
         # Purge existing data
-        for collection in get_collection_names():
-            yield pymongo.DeleteMany({'volatile': True}, namespace=f'pf2e.{collection}')
+        yield from _purge_world_content()
 
         # Load data
         for content_type in (world/'data').iterdir():
@@ -159,6 +163,8 @@ def load_world_content(world: Path):
 def initialise():
     if (world := os.environ.get('PF2E_COMPENDIUM_FOUNDRY_WORLD')) is not None:
         load_world_content(Path(world))
+    else:
+        bulk_write(_purge_world_content())
 
 
 def update():
