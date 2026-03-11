@@ -55,27 +55,25 @@ def zip_with(mappers: Iterable[Callable[[Any], Any] | None], data: Iterable[Any]
 
 @dataclass
 class Skill:
-    @dataclass
-    class Spec:
-        ability: Literal['str', 'dex', 'con', 'int', 'wis', 'cha']
+    type Attribute = Literal['str', 'dex', 'con', 'int', 'wis', 'cha']
 
-    SKILLS: ClassVar[dict[str, Spec]] = {
-        'acrobatics': Spec('dex'),
-        'arcana': Spec('int'),
-        'athletics': Spec('str'),
-        'crafting': Spec('int'),
-        'deception': Spec('cha'),
-        'diplomacy': Spec('cha'),
-        'intimidation': Spec('cha'),
-        'medicine': Spec('wis'),
-        'nature': Spec('wis'),
-        'occultism': Spec('int'),
-        'performance': Spec('cha'),
-        'religion': Spec('wis'),
-        'society': Spec('int'),
-        'stealth': Spec('dex'),
-        'survival': Spec('wis'),
-        'thievery': Spec('dex')
+    SKILLS: ClassVar[dict[str, Attribute]] = {
+        'acrobatics': 'dex',
+        'arcana': 'int',
+        'athletics': 'str',
+        'crafting': 'int',
+        'deception': 'cha',
+        'diplomacy': 'cha',
+        'intimidation': 'cha',
+        'medicine': 'wis',
+        'nature': 'wis',
+        'occultism': 'int',
+        'performance': 'cha',
+        'religion': 'wis',
+        'society': 'int',
+        'stealth': 'dex',
+        'survival': 'wis',
+        'thievery': 'dex'
     }
     name: str
     mod: int
@@ -100,9 +98,9 @@ class Skill:
         return name in cls.SKILLS or 'lore' in name
 
     @staticmethod
-    def spec(skill: str):
+    def attribute(skill: str) -> Attribute:
         if 'lore' in skill:
-            return Skill.Spec('int')
+            return 'int'
         return Skill.SKILLS[skill]
 
     @staticmethod
@@ -168,7 +166,7 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
         if skill in self.skills:
             return self.skills[skill].mod
         else:
-            return self.abilities[Skill.spec(skill).ability]
+            return self.abilities[Skill.attribute(skill)]
 
     def initiative_mod(self) -> int:
         if self.initiative_source == 'perception':
