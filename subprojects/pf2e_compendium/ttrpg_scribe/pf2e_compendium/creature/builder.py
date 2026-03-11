@@ -61,7 +61,7 @@ class CreatureBuilder:
     skills: dict[str, Skill]
     inventory: dict[str, int]
     abilities: Abilities[_Statistic[int]]
-    interactions: list[tuple[str, str]]
+    interactions: list[SimpleAction]
     ac: _Statistic[int]
     saves: Saves[_Statistic[int]]
     max_hp: _Statistic[int]
@@ -170,7 +170,7 @@ class CreatureBuilder:
         skills: dict[str, Skill]
         inventory: dict[str, int]
         abilities: Abilities[StatisticBracket | int]
-        interactions: list[tuple[str, str]]
+        interactions: list[SimpleAction]
         ac: StatisticBracket | int
         saves: Saves[StatisticBracket | int]
         max_hp: StatisticBracket | int

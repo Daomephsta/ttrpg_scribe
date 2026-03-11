@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
 import logging
+from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from slugify import slugify
@@ -8,12 +8,9 @@ from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.actor import DetailedValue
+from ttrpg_scribe.pf2e_compendium.actor.templates import elite, weak
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
-from ttrpg_scribe.pf2e_compendium.creature.templates import \
-    elite as elite_creature
-from ttrpg_scribe.pf2e_compendium.creature.templates import \
-    weak as weak_creature
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, roll_data
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
@@ -57,7 +54,7 @@ def _read_creature(json: Json) -> PF2Creature:
             yield name, Skill(name, info['base'], special)
 
     skills: dict[str, Skill] = dict(read_skills())
-    interactions: list[tuple[str, str]] = []
+    interactions: list[SimpleAction] = []
     defenses: list[SimpleAction] = []
     actions: list[Action] = []
     inventory: dict[str, int] = {}
@@ -104,7 +101,7 @@ def _read_creature(json: Json) -> PF2Creature:
                     desc = enrich(system.description.value(item), item_roll_data)
                     match system.category(item):
                         case 'interaction':
-                            interactions.append((name, desc))
+                            interactions.append(SimpleAction(name, desc, cost=0))
                         case 'defensive':
                             defenses.append(_read_simple_action(item, item_roll_data))
                         case 'offensive':
@@ -156,9 +153,10 @@ def _read_creature(json: Json) -> PF2Creature:
                         location = system.location.value(item, _or=None)
                     spellcasting_lists[location].add_spell(item)
                 case 'condition':
-                    interactions.append((
+                    interactions.append(SimpleAction(
                         item['name'],
-                        enrich(system.description.value(item), item_roll_data)))
+                        enrich(system.description.value(item), item_roll_data),
+                        cost=0))
                 case 'effect':
                     # Items that don't need to be in the stat block
                     pass
@@ -171,9 +169,9 @@ def _read_creature(json: Json) -> PF2Creature:
 
     match system.attributes.adjustment(json, _or=None):
         case 'elite':
-            templates = [elite_creature(rename=False)]
+            templates = [elite(rename=False)]
         case 'weak':
-            templates = [weak_creature]
+            templates = [weak(rename=False)]
         case _:
             templates = []
 

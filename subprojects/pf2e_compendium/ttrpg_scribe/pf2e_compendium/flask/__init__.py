@@ -14,9 +14,9 @@ import ttrpg_scribe.pf2e_compendium.oracle
 from ttrpg_scribe.encounter.flask import (EncounterSpec, InitiativeParticipant,
                                           SystemPlugin)
 from ttrpg_scribe.pf2e_compendium import foundry
+from ttrpg_scribe.pf2e_compendium.actor import templates
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
-from ttrpg_scribe.pf2e_compendium.creature import templates
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
@@ -225,22 +225,13 @@ class Pf2ePlugin(SystemPlugin):
 
         participant = read_base()
 
-        from ttrpg_scribe.pf2e_compendium.creature.templates import \
-            elite as elite_creature
-        from ttrpg_scribe.pf2e_compendium.creature.templates import rename
-        from ttrpg_scribe.pf2e_compendium.creature.templates import \
-            weak as weak_creature
-        from ttrpg_scribe.pf2e_compendium.hazard import elite as elite_hazard
-        from ttrpg_scribe.pf2e_compendium.hazard import weak as weak_hazard
-        match participant, extra.get('adjustment'):
-            case PF2Creature(), 'weak':
-                participant = participant.apply(weak_creature)
-            case PF2Creature(), 'elite':
-                participant = participant.apply(elite_creature)
-            case PF2Hazard(), 'weak':
-                participant = participant.apply(weak_hazard)
-            case PF2Hazard(), 'elite':
-                participant = participant.apply(elite_hazard)
+        from ttrpg_scribe.pf2e_compendium.actor.templates import (elite,
+                                                                  rename, weak)
+        match extra.get('adjustment'):
+            case 'weak':
+                participant = participant.apply(weak)
+            case 'elite':
+                participant = participant.apply(elite)
 
         match participant, extra.get('name'):
             case _, None:

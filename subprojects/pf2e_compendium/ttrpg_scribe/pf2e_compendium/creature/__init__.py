@@ -4,6 +4,7 @@ from typing import Any, Callable, ClassVar, Iterable, Literal
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
+from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, Saves
 from ttrpg_scribe.pf2e_compendium.creature import statistics
 from ttrpg_scribe.pf2e_compendium.creature.statistics import (StatisticBracket,
                                                               Table)
@@ -129,11 +130,10 @@ class Sense:
 
 
 type Abilities[V] = dict[Literal['str', 'dex', 'con', 'int', 'wis', 'cha'], V]
-type Saves[V] = dict[Literal['fortitude', 'reflex', 'will'], V]
 
 
 @dataclass
-class PF2Creature(InitiativeParticipant):
+class PF2Creature(InitiativeParticipant, PF2Actor):
     name: str
     level: int
     size: str
@@ -146,7 +146,7 @@ class PF2Creature(InitiativeParticipant):
     skills: dict[str, Skill]
     inventory: dict[str, int]
     abilities: Abilities[int]
-    interactions: list[tuple[str, str]]
+    interactions: list[SimpleAction]
     ac: int
     saves: Saves[int]
     max_hp: int
@@ -186,7 +186,7 @@ class PF2Creature(InitiativeParticipant):
             setattr(self, name, value)
         return self
 
-    type Template = Callable[['PF2Creature'], None]
+    type Template = PF2Actor.GenericTemplate['PF2Creature']
 
     def apply(self, *templates: Template):
         for template in templates:
@@ -236,14 +236,14 @@ class PF2Creature(InitiativeParticipant):
             skills={name: Skill.from_json(skill) for name, skill in data['skills'].items()},
             inventory=data['inventory'],
             abilities=data['abilities'],
-            interactions=data['interactions'],
+            interactions=[SimpleAction.from_json(action) for action in data['interactions']],
             ac=data['ac'],
             saves=data['saves'],
             max_hp=data['max_hp'],
             immunities=data['immunities'],
             resistances=data['resistances'],
             weaknesses=data['weaknesses'],
-            defenses=data['defenses'],
+            defenses=[SimpleAction.from_json(action) for action in data['defenses']],
             speeds=data['speeds'],
             actions=[Action.from_json(action) for action in data['actions']],
             spellcasting=[Spellcasting.from_json(e) for e in data.get('spellcasting', [])],

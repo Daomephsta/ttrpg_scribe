@@ -38,19 +38,24 @@ class Action:
             trigger=self.trigger
         )
 
-    @staticmethod
-    def from_json(data: dict):
-        def from_json_as(kind: type[Action]):
+    @classmethod
+    def from_json(cls, data: dict) -> Self:
+        @staticmethod
+        def from_json_as(data: dict, kind: type[Self]) -> Self:
             return kind.from_json_with(
                 partial(kind, name=data['name'], cost=data['cost'], traits=data['traits'],
                         trigger=data['trigger']),
                 data
             )
-        match data.pop('kind'):
+
+        kind = data.pop('kind')
+        if kind != 'Action' and kind != cls.__name__:
+            raise ValueError(f'Kind {kind} does not match cls {cls}')
+        match kind:
             case 'SimpleAction':
-                return from_json_as(SimpleAction)
+                return from_json_as(data, SimpleAction)
             case 'Strike':
-                return from_json_as(Strike)
+                return from_json_as(data, Strike)
             case _ as kind:
                 raise ValueError(f'Unknown kind {kind} for action {data}')
 
