@@ -28,7 +28,7 @@ def initialise():
             create = True
 
         if create:
-            subprocess.run([
+            subprocess.check_call([
                 'git', 'clone',
                 '--depth', '1',
                 '--branch', VERSION,
