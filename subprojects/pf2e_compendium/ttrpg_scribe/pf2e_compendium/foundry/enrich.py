@@ -321,7 +321,7 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
                         raise NotImplementedError('Only inline @Embed is implemented')
                     doc = mongo_client.get_document('all', uuid, id_type='uuid')
                     desc = enrich(doc['system']['description']['value'])
-                    return f'<div class="embed">{desc}</div>'
+                    return f'<div class="details">{desc}</div>'
             case unknown:
                 raise ValueError(f'Unknown enricher @{unknown}[{raw_args}]')
 

@@ -73,7 +73,7 @@
 .stat-block .view-spell {
     display: inline-block;
 }
-.pf2e_creature .details {
+.stat-block .details {
     border-left: 2px solid gray;
     padding-left: 1em;
 }
