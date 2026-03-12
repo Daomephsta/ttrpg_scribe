@@ -5,7 +5,7 @@ import subprocess
 
 import platformdirs
 
-VERSION = '7.7.1'
+VERSION = '7.11.2'
 data_dir = (platformdirs.user_data_path('ttrpg_scribe') / 'pf2e_compendium/data').absolute()
 pf2e_dir = (data_dir / 'foundryvtt/pf2e').absolute()
 _LOGGER = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ def initialise():
 
     def check_for_updates():
         if pf2e_dir.exists():
-            system_data = json.loads((pf2e_dir/'static/system.json').read_text())
+            system_data = json.loads((pf2e_dir/'system.pf2e.json').read_text())
             if system_data['version'] == VERSION:
                 _LOGGER.info(f'PF2e system already compatible ({VERSION})')
                 return
@@ -31,7 +31,7 @@ def initialise():
             subprocess.check_call([
                 'git', 'clone',
                 '--depth', '1',
-                '--branch', VERSION,
+                '--branch', f'pf2e-{VERSION}',
                 'https://github.com/foundryvtt/pf2e',
                 pf2e_dir.as_posix()])
             mongo_client.update()

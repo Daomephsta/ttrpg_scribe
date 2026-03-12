@@ -11,7 +11,7 @@ from typing import Any, Callable, overload
 
 from ttrpg_scribe.core.dice import SimpleDice, d
 
-from ttrpg_scribe.pf2e_compendium.foundry import i18n
+from ttrpg_scribe.pf2e_compendium.foundry import i18n, mongo_client
 
 
 class Args:
@@ -289,8 +289,8 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
                     return f'{distance}-foot {shape}'
             case 'Check':
                 with parse_args(raw_args, context='@Check') as args:
-                    args.ignore('against', 'defense', 'immutable', 'name', 'overrideTraits',
-                                'rollerRole', 'showDC', 'options', 'traits')
+                    args.ignore('against', 'defense', 'immutable', 'inflicts', 'name',
+                                'overrideTraits', 'rollerRole', 'showDC', 'options', 'traits')
                     check_type = args.consume_str('type') or args.consume_index(0)
                     basic = args.consume_bool('basic')
                     dc = args.consume_str('dc')
