@@ -3,7 +3,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any, Iterable, cast, overload
+from typing import Any, Iterable, Literal, cast, overload
 
 import pymongo
 from pymongo import IndexModel, MongoClient
@@ -19,19 +19,27 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @overload
-def get_document(collection: str, path: str, optional: bool) -> Document | None:
+def get_document(collection: str, doc_id: str, id_type: Literal['path', 'uuid'], optional: bool
+                 ) -> Document | None:
     ...
 
 
 @overload
-def get_document(collection: str, path: str) -> Document:
+def get_document(collection: str, doc_id: str) -> Document:
     ...
 
 
-def get_document(collection: str, path: str, optional=False) -> Document | None:
-    doc = db[collection].find_one({'_id': path})
+@overload
+def get_document(collection: str, doc_id: str, id_type: Literal['path', 'uuid']) -> Document:
+    ...
+
+
+def get_document(collection: str, doc_id: str, id_type: Literal['path', 'uuid'] = 'path',
+                 optional=False) -> Document | None:
+    id_key: str = '_id' if id_type == 'path' else 'foundry_id'
+    doc = db[collection].find_one({id_key: doc_id})
     if not optional and doc is None:
-        raise KeyError(f'{path} not found in {collection}')
+        raise KeyError(f'{doc_id} not found in {collection}')
     return doc
 
 
@@ -169,7 +177,7 @@ def initialise():
 
 def update():
     client.drop_database('pf2e')
-    packs_dir = foundry.pf2e_dir/'packs'
+    packs_dir = foundry.pf2e_dir/'packs/pf2e'
     _LOGGER.info(f'Updating MongoDB from {packs_dir.as_posix()}')
 
     def build_ops_batch():
