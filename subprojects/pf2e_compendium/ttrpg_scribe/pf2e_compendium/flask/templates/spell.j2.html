@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
 </head>
 <body>
-    {% call stat_block(data.name, data.spell_type, data.rank, rarity=data.rarity, traits=data.traits, **kwargs) %}
+    {% call stat_block(data.name, data.spell_type, data.rank, rarity=data.rarity, traits=data.traits) %}
         <ul class="field-list">
             {% if data.traditions %}
             <li><b>Traditions</b> {{ data.traditions | join(', ') }}</li>
