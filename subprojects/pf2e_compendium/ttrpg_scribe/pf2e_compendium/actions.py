@@ -49,7 +49,7 @@ class Action:
             )
 
         kind = data.pop('kind')
-        if kind != 'Action' and kind != cls.__name__:
+        if cls != Action and kind != cls.__name__:
             raise ValueError(f'Kind {kind} does not match cls {cls}')
         match kind:
             case 'SimpleAction':
