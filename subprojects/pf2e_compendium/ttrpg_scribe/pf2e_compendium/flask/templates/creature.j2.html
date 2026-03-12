@@ -1,4 +1,4 @@
-{% from 'actions.j2.html' import action, simple_action %}
+{% from 'actions.j2.html' import action %}
 {% from 'stat_block.j2.html' import stat_block as stat_block_base %}
 
 {% macro stat_block(data, collapsible=False) %}
@@ -56,8 +56,8 @@
 </p>
 <!-- Interactions -->
 <ul class="field-list">
-{% for name, desc in data.interactions %}
-    <li><b>{{ name }}</b> {{ desc | safe }}</li>
+{% for interaction in data.interactions %}
+    <li>{{ action(interaction) }}</li>
 {% endfor %}
 </ul>
 <hr>
@@ -92,7 +92,7 @@
 <!-- Defenses -->
 <ul class="field-list">
 {% for defense in data.defenses %}
-    <li>{{ simple_action(defense) }}</li>
+    <li>{{ action(defense) }}</li>
 {% endfor %}
 </ul>
 <hr>
