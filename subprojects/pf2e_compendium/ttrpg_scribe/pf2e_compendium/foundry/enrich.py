@@ -311,6 +311,17 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
             case 'Damage':
                 with parse_args(raw_args, context='@Damage') as args:
                     return _damage_roll(args, context)
+            case 'Embed':
+                with Args(raw_args, arg_sep=' ', key_value_sep='=',
+                          error_context=f'@{name}') as args:
+                    uuid = args.consume_index(0)
+                    uuid = uuid[uuid.rindex('.') + 1:]
+                    inline = args.consume_bool('inline')
+                    if not inline:
+                        raise NotImplementedError('Only inline @Embed is implemented')
+                    doc = mongo_client.get_document('all', uuid, id_type='uuid')
+                    desc = enrich(doc['system']['description']['value'])
+                    return f'<div class="embed">{desc}</div>'
             case unknown:
                 raise ValueError(f'Unknown enricher @{unknown}[{raw_args}]')
 
