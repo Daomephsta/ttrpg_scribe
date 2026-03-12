@@ -171,7 +171,7 @@ def action(kind: int | str):
             else:
                 return kind
             return Markup(f'<span>{action(left)}{sep}{action(right)}</span>')
-    return Markup(f'<span class="action-symbol">{glyph}</span>')
+    return Markup(f'<span class="action-glyph">{glyph}</span>')
 
 
 @blueprint.app_template_filter()
