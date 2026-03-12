@@ -363,7 +363,6 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
     if '<hr />\n' in text:
         text = text.replace('<hr />\n', '<div class="details">')
         text += '</div>'
-    text = text.replace('\n', '</br>')
     for pattern in [r'@(Damage)\[((?:[^[\]]*|\[[^[\]]*\])*)\](?:{([^}]+)})?',
                     r'@(\w+)\[([^\]]+)\](?:{([^}]+)})?']:
         text = re.sub(pattern, at_enrichers, text)
