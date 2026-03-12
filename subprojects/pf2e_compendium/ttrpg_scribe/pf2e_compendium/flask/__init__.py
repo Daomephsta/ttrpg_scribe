@@ -14,7 +14,7 @@ import ttrpg_scribe.pf2e_compendium.oracle
 from ttrpg_scribe.encounter.flask import (EncounterSpec, InitiativeParticipant,
                                           SystemPlugin)
 from ttrpg_scribe.pf2e_compendium import foundry
-from ttrpg_scribe.pf2e_compendium.actor import templates
+from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, templates
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
@@ -92,7 +92,7 @@ def analyse(doc_type: str):
 
 
 def _apply_adjustments(content):
-    if not isinstance(content, PF2Creature):
+    if not isinstance(content, PF2Actor):
         return
     for adjustment in flask.request.args.getlist('adjustment'):
         match adjustment:
@@ -233,11 +233,8 @@ class Pf2ePlugin(SystemPlugin):
             case 'elite':
                 participant = participant.apply(elite)
 
-        match participant, extra.get('name'):
-            case _, None:
-                pass
-            case PF2Creature(), name:
-                participant = participant.apply(rename(name))
+        if (name := extra.get('name')) is not None:
+            participant = participant.apply(rename(name))
 
         if 'initiative' in extra:
             if isinstance(participant, PF2Hazard):
