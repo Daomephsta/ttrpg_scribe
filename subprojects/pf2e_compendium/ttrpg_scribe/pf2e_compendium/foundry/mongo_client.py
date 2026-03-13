@@ -197,14 +197,19 @@ def update():
     packs_dir = foundry.pf2e_dir/'packs'
     _LOGGER.info(f'Updating MongoDB from {packs_dir.as_posix()}')
     system_data: dict[str, Any] = json.loads((foundry.pf2e_dir/'system.json').read_text())
+    from rich.progress import Progress
 
     def build_ops_batch():
-        for pack in system_data['packs']:
-            _LOGGER.info(f'Loading {pack['name']}')
-            with _open_db(foundry.pf2e_dir/pack['path']) as content_db:
-                folder_paths = _resolve_folder_paths(doc for key, doc in _db_iter(content_db)
-                                                     if '!folders!' in key)
-                yield from _import_db(content_db, pack['name'], folder_paths)
+        packs: list = system_data['packs']
+        with Progress(*Progress.get_default_columns(), '{task.fields[pack]}') as bar:
+            task = bar.add_task('Loading packs', total=len(packs), pack='?')
+            for pack in packs:
+                bar.update(task, pack=pack['name'])
+                with _open_db(foundry.pf2e_dir/pack['path']) as content_db:
+                    folder_paths = _resolve_folder_paths(doc for key, doc in _db_iter(content_db)
+                                                         if '!folders!' in key)
+                    yield from _import_db(content_db, pack['name'], folder_paths)
+                bar.advance(task)
 
     bulk_write(build_ops_batch())
 
