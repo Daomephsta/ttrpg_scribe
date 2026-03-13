@@ -1,9 +1,12 @@
 import json
 import logging
 import shutil
-import subprocess
+from io import BytesIO
+from zipfile import ZipFile
 
 import platformdirs
+import requests
+from rich.progress import BarColumn, Progress, TimeRemainingColumn
 
 VERSION = '7.11.2'
 data_dir = (platformdirs.user_data_path('ttrpg_scribe') / 'pf2e_compendium/data').absolute()
@@ -16,7 +19,7 @@ def initialise():
 
     def check_for_updates():
         if pf2e_dir.exists():
-            system_data = json.loads((pf2e_dir/'system.pf2e.json').read_text())
+            system_data = json.loads((pf2e_dir/'system.json').read_text())
             if system_data['version'] == VERSION:
                 _LOGGER.info(f'PF2e system already compatible ({VERSION})')
                 return
@@ -28,12 +31,22 @@ def initialise():
             create = True
 
         if create:
-            subprocess.check_call([
-                'git', 'clone',
-                '--depth', '1',
-                '--branch', f'pf2e-{VERSION}',
-                'https://github.com/foundryvtt/pf2e',
-                pf2e_dir.as_posix()])
+            url = f'https://github.com/foundryvtt/pf2e/releases/download/pf2e-{VERSION}/system.zip'
+            response = requests.get(url, stream=True)
+            bar = Progress(
+               '{task.description}',
+               BarColumn(),
+               TimeRemainingColumn(compact=True, elapsed_when_finished=True)
+            )
+            with BytesIO() as buffer, bar:
+                task = bar.add_task(f'Downloading foundryvtt/pf2e-{VERSION}',
+                                    total=int(response.headers['Content-Length']))
+                chunk: bytes
+                for chunk in response.iter_content(chunk_size=4 * 1024):
+                    buffer.write(chunk)
+                    bar.advance(task, len(chunk))
+                with ZipFile(buffer) as zip:
+                    zip.extractall(pf2e_dir)
             mongo_client.update()
 
     check_for_updates()
