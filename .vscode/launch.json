@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug D&DScribe All-in-One",
+            "name": "Debug D&DScribe",
             "type": "debugpy",
             "request": "launch",
             "module": "ttrpg_scribe.cli",
@@ -18,7 +18,7 @@
             "justMyCode": false
         },
         {
-            "name": "Debug PF2eScribe All-in-One",
+            "name": "Debug PF2eScribe",
             "type": "debugpy",
             "request": "launch",
             "module": "ttrpg_scribe.cli",
@@ -27,6 +27,19 @@
                 "--debug"
             ],
             "cwd": "${workspaceFolder}/subprojects/cli/ttrpg_scribe/cli/test/pf2e",
+            "jinja": true,
+            "justMyCode": false
+        },
+        {
+            "name": "Debug TTRPGScribe Mongo DB",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ttrpg_scribe.cli",
+            "args": [
+                "pf2e_foundry",
+                "mongo",
+                "--rebuild"
+            ],
             "jinja": true,
             "justMyCode": false
         },

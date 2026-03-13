@@ -1,14 +1,13 @@
 import json
 import logging
 import os
-import re
 from pathlib import Path
-from typing import Any, Iterable, Literal, cast, overload
+from typing import Any, Generator, Iterable, Literal, cast, overload
 
 import plyvel
 import pymongo
 import pymongo.errors
-from pymongo import IndexModel, MongoClient
+from pymongo import IndexModel, InsertOne, MongoClient
 from pymongo.synchronous.collection import _WriteOp
 from slugify import slugify
 
@@ -82,22 +81,12 @@ def unionOf(collections: list[str]):
 def bulk_write(ops: Iterable[_WriteOp]):
     ops = list(ops)  # Resolve before submitting
     _LOGGER.info('Submitting bulk write')
-    result = client.bulk_write(ops)
-    _LOGGER.info(f'Inserted: {result.inserted_count} Upserted: {result.upserted_count} '
-          f'Modified: {result.modified_count} Deleted: {result.deleted_count}')
-
-
-def _import_doc(doc_id: str, doc: Document):
-    TYPE_TO_COLL: dict[str, str] = {t: 'equipment' for t in
-                    ['armor', 'backpack', 'consumable', 'kit', 'shield', 'treasure', 'weapon']}
-    doc_type = doc.get('type')
-    assert isinstance(doc_type, str)
-    collection = TYPE_TO_COLL.get(doc_type, doc_type)
-    doc['_id'], doc['foundry_id'] = doc_id, doc['_id']
-    doc['path'] = {}
-    [doc['path']['pack'], *subfolders, doc['path']['stem']] = doc_id.split('/')
-    doc['path']['subpath'] = '/'.join(subfolders)
-    return pymongo.InsertOne(doc, namespace=f'pf2e.{collection}')
+    try:
+        result = client.bulk_write(ops)
+        _LOGGER.info(f'Inserted: {result.inserted_count} Upserted: {result.upserted_count} '
+              f'Modified: {result.modified_count} Deleted: {result.deleted_count}')
+    except pymongo.errors.ClientBulkWriteException as ex:
+        _LOGGER.error(f'{type(ex).__name__} {json.dumps(ex.details, indent=2)}')
 
 
 def _purge_world_content():
@@ -105,73 +94,93 @@ def _purge_world_content():
         yield pymongo.DeleteMany({'volatile': True}, namespace=f'pf2e.{collection}')
 
 
-def _slug(s: str) -> str:
-    s = re.sub(r'[^a-zA-Z0-9/\-]', '', s)
-    return slugify(s, regex_pattern=r'[^a-z0-9/\-]')
+def _open_db(path: Path) -> plyvel.DB:
+    return plyvel.DB(path.as_posix())
 
 
-def _db_iter(level_db: plyvel.DB):
+def _db_iter(level_db: plyvel.DB) -> Generator[tuple[str, Any], None, None]:
     for key, doc in cast(Iterable[tuple[bytes, bytes]], level_db):
-        key = key.decode()
-        doc = json.loads(doc)
-        yield key, doc
+        yield key.decode(), json.loads(doc)
 
 
-def _resolve_id(content_db: plyvel.DB, prefix: str, content_id: str):
-    return json.loads(content_db.get(f'!{prefix}!{content_id}'.encode()))
+def _resolve_folder_paths(folder_docs: Iterable[Document]) -> dict[str, str]:
+    folders_by_id: dict[str, Document] = {doc['_id']: doc for doc in folder_docs}
+
+    def resolve_folder_path(doc: Document) -> str:
+        segments = [doc['name']]
+        while doc['folder'] is not None:
+            doc = folders_by_id[doc['folder']]
+            segments.insert(0, doc['name'])
+        return '/'.join(segments)
+    return {key: resolve_folder_path(doc) for key, doc in folders_by_id.items()}
 
 
-def _resolve_id_list(content_db: plyvel.DB, prefix: str,
-                    parent_id: str, content_ids: list[str]):
-    return [_resolve_id(content_db, prefix, f'{parent_id}.{content_id}')
-            for content_id in content_ids]
+def _import_db_from_path(db_path: Path, id_root: str, folder_paths: dict[str, str]
+                         ) -> Generator[InsertOne[Document], None, None]:
+    return _import_db(_open_db(db_path), id_root, folder_paths)
 
 
-def _resolve_nested_documents(content_db: plyvel.DB, doc: Document):
-    match doc['type']:
-        case 'npc':
-            doc['items'] = _resolve_id_list(content_db, 'actors.items',
-                                           doc['_id'], doc['items'])
+def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
+               ) -> Generator[InsertOne[Document], None, None]:
+    IGNORED = {None, 'army', 'campaignFeature', 'character', 'familiar', 'script'}
+
+    def resolve_id(db: plyvel.DB, prefix: str, content_id: str):
+        return json.loads(db.get(f'!{prefix}!{content_id}'.encode()))
+
+    def resolve_id_list(db: plyvel.DB, prefix: str,
+                        parent_id: str, content_ids: list[str]):
+        return [resolve_id(db, prefix, f'{parent_id}.{content_id}')
+                for content_id in content_ids]
+
+    def resolve_nested_documents(db: plyvel.DB, doc: Document):
+        match doc['type']:
+            case 'npc':
+                doc['items'] = resolve_id_list(db, 'actors.items',
+                                               doc['_id'], doc['items'])
+
+    def import_doc(doc_id: str, doc: Document):
+        TYPE_TO_COLL: dict[str, str] = {t: 'equipment' for t in
+                        ['armor', 'backpack', 'consumable', 'kit', 'shield', 'treasure', 'weapon']}
+        doc_type = doc.get('type')
+        assert isinstance(doc_type, str)
+        collection = TYPE_TO_COLL.get(doc_type, doc_type)
+        doc['_id'], doc['foundry_id'] = doc_id, doc['_id']
+        doc['path'] = {}
+        [doc['path']['pack'], *subfolders, doc['path']['stem']] = doc_id.split('/')
+        doc['path']['subpath'] = '/'.join(subfolders)
+        return pymongo.InsertOne(doc, namespace=f'pf2e.{collection}')
+
+    with db:
+        for key, doc in _db_iter(db):
+            if not isinstance(doc, dict) or doc.get('type') in IGNORED:
+                continue
+            doc = cast(dict[str, Any], doc)
+            try:
+                _, kind, _ = key.split('!')
+                if kind == 'folders' or '.' in kind:
+                    continue  # Ignore nested documents and folders
+                resolve_nested_documents(db, doc)
+                id_parts = [id_root, doc['name']]
+                if (folder := folder_paths.get(doc.get('folder', ''))) is not None:
+                    id_parts.insert(1, folder)
+                yield import_doc(doc_id='/'.join(map(slugify, id_parts)), doc=doc)
+            except Exception as e:
+                e.add_note(f'{doc['name']=}')
+                raise e
 
 
 def load_world_content(world: Path):
-    import plyvel
-
-    with plyvel.DB((world/'data/folders').as_posix()) as folders_db:
-        folders: dict[str, Document] = {doc['_id']: doc for _, doc in _db_iter(folders_db)}
-
-        def resolve_folder_path(doc: Document) -> str:
-            segments = [doc['name']]
-            while doc['folder'] is not None:
-                doc = folders[doc['folder']]
-                segments.insert(0, doc['name'])
-            return '/'.join(segments)
-
-        folder_paths = {key: resolve_folder_path(doc) for key, doc in folders.items()}
+    with _open_db(world/'data/folders') as folders_db:
+        folder_paths = _resolve_folder_paths(doc for _, doc in _db_iter(folders_db))
 
     def build_ops_batch():
         # Purge existing data
         yield from _purge_world_content()
-
         # Load data
         for content_type in (world/'data').iterdir():
             if content_type.stem not in ['actors', 'items']:
                 continue
-            with plyvel.DB(content_type.as_posix()) as content_db:
-                for key, doc in _db_iter(content_db):
-                    try:
-                        _, kind, _ = key.split('!')
-                        if '.' in kind:
-                            continue  # Ignore nested documents
-                        _resolve_nested_documents(content_db, doc)
-                        doc['volatile'] = True
-                        id_parts = [world.stem, doc['name']]
-                        if doc['folder'] is not None:
-                            id_parts.insert(1, folder_paths[doc['folder']])
-                        yield _import_doc(doc_id=_slug('/'.join(id_parts)), doc=doc)
-                    except Exception as e:
-                        e.add_note(f'{doc['name']=}')
-                        raise e
+            yield from _import_db_from_path(content_type, world.stem, folder_paths)
 
     bulk_write(build_ops_batch())
 
@@ -189,51 +198,15 @@ def update():
     _LOGGER.info(f'Updating MongoDB from {packs_dir.as_posix()}')
     system_data: dict[str, Any] = json.loads((foundry.pf2e_dir/'system.json').read_text())
 
-    def resolve_folders():
-        by_id: dict[str, Document] = {}
-        for pack in system_data['packs']:
-            with plyvel.DB((foundry.pf2e_dir/pack['path']).as_posix()) as content_db:
-                for key, doc in _db_iter(content_db):
-                    _, kind, _ = key.split('!')
-                    if kind == 'folders':
-                        by_id[doc['_id']] = doc
-
-        def resolve_folder_path(doc: Document) -> str:
-            segments = [doc['name']]
-            while doc['folder'] is not None:
-                doc = by_id[doc['folder']]
-                segments.insert(0, doc['name'])
-            return '/'.join(segments)
-
-        return {key: resolve_folder_path(doc) for key, doc in by_id.items()}
-
     def build_ops_batch():
-        folders = resolve_folders()
-        IGNORED = {None, 'army', 'campaignFeature', 'character', 'familiar', 'script'}
         for pack in system_data['packs']:
             _LOGGER.info(f'Loading {pack['name']}')
-            with plyvel.DB((foundry.pf2e_dir/pack['path']).as_posix()) as content_db:
-                for key, doc in _db_iter(content_db):
-                    if not isinstance(doc, dict) or doc.get('type') in IGNORED:
-                        continue
-                    try:
-                        _, kind, _ = key.split('!')
-                        if kind == 'folders' or '.' in kind:
-                            continue  # Ignore nested documents and folders
-                        _resolve_nested_documents(content_db, doc)
-                        id_parts = [pack['name'], doc['name']]
-                        if doc.get('folder') is not None and\
-                                (folder := folders.get(doc['folder'])) is not None:
-                            id_parts.insert(1, folder)
-                        yield _import_doc(doc_id=_slug('/'.join(id_parts)), doc=doc)
-                    except Exception as e:
-                        e.add_note(f'{doc['name']=}')
-                        raise e
+            with _open_db(foundry.pf2e_dir/pack['path']) as content_db:
+                folder_paths = _resolve_folder_paths(doc for key, doc in _db_iter(content_db)
+                                                     if '!folders!' in key)
+                yield from _import_db(content_db, pack['name'], folder_paths)
 
-    try:
-        bulk_write(build_ops_batch())
-    except pymongo.errors.ClientBulkWriteException as ex:
-        _LOGGER.error(f'{type(ex).__name__} {json.dumps(ex.details, indent=2)}')
+    bulk_write(build_ops_batch())
 
     for name in db.list_collection_names():
         db[name].create_indexes([
