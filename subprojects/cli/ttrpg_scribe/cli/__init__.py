@@ -127,14 +127,13 @@ def new(project_dir: Path, system: str):
 
 def pf2e_foundry(parent: _SubParsersAction):
     def start_mongo(rebuild: bool):
+        from ttrpg_scribe.pf2e_compendium import foundry
         from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 
         logging.basicConfig(level=logging.INFO,
                             format='%(name)s @ %(levelname)s: %(message)s')
         mongo_server.start()
-        if rebuild:
-            from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
-            mongo_client.update()
+        foundry.initialise(rebuild)
         logging.info('Mongo server ready')
         try:
             while True:  # Keep server alive until termination

@@ -14,7 +14,7 @@ pf2e_dir = (data_dir / 'foundryvtt/pf2e').absolute()
 _LOGGER = logging.getLogger(__name__)
 
 
-def initialise():
+def initialise(force_rebuild: bool = False):
     from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 
     def check_for_updates():
@@ -47,6 +47,7 @@ def initialise():
                     bar.advance(task, len(chunk))
                 with ZipFile(buffer) as zip:
                     zip.extractall(pf2e_dir)
+        if create or force_rebuild:
             mongo_client.update()
 
     check_for_updates()
