@@ -6,10 +6,11 @@ import subprocess
 from ttrpg_scribe.pf2e_compendium import foundry
 
 _LOGGER = logging.getLogger(__name__)
+CONNECTION_ARGS = '127.0.0.1', 48165
 
 
 def start():
-    IP, PORT = '127.0.0.1', 48165
+    IP, PORT = CONNECTION_ARGS
 
     (mongo_dir := foundry.data_dir/'mongod').mkdir(parents=True, exist_ok=True)
     (db_data := mongo_dir/'data/db').mkdir(parents=True, exist_ok=True)
@@ -29,4 +30,3 @@ def start():
         _LOGGER.info('Stopping mongo server')
         server.terminate()
     atexit.register(stop)
-    return IP, PORT

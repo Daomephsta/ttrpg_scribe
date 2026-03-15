@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def initialise(force_rebuild: bool = False):
-    from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
+    from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, mongo_server
 
     def check_for_updates():
         if pf2e_dir.exists():
@@ -50,5 +50,6 @@ def initialise(force_rebuild: bool = False):
         if create or force_rebuild:
             mongo_client.update()
 
-    check_for_updates()
+    mongo_server.start()
     mongo_client.initialise()
+    check_for_updates()
