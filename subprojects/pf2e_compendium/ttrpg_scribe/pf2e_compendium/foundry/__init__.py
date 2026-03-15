@@ -22,7 +22,7 @@ def initialise(force_rebuild: bool = False):
             system_data = json.loads((pf2e_dir/'system.json').read_text())
             if system_data['version'] == VERSION:
                 _LOGGER.info(f'PF2e system already compatible ({VERSION})')
-                return
+                create = False
             else:
                 _LOGGER.info(f'Replacing {system_data['version']} with {VERSION}')
                 shutil.rmtree(pf2e_dir)
