@@ -6,7 +6,7 @@ from zipfile import ZipFile
 
 import platformdirs
 import requests
-from rich.progress import BarColumn, Progress, TimeRemainingColumn
+from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
 
 VERSION = '7.11.2'
 data_dir = (platformdirs.user_data_path('ttrpg_scribe') / 'pf2e_compendium/data').absolute()
@@ -30,25 +30,30 @@ def initialise(force_rebuild: bool = False):
         else:
             create = True
 
-        if create:
-            url = f'https://github.com/foundryvtt/pf2e/releases/download/pf2e-{VERSION}/system.zip'
-            response = requests.get(url, stream=True)
-            bar = Progress(
+        def progress():
+            return Progress(
                '{task.description}',
                BarColumn(),
-               TimeRemainingColumn(compact=True, elapsed_when_finished=True)
+               TimeRemainingColumn(compact=True, elapsed_when_finished=True),
+               TextColumn('{task.fields[subdesc]}'),
             )
-            with BytesIO() as buffer, bar:
+
+        if create:
+            url = f'https://github.com/foundryvtt/pf2e/releases/download/pf2e-{VERSION}/system.zip'
+            with BytesIO() as buffer, progress() as bar:
                 task = bar.add_task(f'Downloading foundryvtt/pf2e-{VERSION}',
-                                    total=int(response.headers['Content-Length']))
+                                    total=None, subdesc='')
+                response = requests.get(url, stream=True)
+                bar.update(task, total=int(response.headers['Content-Length']))
                 chunk: bytes
                 for chunk in response.iter_content(chunk_size=4 * 1024):
                     buffer.write(chunk)
                     bar.advance(task, len(chunk))
                 with ZipFile(buffer) as zip:
                     zip.extractall(pf2e_dir)
-        if create or force_rebuild:
-            mongo_client.update()
+                mongo_client.update(bar)
+        elif force_rebuild:
+            mongo_client.update(progress())
 
     mongo_server.start()
     mongo_client.initialise()

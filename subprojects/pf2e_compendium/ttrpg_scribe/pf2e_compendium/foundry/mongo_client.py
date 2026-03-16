@@ -9,6 +9,7 @@ import pymongo
 import pymongo.errors
 from pymongo import IndexModel, InsertOne, MongoClient
 from pymongo.synchronous.collection import _WriteOp
+from rich.progress import Progress
 from slugify import slugify
 
 from ttrpg_scribe.pf2e_compendium import foundry
@@ -80,6 +81,8 @@ def unionOf(collections: list[str]):
 
 def bulk_write(ops: Iterable[_WriteOp]):
     ops = list(ops)  # Resolve before submitting
+    if len(ops) == 0:
+        return
     _LOGGER.info('Submitting bulk write')
     try:
         result = client.bulk_write(ops)
@@ -192,24 +195,22 @@ def initialise():
         bulk_write(_purge_world_content())
 
 
-def update():
+def update(progress: Progress):
     client.drop_database('pf2e')
-    packs_dir = foundry.pf2e_dir/'packs'
-    _LOGGER.info(f'Updating MongoDB from {packs_dir.as_posix()}')
     system_data: dict[str, Any] = json.loads((foundry.pf2e_dir/'system.json').read_text())
-    from rich.progress import Progress
 
     def build_ops_batch():
         packs: list = system_data['packs']
-        with Progress(*Progress.get_default_columns(), '{task.fields[pack]}') as bar:
-            task = bar.add_task('Loading packs', total=len(packs), pack='?')
+        with progress:
+            task = progress.add_task('Loading packs', total=len(packs), subdesc='')
             for pack in packs:
-                bar.update(task, pack=pack['name'])
+                progress.update(task, subdesc=pack['name'])
                 with _open_db(foundry.pf2e_dir/pack['path']) as content_db:
                     folder_paths = _resolve_folder_paths(doc for key, doc in _db_iter(content_db)
                                                          if '!folders!' in key)
                     yield from _import_db(content_db, pack['name'], folder_paths)
-                bar.advance(task)
+                progress.advance(task)
+            progress.update(task, subdesc='')
 
     bulk_write(build_ops_batch())
 
