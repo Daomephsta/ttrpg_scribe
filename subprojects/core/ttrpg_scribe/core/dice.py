@@ -26,15 +26,18 @@ class SimpleDice(Rollable):
     @classmethod
     def parse(cls, value: str) -> Self:
         value = value.replace(' ', '')  # Remove all spaces
-        result = re.match(r'(?P<count>\d+)d(?P<size>\d+)(?P<mod>[+-]\d+)?', value,
+        result = re.fullmatch(r'(?P<count>\d+)d(?P<size>\d+)(?P<modifiers>[+\-\d]+)?', value,
                           flags=re.IGNORECASE)
         if result is None:
             raise ValueError(f'Cannot parse {value}')
         groups = result.groupdict()
+        # Separate individual modifiers in modifiers group
+        modifiers = re.findall(r'[+-]?\d', groups['modifiers'] or '0')
         return cls(
             int(groups['count'] or '1'),
             int(groups['size']),
-            int(groups['mod'] or '0')
+            # Parse and sum modifiers into one modifier
+            sum(int(mod) for mod in modifiers)
         )
 
     def __mul__(self, mult: int) -> 'SimpleDice':
