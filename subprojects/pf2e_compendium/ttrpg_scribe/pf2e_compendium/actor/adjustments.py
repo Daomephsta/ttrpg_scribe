@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Mapping
-
-from ttrpg_scribe.pf2e_compendium.actor import Save
+from typing import Callable
 
 
 class Adjuster[T](ABC):
@@ -26,31 +24,24 @@ class Adjuster[T](ABC):
     def level(self, level: int):
         ...
 
-    @property
     @abstractmethod
-    def ac(self) -> int:
-        ...
-
-    @ac.setter
-    def ac(self, ac: int):
-        ...
-
-    @property
-    @abstractmethod
-    def saves(self) -> Mapping[Save, int | None]:
+    def ac(self, delta: int):
         ...
 
     @abstractmethod
-    def set_save(self, save: Save, value: int):
+    def dcs(self, delta: int):
         ...
 
-    @property
     @abstractmethod
-    def max_hp(self) -> int:
+    def saves(self, delta: int):
         ...
 
-    @max_hp.setter
-    def max_hp(self, hp: int):
+    @abstractmethod
+    def max_hp(self, delta: int):
+        ...
+
+    @abstractmethod
+    def damaging_actions(self, attack_delta: int, damage_delta: int):
         ...
 
     def apply(self, name: str, level_delta: Callable[[int], int], mod_delta: int,
@@ -59,24 +50,11 @@ class Adjuster[T](ABC):
             self.name = f'{name.title()} {self.name}'
         starting_level = self.level
         self.level += level_delta(starting_level)
-        # Increase AC and DCs
-        self.ac += mod_delta
-        # adapter.apply(adjust_all_dcs(adjustment.mod_delta))
-        # # Increase attack bonus & damage
-        # for action in adapter.iter_actions():
-        #     match action:
-        #         case Strike():
-        #             action.bonus += adjustment.mod_delta
-        #             # Some strikes do no damage
-        #             if len(action.damage) > 0:
-        #                 # Only boost the main/first damage type
-        #                 amount, damage_type = action.damage[0]
-        #                 action.damage[0] = amount + adjustment.mod_delta, damage_type
-        for save in self.saves:
-            if (value := self.saves[save]) is not None:  # Hazard saves can be None
-                self.set_save(save, value + mod_delta)
-        # Adjust hp
-        self.max_hp += hp_delta(starting_level)
+        self.ac(mod_delta)
+        self.dcs(mod_delta)
+        self.damaging_actions(attack_delta=mod_delta, damage_delta=mod_delta)
+        self.saves(mod_delta)
+        self.max_hp(hp_delta(starting_level))
         return self.obj
 
     def elite(self, rename: bool) -> T:
@@ -102,40 +80,34 @@ class Adjuster[T](ABC):
 
 
 class CreatureAdjuster[T](Adjuster[T]):
-    @property
     @abstractmethod
-    def perception(self) -> int:
+    def perception(self, delta: int):
         ...
 
-    @perception.setter
-    def perception(self, perception: int):
+    @abstractmethod
+    def skills(self, delta: int):
+        ...
+
+    @abstractmethod
+    def spellcasting(self, attack_delta: int, dc_delta: int):
         ...
 
     def apply(self, name: str, level_delta: Callable[[int], int], mod_delta: int,
               hp_delta: Callable[[int], int], rename: bool) -> T:
         super().apply(name, level_delta, mod_delta, hp_delta, rename)
-        self.perception += mod_delta
-        # for skill in self.skills.values():
-        #    skill.mod += adjustment.mod_delta
-
-        # for casting in creature.spellcasting:
-        #     casting.attack += adjustment.mod_delta  # Increase attack bonus
-        #     casting.dc += adjustment.mod_delta  # Increase DC
+        self.perception(mod_delta)
+        self.skills(mod_delta)
+        self.spellcasting(attack_delta=mod_delta, dc_delta=mod_delta)
         return self.obj
 
 
 class HazardAdjuster[T](Adjuster[T]):
-    @property
     @abstractmethod
-    def stealth(self) -> int:
-        ...
-
-    @stealth.setter
-    def stealth(self, stealth: int):
+    def stealth(self, delta: int):
         ...
 
     def apply(self, name: str, level_delta: Callable[[int], int], mod_delta: int,
               hp_delta: Callable[[int], int], rename: bool) -> T:
         super().apply(name, level_delta, mod_delta, hp_delta, rename)
-        self.stealth += mod_delta
+        self.stealth(mod_delta)
         return self.obj

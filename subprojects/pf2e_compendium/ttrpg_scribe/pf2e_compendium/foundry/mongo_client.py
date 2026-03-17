@@ -1,8 +1,9 @@
 import json
 import logging
 import os
+import re
 from pathlib import Path
-from typing import Any, Generator, Iterable, Literal, Mapping, cast, overload
+from typing import Any, Generator, Iterable, Literal, cast, overload
 
 import plyvel
 import pymongo
@@ -125,7 +126,6 @@ def _import_db_from_path(db_path: Path, id_root: str, folder_paths: dict[str, st
 
 def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                ) -> Generator[InsertOne[Document], None, None]:
-    from ttrpg_scribe.pf2e_compendium.actor import Save
     from ttrpg_scribe.pf2e_compendium.actor.adjustments import (
         Adjuster, CreatureAdjuster, HazardAdjuster)
     IGNORED = {None, 'army', 'campaignFeature', 'character', 'familiar', 'script'}
@@ -144,71 +144,82 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                 doc['items'] = resolve_id_list(db, 'actors.items',
                                                doc['_id'], doc['items'])
 
-    class PF2ActorDocAdjuster(Adjuster):
-        def __init__(self, doc: Document) -> None:
-            self.doc = doc
-
+    class PF2ActorDocAdjuster(Adjuster[Document]):
         @property
         def name(self) -> str:
-            return self.doc['name']
+            return self.obj['name']
 
         @name.setter
         def name(self, name: str):
-            self.doc['name'] = name
+            self.obj['name'] = name
 
         @property
         def level(self) -> int:
-            return self.doc['system']['details']['level']['value']
+            return self.obj['system']['details']['level']['value']
 
         @level.setter
         def level(self, level: int):
-            self.doc['system']['details']['level']['value'] = level
+            self.obj['system']['details']['level']['value'] = level
 
-        @property
-        def ac(self) -> int:
-            return self.doc['system']['attributes']['ac']['value']
+        def ac(self, delta: int):
+            self.obj['system']['attributes']['ac']['value'] += delta
 
-        @ac.setter
-        def ac(self, ac: int):
-            self.doc['system']['attributes']['ac']['value'] = ac
+        def dcs(self, delta: int):
+            for item in self.obj['items']:
+                if 'description' not in item['system']:
+                    continue
+                item['system']['description']['value'] = re.sub(
+                    r'([AD]C) (\d+)',
+                    lambda match: f'{match[1]} {int(match[2]) + delta}',
+                    item['system']['description']['value']
+                )
 
-        @property
-        def saves(self) -> Mapping[Save, int | None]:
-            return {k: v['value'] for k, v in self.doc['system']['saves'].items()}
+        def saves(self, delta: int):
+            self.obj['system']['saves'] = {
+                save: data | {'value': data['value'] + delta}
+                for save, data in self.obj['system']['saves'].items()
+                if data['value'] is not None
+            }
 
-        def set_save(self, save: Save, value: int):
-            self.doc['system']['saves'][save] = value
+        def max_hp(self, delta: int):
+            self.obj['system']['attributes']['hp']['max'] += delta
+            self.obj['system']['attributes']['hp']['value'] += delta
 
-        @property
-        def max_hp(self) -> int:
-            return self.doc['system']['attributes']['hp']['max']
+        def damaging_actions(self, attack_delta: int, damage_delta: int):
+            for item in self.obj['items']:
+                if item['type'] not in ['melee', 'spell']:
+                    continue
+                if 'bonus' in item['system']:
+                    item['system']['bonus']['value'] += attack_delta
+                for damage_roll in item['system'].get('damageRolls', {}).values():
+                    damage_roll['damage'] += f'{damage_delta:+d}'
+                for damage in item['system'].get('damage', {}).values():
+                    damage['formula'] += f'{damage_delta:+d}'
 
-        @max_hp.setter
-        def max_hp(self, hp: int):
-            self.doc['system']['attributes']['hp']['max'] = hp
-            self.doc['system']['attributes']['hp']['value'] = hp
+    class PF2CreatureDocAdjuster(PF2ActorDocAdjuster, CreatureAdjuster[Document]):
+        def perception(self, delta: int):
+            self.obj['system']['perception']['mod'] += delta
 
-    class PF2CreatureDocAdjuster(PF2ActorDocAdjuster, CreatureAdjuster):
-        @property
-        def perception(self) -> int:
-            return self.doc['system']['perception']['mod']
+        def skills(self, delta: int):
+            for skill in self.obj['system']['skills'].values():
+                skill['base'] += delta
+                for special in skill.get('special', []):
+                    special['base'] += delta
 
-        @perception.setter
-        def perception(self, perception: int):
-            self.doc['system']['perception']['mod'] = perception
+        def spellcasting(self, attack_delta: int, dc_delta: int):
+            for item in self.obj['items']:
+                if item['type'] != 'spellcastingEntry':
+                    continue
+                item['system']['spelldc']['value'] += attack_delta
+                item['system']['spelldc']['dc'] += dc_delta
 
-    class PF2HazardDocAdjuster(PF2ActorDocAdjuster, HazardAdjuster):
-        @property
-        def stealth(self) -> int:
-            return self.doc['system']['attributes']['stealth']['value']
-
-        @stealth.setter
-        def stealth(self, stealth: int):
-            self.doc['system']['attributes']['stealth']['value'] = stealth
+    class PF2HazardDocAdjuster(PF2ActorDocAdjuster, HazardAdjuster[Document]):
+        def stealth(self, delta: int):
+            self.obj['system']['attributes']['stealth']['value'] += delta
 
     def adjust_doc(doc: Document, doc_type: str):
-        adjustment = doc.get('system', {}).get('attributes', {}).pop('adjustment', '')
-        if adjustment == '':
+        adjustment = doc.get('system', {}).get('attributes', {}).pop('adjustment', None)
+        if adjustment in [None, '']:
             return doc
         match doc_type:
             case 'npc':

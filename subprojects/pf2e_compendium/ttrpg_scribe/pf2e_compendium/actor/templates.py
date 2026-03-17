@@ -1,10 +1,13 @@
 import itertools
 import re
-from typing import Callable, Iterable, Mapping, overload
+from abc import abstractmethod
+from typing import Callable, Iterable, overload
 
-from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
+from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, Save
-from ttrpg_scribe.pf2e_compendium.actor.adjustments import Adjuster
+from ttrpg_scribe.pf2e_compendium.actor.adjustments import (Adjuster,
+                                                            CreatureAdjuster,
+                                                            HazardAdjuster)
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -16,18 +19,17 @@ def compose[A](*templates: PF2Actor.GenericTemplate[A]) -> PF2Actor.GenericTempl
     return composed
 
 
-def iter_actions(actor: PF2Actor) -> Iterable[Action]:
-    match actor:
-        case PF2Hazard() as hazard:
-            return hazard.actions
-        case PF2Creature() as creature:
-            return itertools.chain(creature.actions, creature.defenses,
-                                      creature.interactions)
-        case unknown:
-            raise ValueError(f'Unknown actor type {type(unknown)}')
-
-
 def map_all_text(mapper: Callable[[str], str]) -> PF2Actor.Template:
+    def iter_actions(actor: PF2Actor) -> Iterable[Action]:
+        match actor:
+            case PF2Hazard() as hazard:
+                return hazard.actions
+            case PF2Creature() as creature:
+                return itertools.chain(creature.actions, creature.defenses,
+                                          creature.interactions)
+            case unknown:
+                raise ValueError(f'Unknown actor type {type(unknown)}')
+
     def template(actor: PF2Actor):
         for action in iter_actions(actor):
             match action:
@@ -66,74 +68,82 @@ def rename(full: str, *other_names: tuple[str, str]) -> PF2Actor.Template:
     return template
 
 
-class PF2ActorAdjuster[A: PF2Actor](Adjuster):
-    def __init__(self, actor: A) -> None:
-        self.actor = actor
-
+class PF2ActorAdjuster[A: PF2Actor](Adjuster[A]):
     @property
     def name(self) -> str:
-        return self.actor.name
+        return self.obj.name
 
     @name.setter
     def name(self, name: str):
-        self.actor.name = name
+        self.obj.name = name
 
     @property
     def level(self) -> int:
-        return self.actor.level
+        return self.obj.level
 
     @level.setter
     def level(self, level: int):
-        self.actor.level = level
+        self.obj.level = level
 
-    @property
-    def ac(self) -> int:
-        return self.actor.ac
+    def ac(self, delta: int):
+        self.obj.ac += delta
 
-    @ac.setter
-    def ac(self, ac: int):
-        self.actor.ac = ac
+    def dcs(self, delta: int):
+        self.obj = self.obj.apply(adjust_all_dcs(delta))
 
-    @property
-    def saves(self) -> Mapping[Save, int | None]:
-        return self.actor.saves
+    def saves(self, delta: int):
+        self.obj.saves = {
+            save: mod + delta
+            for save, mod in self.obj.saves.items()
+            if mod is not None
+        }
 
     def set_save(self, save: Save, value: int):
-        self.actor.saves[save] = value
+        self.obj.saves[save] = value
 
-    @property
-    def max_hp(self) -> int:
-        return self.actor.max_hp
+    def max_hp(self, delta: int):
+        self.obj.max_hp += delta
 
-    @max_hp.setter
-    def max_hp(self, hp: int):
-        self.actor.max_hp = hp
+    @abstractmethod
+    def iter_actions(self) -> Iterable[Action]:
+        ...
 
-
-class PF2CreatureAdjuster(PF2ActorAdjuster[PF2Creature], Adjuster[PF2Creature]):
-    def __init__(self, creature: PF2Creature) -> None:
-        super().__init__(creature)
-
-    @property
-    def perception(self) -> int:
-        return self.actor.perception
-
-    @perception.setter
-    def perception(self, perception: int):
-        self.actor.perception = perception
+    def damaging_actions(self, attack_delta: int, damage_delta: int):
+        for action in self.iter_actions():
+            match action:
+                case Strike():
+                    action.bonus += attack_delta
+                    # Some strikes do no damage
+                    if len(action.damage) == 0:
+                        continue
+                    # Only boost the main/first damage type
+                    amount, damage_type = action.damage[0]
+                    action.damage[0] = amount + damage_delta, damage_type
 
 
-class PF2HazardAdjuster(PF2ActorAdjuster[PF2Hazard], Adjuster[PF2Hazard]):
-    def __init__(self, hazard: PF2Hazard) -> None:
-        super().__init__(hazard)
+class PF2CreatureAdjuster(PF2ActorAdjuster[PF2Creature], CreatureAdjuster[PF2Creature]):
+    def perception(self, delta: int):
+        self.obj.perception += delta
 
-    @property
-    def stealth(self) -> int:
-        return self.actor.stealth.value
+    def skills(self, delta: int):
+        for skill in self.obj.skills.values():
+            skill.mod += delta
 
-    @stealth.setter
-    def stealth(self, stealth: int):
-        self.actor.stealth.value = stealth
+    def spellcasting(self, attack_delta: int, dc_delta: int):
+        for casting in self.obj.spellcasting:
+            casting.attack += attack_delta
+            casting.dc += dc_delta
+
+    def iter_actions(self) -> Iterable[Action]:
+        return itertools.chain(self.obj.actions, self.obj.defenses, self.obj.interactions)
+
+
+class PF2HazardAdjuster(PF2ActorAdjuster[PF2Hazard], HazardAdjuster[PF2Hazard]):
+    def stealth(self, delta: int):
+        self.obj.stealth.value += delta
+
+    def iter_actions(self) -> Iterable[Action]:
+        return self.obj.actions
 
 
 class _Adjustment:
