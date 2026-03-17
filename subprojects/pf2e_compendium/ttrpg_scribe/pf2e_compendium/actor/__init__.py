@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import Callable, Literal
 
-type Saves[V] = dict[Literal['fortitude', 'reflex', 'will'], V]
+type Save = Literal['fortitude', 'reflex', 'will']
+type Saves[V] = dict[Save, V]
 
 
 class PF2Actor:

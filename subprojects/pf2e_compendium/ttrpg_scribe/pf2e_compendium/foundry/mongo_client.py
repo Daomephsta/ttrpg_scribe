@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Generator, Iterable, Literal, cast, overload
+from typing import Any, Generator, Iterable, Literal, Mapping, cast, overload
 
 import plyvel
 import pymongo
@@ -125,6 +125,9 @@ def _import_db_from_path(db_path: Path, id_root: str, folder_paths: dict[str, st
 
 def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                ) -> Generator[InsertOne[Document], None, None]:
+    from ttrpg_scribe.pf2e_compendium.actor import Save
+    from ttrpg_scribe.pf2e_compendium.actor.adjustments import (
+        Adjuster, CreatureAdjuster, HazardAdjuster)
     IGNORED = {None, 'army', 'campaignFeature', 'character', 'familiar', 'script'}
 
     def resolve_id(db: plyvel.DB, prefix: str, content_id: str):
@@ -141,11 +144,93 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                 doc['items'] = resolve_id_list(db, 'actors.items',
                                                doc['_id'], doc['items'])
 
+    class PF2ActorDocAdjuster(Adjuster):
+        def __init__(self, doc: Document) -> None:
+            self.doc = doc
+
+        @property
+        def name(self) -> str:
+            return self.doc['name']
+
+        @name.setter
+        def name(self, name: str):
+            self.doc['name'] = name
+
+        @property
+        def level(self) -> int:
+            return self.doc['system']['details']['level']['value']
+
+        @level.setter
+        def level(self, level: int):
+            self.doc['system']['details']['level']['value'] = level
+
+        @property
+        def ac(self) -> int:
+            return self.doc['system']['attributes']['ac']['value']
+
+        @ac.setter
+        def ac(self, ac: int):
+            self.doc['system']['attributes']['ac']['value'] = ac
+
+        @property
+        def saves(self) -> Mapping[Save, int | None]:
+            return {k: v['value'] for k, v in self.doc['system']['saves'].items()}
+
+        def set_save(self, save: Save, value: int):
+            self.doc['system']['saves'][save] = value
+
+        @property
+        def max_hp(self) -> int:
+            return self.doc['system']['attributes']['hp']['max']
+
+        @max_hp.setter
+        def max_hp(self, hp: int):
+            self.doc['system']['attributes']['hp']['max'] = hp
+            self.doc['system']['attributes']['hp']['value'] = hp
+
+    class PF2CreatureDocAdjuster(PF2ActorDocAdjuster, CreatureAdjuster):
+        @property
+        def perception(self) -> int:
+            return self.doc['system']['perception']['mod']
+
+        @perception.setter
+        def perception(self, perception: int):
+            self.doc['system']['perception']['mod'] = perception
+
+    class PF2HazardDocAdjuster(PF2ActorDocAdjuster, HazardAdjuster):
+        @property
+        def stealth(self) -> int:
+            return self.doc['system']['attributes']['stealth']['value']
+
+        @stealth.setter
+        def stealth(self, stealth: int):
+            self.doc['system']['attributes']['stealth']['value'] = stealth
+
+    def adjust_doc(doc: Document, doc_type: str):
+        adjustment = doc.get('system', {}).get('attributes', {}).pop('adjustment', '')
+        if adjustment == '':
+            return doc
+        match doc_type:
+            case 'npc':
+                adjuster = PF2CreatureDocAdjuster(doc)
+            case 'hazard':
+                adjuster = PF2HazardDocAdjuster(doc)
+            case _:
+                raise ValueError(f'No adjuster for {doc_type}')
+        match adjustment:
+            case 'elite':
+                return adjuster.elite(rename=False)
+            case 'weak':
+                return adjuster.weak(rename=False)
+            case _:
+                raise ValueError(f'Unknown adjustment {adjustment}')
+
     def import_doc(doc_id: str, doc: Document):
         TYPE_TO_COLL: dict[str, str] = {t: 'equipment' for t in
                         ['armor', 'backpack', 'consumable', 'kit', 'shield', 'treasure', 'weapon']}
-        doc_type = doc.get('type')
+        doc_type: str = doc['type']
         assert isinstance(doc_type, str)
+        doc = adjust_doc(doc, doc_type)
         collection = TYPE_TO_COLL.get(doc_type, doc_type)
         doc['_id'], doc['foundry_id'] = doc_id, doc['_id']
         doc['path'] = {}

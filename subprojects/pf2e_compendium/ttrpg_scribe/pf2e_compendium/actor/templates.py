@@ -1,9 +1,10 @@
 import itertools
 import re
-from typing import Callable, Iterable, overload
+from typing import Callable, Iterable, Mapping, overload
 
-from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
-from ttrpg_scribe.pf2e_compendium.actor import PF2Actor
+from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
+from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, Save
+from ttrpg_scribe.pf2e_compendium.actor.adjustments import Adjuster
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
 
@@ -65,13 +66,79 @@ def rename(full: str, *other_names: tuple[str, str]) -> PF2Actor.Template:
     return template
 
 
+class PF2ActorAdjuster[A: PF2Actor](Adjuster):
+    def __init__(self, actor: A) -> None:
+        self.actor = actor
+
+    @property
+    def name(self) -> str:
+        return self.actor.name
+
+    @name.setter
+    def name(self, name: str):
+        self.actor.name = name
+
+    @property
+    def level(self) -> int:
+        return self.actor.level
+
+    @level.setter
+    def level(self, level: int):
+        self.actor.level = level
+
+    @property
+    def ac(self) -> int:
+        return self.actor.ac
+
+    @ac.setter
+    def ac(self, ac: int):
+        self.actor.ac = ac
+
+    @property
+    def saves(self) -> Mapping[Save, int | None]:
+        return self.actor.saves
+
+    def set_save(self, save: Save, value: int):
+        self.actor.saves[save] = value
+
+    @property
+    def max_hp(self) -> int:
+        return self.actor.max_hp
+
+    @max_hp.setter
+    def max_hp(self, hp: int):
+        self.actor.max_hp = hp
+
+
+class PF2CreatureAdjuster(PF2ActorAdjuster[PF2Creature], Adjuster[PF2Creature]):
+    def __init__(self, creature: PF2Creature) -> None:
+        super().__init__(creature)
+
+    @property
+    def perception(self) -> int:
+        return self.actor.perception
+
+    @perception.setter
+    def perception(self, perception: int):
+        self.actor.perception = perception
+
+
+class PF2HazardAdjuster(PF2ActorAdjuster[PF2Hazard], Adjuster[PF2Hazard]):
+    def __init__(self, hazard: PF2Hazard) -> None:
+        super().__init__(hazard)
+
+    @property
+    def stealth(self) -> int:
+        return self.actor.stealth.value
+
+    @stealth.setter
+    def stealth(self, stealth: int):
+        self.actor.stealth.value = stealth
+
+
 class _Adjustment:
-    def __init__(self, name: str, level_delta: Callable[[int], int], mod_delta: int,
-                 hp_delta: Callable[[int], int]) -> None:
-        self.name = name
-        self.level_delta = level_delta
-        self.mod_delta = mod_delta
-        self.hp_delta = hp_delta
+    def __init__(self, adjustment: Callable[[Adjuster, bool], None]) -> None:
+        self.adjustment = adjustment
 
     # Backwards compat so `apply(elite)` is equivalent to `apply(elite())``
     @overload
@@ -79,83 +146,30 @@ class _Adjustment:
         ...
 
     @overload
-    def __call__(self, rename: bool) -> PF2Actor.Template:
+    def __call__(self, *, rename: bool) -> PF2Actor.Template:
         ...
 
     def __call__(self, *args, **kwargs) -> PF2Actor.Template | None:
-        def adjust_actor(actor: PF2Actor):
-            if kwargs.get('rename', True):
-                actor.name = f'{self.name.title()} {actor.name}'
-            starting_level = actor.level
-            actor.level += self.level_delta(starting_level)
-            # Increase AC and DCs
-            actor.apply(adjust_all_dcs(self.mod_delta))
-            # Increase attack bonus & damage
-            for action in iter_actions(actor):
-                match action:
-                    case Strike():
-                        action.bonus += self.mod_delta
-                        # Some strikes do no damage
-                        if len(action.damage) > 0:
-                            # Only boost the main/first damage type
-                            amount, damage_type = action.damage[0]
-                            action.damage[0] = amount + self.mod_delta, damage_type
-            for save in actor.saves:
-                if actor.saves[save] is not None:  # Hazard saves can be None
-                    actor.saves[save] += self.mod_delta
-            # Adjust hp
-            actor.max_hp += self.hp_delta(starting_level)
-
-        def adjust_creature(creature: PF2Creature):
-            adjust_actor(creature)
-            creature.perception += self.mod_delta
-            for skill in creature.skills.values():
-                skill.mod += self.mod_delta
-
-            for casting in creature.spellcasting:
-                casting.attack += self.mod_delta  # Increase attack bonus
-                casting.dc += self.mod_delta  # Increase DC
-
-        def adjust_hazard(hazard: PF2Hazard):
-            adjust_actor(hazard)
-            hazard.stealth.value += self.mod_delta
-
-        def adjust(actor: PF2Actor):
+        def adjust(actor: PF2Actor) -> None:
+            rename: bool = kwargs.get('rename', True)
             match actor:
                 case PF2Creature():
-                    return adjust_creature(actor)
+                    self.adjustment(PF2CreatureAdjuster(actor), rename)
                 case PF2Hazard():
-                    return adjust_hazard(actor)
+                    self.adjustment(PF2HazardAdjuster(actor), rename)
                 case _:
                     raise ValueError(f'Unknown actor type {type(actor)}')
 
         match args, kwargs:
             case [PF2Creature() as creature], {}:
-                return adjust_creature(creature)
+                return adjust(creature)
             case [PF2Hazard() as hazard], {}:
-                return adjust_hazard(hazard)
+                return adjust(hazard)
             case [], {'rename': _}:
                 return adjust
             case _:
                 raise ValueError(f'Unexpected {args=} {kwargs=}')
 
 
-elite = _Adjustment(
-    'elite',
-    level_delta=lambda level: 1 if level > 0 else 2,
-    mod_delta=2,
-    hp_delta=lambda level: (10 if level <= 1 else
-                            15 if 2 <= level <= 4 else
-                            20 if 5 <= level <= 19 else
-                            30)
-)
-
-weak = _Adjustment(
-    'weak',
-    level_delta=lambda level: -1 if level != 1 else -2,
-    mod_delta=-2,
-    hp_delta=lambda level: (-10 if level <= 2 else
-                            -15 if 3 <= level <= 5 else
-                            -20 if 6 <= level <= 20 else
-                            -30)
-)
+elite = _Adjustment(Adjuster.elite)
+weak = _Adjustment(Adjuster.weak)

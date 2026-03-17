@@ -8,7 +8,6 @@ from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.actor import DetailedValue
-from ttrpg_scribe.pf2e_compendium.actor.templates import elite, weak
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, roll_data
@@ -167,14 +166,6 @@ def _read_creature(json: Json) -> PF2Creature:
             raise
     size: str = system.traits.size.value(json)
 
-    match system.attributes.adjustment(json, _or=None):
-        case 'elite':
-            templates = [elite(rename=False)]
-        case 'weak':
-            templates = [weak(rename=False)]
-        case _:
-            templates = []
-
     return PF2Creature(
         name=json['name'],
         level=system.details.level.value(json),
@@ -202,7 +193,7 @@ def _read_creature(json: Json) -> PF2Creature:
                 for speed in attributes.speed.otherSpeeds(json)}},
         actions=actions,
         spellcasting=[builder.build() for builder in spellcasting_lists.values()]
-    ).apply(*templates)
+    )
 
 
 def hazard(id: str) -> PF2Hazard:
