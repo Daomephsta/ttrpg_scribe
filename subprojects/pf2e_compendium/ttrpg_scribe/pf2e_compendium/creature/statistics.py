@@ -274,7 +274,7 @@ EXTREME = StatisticBracket('Extreme')
 
 ATTRIBUTE_MODIFIERS = Table('ATTRIBUTE_MODIFIERS', NumberCell,
     ['Extreme', 'High', 'Moderate', 'Low'],
-    [
+    [  # E   H   M  L
         [4,  3,  2, 0],  # -1
         [4,  3,  2, 0],  # 00
         [5,  4,  3, 1],  # 01
@@ -305,7 +305,7 @@ ATTRIBUTE_MODIFIERS = Table('ATTRIBUTE_MODIFIERS', NumberCell,
 
 PERCEPTION = Table('PERCEPTION', NumberCell,
     ['Extreme', 'High', 'Moderate', 'Low', 'Terrible'],
-    [
+    [   # E    H    M    L    T
         [+9,  +8,  +5,  +2,  +0],   # -1
         [+10, +9,  +6,  +3,  +1],   # 00
         [+11, +10, +7,  +4,  +2],   # 01
@@ -336,7 +336,7 @@ PERCEPTION = Table('PERCEPTION', NumberCell,
 
 SKILLS = Table('SKILLS', NumberCell,
     ['Extreme', 'High', 'Moderate', 'Low'],
-    [
+    [   # E    H    M       L
         [+8,  +5,  +4,  (+1,  +2)],   # -1
         [+9,  +6,  +5,  (+2,  +3)],   # 00
         [+10, +7,  +6,  (+3,  +4)],   # 01
@@ -367,7 +367,7 @@ SKILLS = Table('SKILLS', NumberCell,
 
 ARMOR_CLASS = Table('ARMOR_CLASS', NumberCell,
     ['Extreme', 'High', 'Moderate', 'Low'],
-    [
+    [  # E   H   M   L
         [18, 15, 14, 12],  # -1
         [19, 16, 15, 13],  # 00
         [19, 16, 15, 13],  # 01
@@ -398,7 +398,7 @@ ARMOR_CLASS = Table('ARMOR_CLASS', NumberCell,
 
 SAVING_THROWS = Table('SAVING_THROWS', NumberCell,
     ['Extreme', 'High', 'Moderate', 'Low', 'Terrible'],
-    [
+    [   # E    H    M    L    T
         [+9,  +8,  +5,  +2,  +0],   # -1
         [+10, +9,  +6,  +3,  +1],   # 00
         [+11, +10, +7,  +4,  +2],   # 01
@@ -429,7 +429,7 @@ SAVING_THROWS = Table('SAVING_THROWS', NumberCell,
 
 HIT_POINTS = Table('HIT_POINTS', NumberCell,
     ['High', 'Moderate', 'Low'],
-    [
+    [       # H             M             L
          [+9,          (+7,   +8),   (+5,   +6)],    # -1
         [(+17,  +20),  (+14,  +16),  (+11,  +13)],   # 00
         [(+24,  +26),  (+19,  +21),  (+14,  +16)],   # 01
@@ -460,7 +460,7 @@ HIT_POINTS = Table('HIT_POINTS', NumberCell,
 
 RESISTANCES = Table('RESISTANCES', NumberCell,
     ['High', 'Moderate', 'Low'],
-    [
+    [  # H   M   L
         [1,  1,  1],   # -1
         [3,  2,  1],   # 00
         [3,  2,  2],   # 01
@@ -491,7 +491,7 @@ RESISTANCES = Table('RESISTANCES', NumberCell,
 
 WEAKNESSES = Table('WEAKNESSES', NumberCell,
     ['High', 'Moderate', 'Low'],
-    [
+    [  # H   M   L
         [1,  1,  1],   # -1
         [3,  2,  1],   # 00
         [3,  2,  2],   # 01
@@ -522,7 +522,7 @@ WEAKNESSES = Table('WEAKNESSES', NumberCell,
 
 STRIKE_ATTACK_BONUS = Table('STRIKE_ATTACK_BONUS', NumberCell,
     ['Extreme', 'High', 'Moderate', 'Low'],
-    [
+    [   # E    H    M    L
         [+10, +8,  +6,  +4],   # -1
         [+10, +8,  +6,  +4],   # 00
         [+11, +9,  +7,  +5],   # 01
@@ -553,7 +553,7 @@ STRIKE_ATTACK_BONUS = Table('STRIKE_ATTACK_BONUS', NumberCell,
 
 STRIKE_DAMAGE = Table('STRIKE_DAMAGE', DiceCell,
     ['Extreme', 'High', 'Moderate', 'Low'],
-    [
+    [      # E           H           M          L
           [d(6)+1,     d(4)+1,     d(4),      d(4)],     # -1
           [d(6)+3,     d(6)+2,     d(4)+2,    d(4)+1],   # 00
           [d(8)+4,     d(6)+3,     d(6)+2,    d(4)+2],   # 01
@@ -584,7 +584,7 @@ STRIKE_DAMAGE = Table('STRIKE_DAMAGE', DiceCell,
 
 SPELL_DC = Table('SPELL_DC', NumberCell,
     ['Extreme', 'High', 'Moderate'],
-    [
+    [  # E   H   M
         [19, 16, 13],  # -1
         [19, 16, 13],  # 00
         [20, 17, 14],  # 01
@@ -615,7 +615,7 @@ SPELL_DC = Table('SPELL_DC', NumberCell,
 
 SPELL_ATTACK_BONUS = Table('SPELL_ATTACK_BONUS', NumberCell,
     ['Extreme', 'High', 'Moderate'],
-    [
+    [   # E    H    M
         [+11, +8,  +5],   # -1
         [+11, +8,  +5],   # 00
         [+12, +9,  +6],   # 01
