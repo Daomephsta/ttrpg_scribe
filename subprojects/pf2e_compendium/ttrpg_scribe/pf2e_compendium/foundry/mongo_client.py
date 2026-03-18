@@ -293,10 +293,9 @@ def initialise():
 
 def update(progress: Progress):
     client.drop_database('pf2e')
-    system_data: dict[str, Any] = json.loads((foundry.pf2e_dir/'system.json').read_text())
 
     def build_ops_batch():
-        packs: list = system_data['packs']
+        packs: list = foundry.system['packs']
         with progress:
             task = progress.add_task('Loading packs', total=len(packs), subdesc='')
             for pack in packs:
