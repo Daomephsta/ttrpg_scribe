@@ -140,7 +140,7 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
 
     def resolve_nested_documents(db: plyvel.DB, doc: Document):
         match doc['type']:
-            case 'npc':
+            case 'npc' | 'hazard' | 'vehicle':
                 doc['items'] = resolve_id_list(db, 'actors.items',
                                                doc['_id'], doc['items'])
 

@@ -212,8 +212,8 @@ def _read_hazard(json: Json) -> PF2Hazard:
 
     actions: list[Action] = []
     for i, item in enumerate(json['items']):
-        item_roll_data = actor_roll_data | roll_data.item(item)
         try:
+            item_roll_data = actor_roll_data | roll_data.item(item)
             match item['type']:
                 case 'action':
                     actions.append(_read_simple_action(item, item_roll_data))
