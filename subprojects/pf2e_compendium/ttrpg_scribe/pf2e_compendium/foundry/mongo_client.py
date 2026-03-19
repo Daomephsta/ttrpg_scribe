@@ -259,9 +259,9 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                 if kind == 'folders' or '.' in kind:
                     continue  # Ignore nested documents and folders
                 resolve_nested_documents(db, doc)
-                id_parts = [id_root, doc['name']]
+                id_parts: list[str] = [id_root, doc['name']]
                 if (folder := folder_paths.get(doc.get('folder', ''))) is not None:
-                    id_parts.insert(1, folder)
+                    id_parts = [id_root, *folder.split('/'), doc['name']]
                 yield import_doc(doc_id='/'.join(map(slugify, id_parts)), doc=doc)
             except Exception as e:
                 e.add_note(f'{doc['name']=}')
