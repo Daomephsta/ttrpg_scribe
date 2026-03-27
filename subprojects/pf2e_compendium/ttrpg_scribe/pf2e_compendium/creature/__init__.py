@@ -1,5 +1,6 @@
 import collections
 from dataclasses import dataclass, field
+import itertools
 from typing import Any, Callable, ClassVar, Iterable, Literal
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
@@ -190,6 +191,9 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
         for template in templates:
             template(self)
         return self
+
+    def iter_actions(self) -> Iterable[Action]:
+        return itertools.chain(self.actions, self.defenses, self.interactions)
 
     def write_json(self, data: dict[str, Any]):
         data.update(

@@ -20,23 +20,12 @@ def compose[A](*templates: PF2Actor.GenericTemplate[A]) -> PF2Actor.GenericTempl
 
 
 def map_all_text(mapper: Callable[[str], str]) -> PF2Actor.Template:
-    def iter_actions(actor: PF2Actor) -> Iterable[Action]:
-        match actor:
-            case PF2Hazard() as hazard:
-                return hazard.actions
-            case PF2Creature() as creature:
-                return itertools.chain(creature.actions, creature.defenses,
-                                          creature.interactions)
-            case unknown:
-                raise ValueError(f'Unknown actor type {type(unknown)}')
-
     def template(actor: PF2Actor):
-        for action in iter_actions(actor):
+        for action in actor.iter_actions():
             match action:
                 case SimpleAction():
                     action.name = mapper(action.name)
                     action.desc = mapper(action.desc)
-
     return template
 
 

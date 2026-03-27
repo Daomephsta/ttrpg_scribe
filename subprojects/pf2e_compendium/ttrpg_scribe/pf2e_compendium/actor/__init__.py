@@ -1,11 +1,14 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Callable, Literal
+from typing import Callable, Iterable, Literal
+
+from ttrpg_scribe.pf2e_compendium.actions import Action
 
 type Save = Literal['fortitude', 'reflex', 'will']
 type Saves[V] = dict[Save, V]
 
 
-class PF2Actor:
+class PF2Actor(ABC):
     name: str
     level: int
     rarity: str
@@ -22,6 +25,10 @@ class PF2Actor:
         for template in templates:
             template(self)
         return self
+
+    @abstractmethod
+    def iter_actions(self) -> Iterable[Action]:
+        ...
 
 
 @dataclass

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Iterable
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action
@@ -36,6 +36,9 @@ class PF2Hazard(InitiativeParticipant, PF2Actor):
         for template in templates:
             template(self)
         return self
+
+    def iter_actions(self) -> Iterable[Action]:
+        return self.actions
 
     def write_json(self, data: dict[str, Any]):
         data.update(
