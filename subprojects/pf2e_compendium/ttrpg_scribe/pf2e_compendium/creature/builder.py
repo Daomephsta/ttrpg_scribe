@@ -2,12 +2,16 @@ from dataclasses import dataclass
 from typing import Any, Callable, Self, TypedDict, Unpack
 
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
+from ttrpg_scribe.pf2e_compendium.actor import statistics
+from ttrpg_scribe.pf2e_compendium.actor.statistics import (MODERATE,
+                                                           StatisticBracket,
+                                                           Table)
 from ttrpg_scribe.pf2e_compendium.creature import (Abilities, PF2Creature,
                                                    Saves, Sense, Skill,
-                                                   Spellcasting, statistics)
+                                                   Spellcasting)
 from ttrpg_scribe.pf2e_compendium.creature.statistics import (
-    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, MODERATE, PERCEPTION,
-    RESISTANCES, SAVING_THROWS, WEAKNESSES, StatisticBracket, Table)
+    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, RESISTANCES,
+    SAVING_THROWS, WEAKNESSES)
 
 
 @dataclass

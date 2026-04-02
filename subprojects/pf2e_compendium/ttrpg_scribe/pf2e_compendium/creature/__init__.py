@@ -1,14 +1,14 @@
 import collections
-from dataclasses import dataclass, field
 import itertools
+from dataclasses import dataclass, field
 from typing import Any, Callable, ClassVar, Iterable, Literal
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
 from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, Saves
+from ttrpg_scribe.pf2e_compendium.actor.statistics import (StatisticBracket,
+                                                           Table)
 from ttrpg_scribe.pf2e_compendium.creature import statistics
-from ttrpg_scribe.pf2e_compendium.creature.statistics import (StatisticBracket,
-                                                              Table)
 
 
 @dataclass

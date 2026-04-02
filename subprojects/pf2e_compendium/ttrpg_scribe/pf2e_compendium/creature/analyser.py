@@ -2,10 +2,12 @@ import math
 from typing import Any, Callable, TypedDict
 
 from ttrpg_scribe.core.dice import SimpleDice
+from ttrpg_scribe.pf2e_compendium.actor.statistics import (StatisticBracket,
+                                                           Table)
 from ttrpg_scribe.pf2e_compendium.creature.statistics import (
     ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, RESISTANCES,
     SAVING_THROWS, SKILLS, SPELL_ATTACK_BONUS, SPELL_DC, STRIKE_ATTACK_BONUS,
-    STRIKE_DAMAGE, WEAKNESSES, StatisticBracket, Table)
+    STRIKE_DAMAGE, WEAKNESSES)
 
 
 class _AnalyseStrikes[B, D](TypedDict):
