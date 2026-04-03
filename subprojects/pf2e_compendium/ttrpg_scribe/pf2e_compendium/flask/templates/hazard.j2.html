@@ -56,7 +56,7 @@
 {% endmacro %}
 
 {% block header %}
-    {{ adjustments.SELECTOR }}
+    {{ adjustments.selector() }}
 {% endblock header %}
 {% block stat_block %}
     {{ hazard(data) }}

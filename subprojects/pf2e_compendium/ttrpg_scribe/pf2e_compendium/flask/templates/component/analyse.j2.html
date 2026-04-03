@@ -1,11 +1,11 @@
-{% set HEAD %}
+{% macro script(doc_type) %}
     <script type="module" src="{{ url_for('.static', filename='analyse_creature.js') }}"></script>
     <script type="application/json" id="analyse-endpoint">
-    {{ url_for('.analyse', doc_type=request.view_args.doc_type) }}
+    {{ url_for('.analyse', doc_type=doc_type) }}
     </script>
-{% endset %}
+{% endmacro %}
 
-{% set BUTTON %}
+{% macro button() %}
     <button id="analyse">
         Analyse 
         <span>
@@ -17,4 +17,4 @@
             )
         </span>
     </button>
-{% endset %}
+{% endmacro %}
