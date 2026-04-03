@@ -1,0 +1,5 @@
+{% set SELECTOR %}
+    {% for adjustment, text in [('weak', 'Weak'), (None, 'Normal'), ('elite', 'Elite')] %}
+        <a href="{{ url_for('.content', adjustment=adjustment, **request.view_args) }}">{{ text }}</a>
+    {% endfor %}
+{% endset %}

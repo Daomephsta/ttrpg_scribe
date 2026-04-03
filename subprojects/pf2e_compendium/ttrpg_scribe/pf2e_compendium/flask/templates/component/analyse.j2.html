@@ -1,0 +1,20 @@
+{% set HEAD %}
+    <script type="module" src="{{ url_for('.static', filename='analyse_creature.js') }}"></script>
+    <script type="application/json" id="analyse-endpoint">
+    {{ url_for('.analyse', doc_type=request.view_args.doc_type) }}
+    </script>
+{% endset %}
+
+{% set BUTTON %}
+    <button id="analyse">
+        Analyse 
+        <span>
+            (
+            {%- for bracket in ['terrible', 'low', 'moderate', 'high', 'extreme'] -%}
+            {{- ' ' if not loop.first -}}
+            <span class="{{ bracket }}-statistic">{{ bracket[0] | title }}</span>
+            {%- endfor -%}
+            )
+        </span>
+    </button>
+{% endset %}

@@ -1,11 +1,7 @@
+{% extends 'content.j2.html' %}
 {% from 'stat_block.j2.html' import detailed_value, stat_block %}
 
-<!DOCTYPE html>
-<head>
-    <title>{{ data.name | title }}</title>
-    <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
-</head>
-<body>
+{% block stat_block %}
     {% call stat_block(data.name, data.spell_type, data.rank, rarity=data.rarity, traits=data.traits) %}
         <ul class="field-list">
             {% if data.traditions %}
@@ -52,7 +48,4 @@
         {% endif %}
         {{ data.description | safe }}
     {% endcall %}
-    <footer>
-        {# <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a> #}
-    </footer>
-</body>
+{% endblock stat_block %}

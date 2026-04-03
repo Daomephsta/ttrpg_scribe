@@ -1,0 +1,24 @@
+{% if render | default(False) %}
+{% import 'dependencies.j2.html' as dependencies %}
+<!DOCTYPE html>
+<head>
+    <title>{{ data.name | title }}</title>
+    <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
+    {% block head %}
+    {% endblock head %}
+</head>
+<body>
+    <header>
+    {% block header %}
+    {% endblock header %}
+    </header>
+    {% block stat_block %}
+    {% endblock %}
+    <footer>
+    {% block footer %}
+        <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a>
+        <button id="copy-id" title="Copy {{ request.view_args.id }}" onclick="navigator.clipboard.writeText('{{ request.view_args.id }}')">Copy ID</button>
+    {% endblock footer %}
+    </footer>
+</body>
+{% endif %}
