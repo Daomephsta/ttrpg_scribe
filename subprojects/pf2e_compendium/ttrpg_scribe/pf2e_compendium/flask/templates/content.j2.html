@@ -19,6 +19,10 @@
         {% if 'id' in request.view_args %}
             <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a>
             <button id="copy-id" title="Copy {{ request.view_args.id }}" onclick="navigator.clipboard.writeText('{{ request.view_args.id }}')">Copy ID</button>
+        {% elif 'json' in request.form %}
+            <a href="data:application/json,{{ request.form.json | urlencode }}">View JSON</a>
+        {% elif request.is_json %}
+            <a href="data:application/json,{{ request.json | urlencode }}">View JSON</a>
         {% endif %}
     {% endblock footer %}
     </footer>
