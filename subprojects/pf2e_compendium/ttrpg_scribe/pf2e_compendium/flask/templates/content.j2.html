@@ -16,8 +16,10 @@
     {% endblock %}
     <footer>
     {% block footer %}
-        <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a>
-        <button id="copy-id" title="Copy {{ request.view_args.id }}" onclick="navigator.clipboard.writeText('{{ request.view_args.id }}')">Copy ID</button>
+        {% if 'id' in request.view_args %}
+            <a href="{{ url_for('.raw_content', **request.view_args) }}">View JSON</a>
+            <button id="copy-id" title="Copy {{ request.view_args.id }}" onclick="navigator.clipboard.writeText('{{ request.view_args.id }}')">Copy ID</button>
+        {% endif %}
     {% endblock footer %}
     </footer>
 </body>
