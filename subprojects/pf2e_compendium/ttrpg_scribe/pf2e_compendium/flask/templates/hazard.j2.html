@@ -44,8 +44,10 @@
         {% if data.hardness %}
         <b>Hardness</b> <span id='statistic-hardness'>{{ data.hardness }}</span>;
         {% endif %}
-        <b>HP</b> <span id='statistic-hit-points'>{{ data.max_hp }}</span>
         <!-- HP -->
+        {% if data.max_hp > 0 %}
+        <b>HP</b> <span id='statistic-hit-points'>{{ data.max_hp }}</span>
+        {% endif %}
         </li>
     {% endif %}
     {% if data.complex %}
