@@ -26,22 +26,22 @@
 </div>
 {% endmacro %}
 
-{% macro _detailed_value(value, details) %}
-{{ value }}
+{% macro _detailed_value(value, details, value_attrs = {}) %}
+<span{{ value_attrs | xmlattr }}>{{ value }}</span>
 {%- if details -%}
 {{ ';' if '(' not in details }}
 {{ details | safe}}
 {%- endif -%}
 {% endmacro %}
 
-{% macro detailed_value(data) %}
-{{ _detailed_value(data.value, data.details) }}
+{% macro detailed_value(data, value_attrs = {}) %}
+{{ _detailed_value(data.value, data.details, value_attrs) }}
 {% endmacro %}
 
-{% macro detailed_int(data) %}
-{{ _detailed_value('%+d' | format(data.value), data.details) }}
+{% macro detailed_int(data, value_attrs = {}) %}
+{{ _detailed_value('%+d' | format(data.value), data.details, value_attrs) }}
 {% endmacro %}
 
-{% macro detailed_dc(data, from_modifier=False) %}
-DC {{ _detailed_value('%d' | format(10 + data.value), data.details) }}
+{% macro detailed_dc(data, from_modifier=False, value_attrs = {}) %}
+DC {{ _detailed_value('%d' | format((10 + data.value) if from_modifier else data.value), data.details, value_attrs) }}
 {% endmacro %}

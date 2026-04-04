@@ -13,13 +13,13 @@
     traits=(['complex'] if data.complex else []) + data.traits, collapsible=collapsible, **kwargs) %}
 <ul class="field-list">
     {% if data.complex %}
-    <li><b>Stealth</b> {{ detailed_int(data.stealth) }}</li>
+    <li><b>Stealth</b> {{ detailed_int(data.stealth, value_attrs={'id': 'statistic-stealth'}) }}</li>
     {% else %}
-    <li><b>Notice</b> {{ detailed_dc(data.stealth, from_modifier=True) }}</li>
+    <li><b>Notice</b> {{ detailed_dc(data.stealth, from_modifier=True, value_attrs={'id': 'statistic-notice-dc'}) }}</li>
     {% endif %}
     <li><b>Description</b> {{ data.description | safe }}</li>
     <hr>
-    <li><b>Disable</b> {{ data.disable | safe }}</li>
+    <li><b>Disable</b> <span id="disable-statistics">{{ data.disable | safe }}</span></li>
     {% for data in data.actions %}
     <li>{{ action(data) }}</li>
     {% endfor %}
@@ -31,10 +31,10 @@
     {% if data.ac %} 
         <li>
         <!-- AC -->
-        <b>AC</b> {{ data.ac }};
+        <b>AC</b> <span id='statistic-armour-class'>{{ data.ac }}</span>;
         <!-- Saves -->
-        {% for key, value in data.saves.items() if value %}
-            <b>{{ key | title }}</b> {{ '%+d' % value }}
+        {% for save, value in data.saves.items() if value %}
+            <b>{{ save | title }}</b> <span id="statistic-save-{{ save }}" class="statistic-save">{{ '%+d' % value }}</span>
             {{- ', ' if not loop.last }}
         {% endfor %}
         </li>
@@ -42,9 +42,9 @@
         <!-- Hardness -->
         {% set comma = joiner(';') %}
         {% if data.hardness %}
-        <b>Hardness</b> {{ data.hardness }};
+        <b>Hardness</b> <span id='statistic-hardness'>{{ data.hardness }}</span>;
         {% endif %}
-        <b>HP</b> {{ data.max_hp }}
+        <b>HP</b> <span id='statistic-hit-points'>{{ data.max_hp }}</span>
         <!-- HP -->
         </li>
     {% endif %}
