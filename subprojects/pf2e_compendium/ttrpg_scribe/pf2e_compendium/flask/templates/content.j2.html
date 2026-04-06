@@ -2,7 +2,7 @@
 {% import 'dependencies.j2.html' as dependencies %}
 <!DOCTYPE html>
 <head>
-    <title>{{ data.name | title }}</title>
+    <title>{{ data.name }}</title>
     <link rel="stylesheet" href="{{ url_for('pf2e_compendium.static', filename='stat_block.css') }}">
     {% block head %}
     {% endblock head %}
