@@ -1,8 +1,7 @@
 {% extends 'content.j2.html' %}
 {% import 'component/adjustments.j2.html' as adjustments %}
 {% import 'component/analyse.j2.html' as analyse %}
-{% from 'actions.j2.html' import action %}
-{% from 'stat_block.j2.html' import stat_block as stat_block_base %}
+{% from 'stat_block.j2.html' import action, stat_block as stat_block_base, statistic %}
 
 {% macro stat_block(data, collapsible=False) %}
 {% set _ = DEPRECATED(stat_block, creature) %}
@@ -12,7 +11,7 @@
 {% macro creature(data, collapsible=False) %}
 {% call stat_block_base(data.name, 'creature', data.level, data.size, data.rarity, data.traits, collapsible=collapsible, **kwargs) %}
 <p>
-    <b>Perception</b> <span id='statistic-perception'>{{ '{:+d}'.format(data.perception) }}</span>;
+    <b>Perception</b> {{ statistic('%+d' % data.perception, 'perception') }};
     {% for sense in data.senses %}
         {{ sense.name -}}
         {{ ' (%s)' % sense.acuity if sense.acuity -}}
@@ -29,12 +28,12 @@
     <b>Skills</b>
     {% set skill_joiner = joiner(', ') %}
     {%- for skill in data.skills.values() -%}
-        {{ skill_joiner() }}{{ skill.name | title }} <span id="statistic-skill-{{ skill.name | slug }}" class="statistic-skill-mod">{{ '{:+d}'.format(skill.mod) }}</span>
+        {{ skill_joiner() }}{{ skill.name | title }} {{ statistic('%+d' % skill.mod, 'skill', skill.name | slug) }}
         {%- if skill.special %} 
         (
         {%- set condition_joiner = joiner(', ') -%}
         {%- for condition, bonus in skill.special.items() -%}
-            {{ condition_joiner() }}<span id="statistic-skill-{{ (skill.name, condition) | slug }}" class="statistic-skill-mod">{{ '%+d' % bonus }}</span> {{ condition }}
+            {{ condition_joiner() }}{{ statistic('%+d' % bonus, 'skill', (skill.name, condition) | slug) }} {{ condition }}
         {%- endfor -%}
         ) 
         {%- endif -%}
@@ -53,27 +52,27 @@
 <!-- Abilities -->
 <p>
 {% for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
-    <b>{{ key.title() }}</b> <span id="statistic-attribute-{{ key }}" class="statistic-attribute">{{ '%+d' % data.abilities[key] }}</span>
+    <b>{{ key.title() }}</b> {{ statistic('%+d' % data.abilities[key], 'attribute', key) }}
     {{- ', ' if not loop.last }}
 {% endfor %}
 </p>
 <!-- Interactions -->
 <ul class="field-list">
 {% for interaction in data.interactions %}
-    <li>{{ action(interaction) }}</li>
+    <li>{{ action(interaction, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
 {% endfor %}
 </ul>
 <hr>
 <p>
-    <b>AC</b> <span id='statistic-armour-class'>{{ data.ac }}</span>;
+    <b>AC</b> {{ statistic(data.ac, 'armour-class') }};
     <!-- Saves -->
 {% for save in ['fortitude', 'reflex', 'will'] %}
-    <b>{{ save.title() }}</b> <span id="statistic-save-{{ save }}" class="statistic-save">{{ '%+d' % data.saves[save] }}</span>
+    <b>{{ save.title() }}</b> {{ statistic('%+d' % data.saves[save], 'save', save) }}
     {{- ', ' if not loop.last }}
 {% endfor %}
 </p>
 <p>
-    <b>HP</b> <span id='statistic-hit-points'>{{ data.max_hp }}</span>
+    <b>HP</b> {{ statistic(data.max_hp, 'hit-points') }}
     {%- if data.immunities %};
         <b>Immunities</b> {{ data.immunities | join(', ') }}
     {%- endif -%}
@@ -81,21 +80,21 @@
         <b>Resistances</b>
         {% set resistance_joiner = joiner(', ') %}
         {% for damage_type, amount in data.resistances.items() -%}
-        {{ resistance_joiner() }}{{ damage_type }} <span id="statistic-resistance-{{ damage_type | slug }}" class="statistic-resistance">{{ amount }}</span>
+        {{ resistance_joiner() }}{{ damage_type }} {{ statistic(amount, 'resistance', damage_type | slug) }}
         {%- endfor %}
     {%- endif -%}
     {%- if data.weaknesses %};
         <b>Weaknesses</b>
         {% set weakness_joiner = joiner(', ') %}
         {% for damage_type, amount in data.weaknesses.items() -%}
-        {{ weakness_joiner() }}{{ damage_type }} <span id="statistic-weakness-{{ damage_type | slug }}" class="statistic-weakness">{{ amount }}</span>
+        {{ weakness_joiner() }}{{ damage_type }} {{ statistic(amount, 'weakness', damage_type | slug) }}
         {%- endfor %}
     {% endif %}
 </p>
 <!-- Defenses -->
 <ul class="field-list">
 {% for defense in data.defenses %}
-    <li>{{ action(defense) }}</li>
+    <li>{{ action(defense, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
 {% endfor %}
 </ul>
 <hr>
@@ -114,15 +113,15 @@
 <!-- Actions -->
 <ul class="field-list">
     {% for data in data.actions %}
-    <li>{{ action(data) }}</li>
+    <li>{{ action(data, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
     {% endfor %}
 </ul>
 <!-- Spellcasting -->
 {% for spellcasting in data.spellcasting %}
 <p>
     <b>{{ spellcasting.name }}</b> {{ data.name }} can cast these spells
-    (spell DC <span id="statistic-dc-spell-{{ loop.index }}" class='statistic-dc'>{{ spellcasting.dc }}</span>,
-    spell attack <span id="statistic-spell-attack-{{ loop.index }}" class='statistic-spell-attack'>{{ '%+d' % spellcasting.attack }}</span>).
+    (spell DC {{ statistic(spellcasting.dc, 'dc', 'spell-%d' % loop.index) }},
+    spell attack {{ statistic('%+d' % spellcasting.attack, 'spell-attack', loop.index) }}).
     <ul style="list-style: none; margin-top: 0;">
     {% for level, spells in spellcasting.iter_spells() %}
         <li>
@@ -166,8 +165,6 @@
 {% endmacro %}
 
 {% block head %}
-    {% import 'dependencies.j2.html' as dependencies %}
-    {{ dependencies.JQUERY }}
     <script src="{{ url_for('core.static', filename='popup.js') }}"></script>
     {{ analyse.script(request.view_args.doc_type) }}
 {% endblock head %}

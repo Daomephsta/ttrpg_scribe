@@ -245,11 +245,20 @@ class Table[E](ABC):
             elif lower < value < upper:
                 return self.cell_type.between_brackets(lower, lower_name,
                                                           upper, upper_name, value)
-        highest, *_, lowest = row
-        if value < lowest:
-            return lowest.below_bracket(self.brackets[-1], value)
-        if value > highest:
-            return highest.above_bracket(self.brackets[0], value)
+        if len(row) > 1:
+            [highest, *_, lowest] = row
+            if value < lowest:
+                return lowest.below_bracket(self.brackets[-1], value)
+            if value > highest:
+                return highest.above_bracket(self.brackets[0], value)
+        else:
+            singleton, bracket = row[0], self.brackets[0]
+            if value < singleton:
+                return singleton.below_bracket(bracket, value)
+            elif value > singleton:
+                return singleton.above_bracket(self.brackets[0], value)
+            else:
+                return singleton.in_bracket(self.brackets[0], value)
         cell_str = ', '.join(str(cell) for cell in row)
         raise ValueError(f'Cannot classify {value} for level {level} thresholds: {cell_str}')
 

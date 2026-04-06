@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from typing import Any, Callable, overload
 
 from ttrpg_scribe.core.dice import SimpleDice, d
-
 from ttrpg_scribe.pf2e_compendium.foundry import i18n, mongo_client
 
 
@@ -18,8 +17,10 @@ class Args:
     keyed: dict[str, str] = {}
     __match_args__ = ('positional', 'keyed')
 
-    def __init__(self, raw: str, *, arg_sep: str, key_value_sep: str, error_context: str) -> None:
+    def __init__(self, raw: str, *, arg_sep: str, key_value_sep: str, display: str | None,
+                 error_context: str) -> None:
         self.raw = raw
+        self.display = display
         self.error_context = error_context
         self.keyed = {}
         for arg in raw.split(arg_sep):
@@ -108,13 +109,9 @@ class Args:
 _STATISTIC_ID = itertools.count(1)
 
 
-def _statistic_span(text: str, htmlClass: str):
-    attrs = {
-        'class': f'statistic-{htmlClass}',
-        'id': f'statistic-{htmlClass}-{next(_STATISTIC_ID)}'
-    }
-    attrs_str = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
-    return f'<span {attrs_str}>{text}</span>'
+def _statistic_span(text: str, table: str):
+    return (f'<span class="statistic" data-table="{table}" '
+            f'id="statistic-{table}-{next(_STATISTIC_ID)}">{text}</span>')
 
 
 def _damage_roll(args: Args, context: dict[str, Any]) -> str:
@@ -168,7 +165,7 @@ def _damage_roll(args: Args, context: dict[str, Any]) -> str:
 
         def __str__(self) -> str:
             def helper(dice: list[SimpleDice | int], damage_types: list[str]):
-                amount = _statistic_span(' + '.join(map(str, dice)), 'damage-dice')
+                amount = f'<span class="damage-dice">{' + '.join(map(str, dice))}</span>'
                 return f'{amount}' if self.shortLabel else f'{amount} {' '.join(damage_types)}'
             return ' + '.join(helper(dice, damage_types) for dice, damage_types in self.dice)
 
@@ -266,11 +263,10 @@ def _damage_roll(args: Args, context: dict[str, Any]) -> str:
 
 def enrich(text: str, context: dict[str, Any] = {}) -> str:
     def at_enrichers(result: re.Match) -> str:
-        def parse_args(args: str, *, context: str) -> Args:
-            return Args(args, arg_sep='|', key_value_sep=':', error_context=context)
         name, raw_args, display = result.groups()
         name: str
         raw_args: str
+        # TODO: output display as statistic span
         if display:
             return display
 
@@ -280,7 +276,8 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
             case 'UUID':
                 return raw_args[raw_args.rindex('.') + 1:]
             case 'Template':
-                with parse_args(raw_args, context='@Template') as args:
+                with Args(raw_args, arg_sep='|', key_value_sep=':', display=display,
+                          error_context='@Template') as args:
                     args.ignore('damaging', 'options', 'traits')
                     shape = args.consume_str('type') or args.consume_index(0)
                     distance = args.consume_str('distance')
@@ -288,31 +285,33 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
                         return f'{distance}-foot ({width}-foot wide) {shape}'
                     return f'{distance}-foot {shape}'
             case 'Check':
-                with parse_args(raw_args, context='@Check') as args:
+                with Args(raw_args, arg_sep='|', key_value_sep=':', display=display,
+                          error_context='@Check') as args:
                     args.ignore('against', 'defense', 'immutable', 'inflicts', 'name',
                                 'overrideTraits', 'rollerRole', 'showDC', 'options', 'traits')
                     check_type = args.consume_str('type') or args.consume_index(0)
                     basic = args.consume_bool('basic')
                     dc = args.consume_str('dc')
+                    if check_type == 'flat':  # Flat checks aren't level-based statistics
+                        # Special case check type name for flat checks
+                        return f'DC {dc} Flat Check'
                     match basic, dc:
                         case True, str():
+                            dc = _statistic_span(dc, 'dc')
                             return f'DC {dc} basic {check_type.title()}'
                         case False, None:
                             return check_type.title()
                         case False, str():
-                            if check_type != 'flat':  # Flat checks aren't level-based statistics
-                                dc = _statistic_span(dc, 'dc')
-                            else:
-                                # Special case check type name for flat checks
-                                return f'DC {dc} Flat Check'
+                            dc = _statistic_span(dc, 'dc')
                             return f'DC {dc} {check_type.title()}'
                         case True, None:
                             return f'basic {check_type.title()}'
             case 'Damage':
-                with parse_args(raw_args, context='@Damage') as args:
+                with Args(raw_args, arg_sep='|', key_value_sep=':', display=display,
+                          error_context='@Damage') as args:
                     return _damage_roll(args, context)
             case 'Embed':
-                with Args(raw_args, arg_sep=' ', key_value_sep='=',
+                with Args(raw_args, arg_sep=' ', key_value_sep='=', display=display,
                           error_context=f'@{name}') as args:
                     uuid = args.consume_index(0)
                     uuid = uuid[uuid.rindex('.') + 1:]
@@ -330,12 +329,14 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
         name: str
         raw_args: str
         display: str
+        # TODO: output display as statistic span
         if display:
             return display
 
         raw_args, _, tag = raw_args.partition('#')
         raw_args = raw_args.strip()
-        with Args(raw_args, arg_sep=' ', key_value_sep='=', error_context=f'[[/{name}]]') as args:
+        with Args(raw_args, arg_sep=' ', key_value_sep='=', display=display,
+                  error_context=f'[[/{name}]]') as args:
             match name:
                 case 'r' | 'pr' | 'gmr' | 'br' | 'sr':
                     args.ignore('options', 'traits')

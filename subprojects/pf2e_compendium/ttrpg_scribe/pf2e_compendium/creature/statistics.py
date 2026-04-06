@@ -95,7 +95,7 @@ SKILLS = Table('SKILLS', NumberCell,
         [+48, +45, +40, (+33, +38)],  # 24
     ])
 
-ARMOR_CLASS = Table('ARMOR_CLASS', NumberCell,
+ARMOUR_CLASS = Table('ARMOUR_CLASS', NumberCell,
     ['Extreme', 'High', 'Moderate', 'Low'],
     [  # E   H   M   L
         [18, 15, 14, 12],  # -1

@@ -26,22 +26,102 @@
 </div>
 {% endmacro %}
 
-{% macro _detailed_value(value, details, value_attrs = {}) %}
-<span{{ value_attrs | xmlattr }}>{{ value }}</span>
+{% macro statistic(value, table, id=None) %}
+{%- if id == None -%}
+<span class="statistic" data-table="{{ table }}" id="statistic-{{ table }}">{{ caller() if caller else value }}</span>
+{%- else -%}
+<span class="statistic" data-table="{{ table }}" id="statistic-{{ table }}-{{ id }}">{{ caller() if caller else value }}</span>
+{%- endif -%}
+{% endmacro %}
+
+{% macro _detailed_value(details, value, table, id=None) %}
+{{ statistic(value, table, id) }}
 {%- if details -%}
 {{ ';' if '(' not in details }}
 {{ details | safe}}
 {%- endif -%}
 {% endmacro %}
 
-{% macro detailed_value(data, value_attrs = {}) %}
-{{ _detailed_value(data.value, data.details, value_attrs) }}
+{% macro detailed_value(data, table, id=None) %}
+{{ _detailed_value(data.details, data.value, table, id) }}
 {% endmacro %}
 
-{% macro detailed_int(data, value_attrs = {}) %}
-{{ _detailed_value('%+d' | format(data.value), data.details, value_attrs) }}
+{% macro detailed_int(data, table, id=None) %}
+{{ _detailed_value(data.details, '%+d' | format(data.value), table, id) }}
 {% endmacro %}
 
-{% macro detailed_dc(data, from_modifier=False, value_attrs = {}) %}
-DC {{ _detailed_value('%d' | format((10 + data.value) if from_modifier else data.value), data.details, value_attrs) }}
+{% macro detailed_dc(data, table, id=None, from_modifier=False) %}
+DC {{ _detailed_value(data.details, '%d' | format((10 + data.value) if from_modifier else data.value), table, id) }}
+{% endmacro %}
+
+{% macro fmt_traits(traits) %}
+{% if traits %}
+(
+{%- for trait, value in traits.items() -%}
+    {% set trait = trait | replace('-', ' ') %}
+    {%- if trait in ['reach', 'thrown', 'range-increment'] -%}
+        {{ trait }} {{ value }} ft
+    {%- elif trait == 'versatile' -%}
+        {{ trait }} {{ value | upper }}
+    {%- elif value -%}
+        {{ trait }} {{ value }}
+    {%- else -%}
+        {{ trait }}
+    {%- endif -%}
+    {{- ', ' if not loop.last }}
+{%- endfor %}
+)
+{% endif %}
+{% endmacro %}
+
+{% macro simple_action(action) %}
+<b>{{ action.name }}</b>
+{{ action.cost | action }}
+{{ fmt_traits(action.traits) }}
+{% if action.trigger %}
+    <b>Trigger</b> {{ action.trigger }}
+{% endif %}
+{{ action.desc | safe }}
+{% endmacro %}
+
+{% macro strike_action(action, bonus_table, damage_table) %}
+<b>{{ action.weapon_type | title }}</b>
+{{ action.name }}
+{{ action.cost | action }}
+{{ statistic('%+d' % action.bonus, bonus_table, (action.name, action.weapon_type) | slug) }}
+{% for malus in action.attack_maluses() %}
+    {% if action.traits.get('reload', '-1') | int > 0 %}
+    / reload {{ action.traits['reload'] | action }} /
+    {% else %}
+    /
+    {% endif %}
+    {{ '%+d' | format(action.bonus - malus) }}
+{% endfor %}
+{{ fmt_traits(action.traits) }}
+{% if action.damage %}
+    <b>Damage</b>
+    {% call statistic(None, damage_table, (action.name, action.weapon_type) | slug) %}
+        {% set damage_joiner = joiner(' plus ') %}
+        {% for amount, damage_type in action.damage -%}
+        {{ damage_joiner() }}<span class="damage-dice">{{ amount }}</span> {{ damage_type }}
+        {%- endfor %}
+    {% endcall %}
+{% endif %}
+{% if action.trigger %}
+    <b>Trigger</b> {{ action.trigger }}
+{% endif %}
+{% if action.effects %}
+    <b>Effect</b>
+    {% for effect in action.effects %}
+        {{ effect.replace('-', ' ') }}
+    {% endfor %}
+{% endif %}
+{% endmacro %}
+
+{% macro action(data, context) %}
+    {% if data.kind() == 'SimpleAction' %}
+    {{ simple_action(data) }}
+    {% elif data.kind() == 'Strike' %}
+    {{ strike_action(data, **context['Strike']) }}
+    {% endif %}
 {% endmacro %}

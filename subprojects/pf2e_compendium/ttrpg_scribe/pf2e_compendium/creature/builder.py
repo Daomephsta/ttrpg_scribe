@@ -10,7 +10,7 @@ from ttrpg_scribe.pf2e_compendium.creature import (Abilities, PF2Creature,
                                                    Saves, Sense, Skill,
                                                    Spellcasting)
 from ttrpg_scribe.pf2e_compendium.creature.statistics import (
-    ARMOR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, RESISTANCES,
+    ARMOUR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, RESISTANCES,
     SAVING_THROWS, WEAKNESSES)
 
 
@@ -100,7 +100,7 @@ class CreatureBuilder:
             'cha': _Statistic(ATTRIBUTE_MODIFIERS, level, MODERATE)
         }
         self.interactions = []
-        self.ac = _Statistic(ARMOR_CLASS, level, MODERATE)
+        self.ac = _Statistic(ARMOUR_CLASS, level, MODERATE)
         self.saves = {
             'fortitude': _Statistic(SAVING_THROWS, level, MODERATE),
             'reflex': _Statistic(SAVING_THROWS, level, MODERATE),

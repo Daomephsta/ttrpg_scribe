@@ -5,7 +5,6 @@ from typing import Any, Iterable
 import flask
 from flask import Blueprint, Flask, json, render_template, request
 from markupsafe import Markup
-from werkzeug.exceptions import BadRequest
 
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.core.typescript
@@ -14,9 +13,8 @@ import ttrpg_scribe.pf2e_compendium.oracle
 from ttrpg_scribe.encounter.flask import (EncounterSpec, InitiativeParticipant,
                                           SystemPlugin)
 from ttrpg_scribe.pf2e_compendium import foundry
-from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, templates
+from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, analyser, templates
 from ttrpg_scribe.pf2e_compendium.creature import PF2Creature
-from ttrpg_scribe.pf2e_compendium.creature import analyser as creature_analyser
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 from ttrpg_scribe.pf2e_compendium.foundry import packs as foundry_packs
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
@@ -84,11 +82,7 @@ def raw_content(doc_type: str, id: str):
 
 @blueprint.post('/analyse/<doc_type>/')
 def analyse(doc_type: str):
-    match doc_type:
-        case 'npc':
-            return json.jsonify(creature_analyser.analyse(flask.request.get_json()))
-        case _:
-            raise BadRequest(f'No analyser for content type {type}')
+    return analyser.analyse(doc_type, flask.request.get_json())
 
 
 def _apply_adjustments(content):

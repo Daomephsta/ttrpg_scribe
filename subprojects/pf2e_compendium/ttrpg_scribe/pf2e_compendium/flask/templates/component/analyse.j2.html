@@ -1,5 +1,7 @@
 {% macro script(doc_type) %}
-    <script type="module" src="{{ url_for('.static', filename='analyse_creature.js') }}"></script>
+    {% import 'dependencies.j2.html' as dependencies %}
+    {{ dependencies.JQUERY }}
+    <script type="module" src="{{ url_for('.static', filename='analyse_statistics.js') }}"></script>
     <script type="application/json" id="analyse-endpoint">
     {{ url_for('.analyse', doc_type=doc_type) }}
     </script>
