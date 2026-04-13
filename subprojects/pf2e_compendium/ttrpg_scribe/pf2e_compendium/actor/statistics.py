@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Self
 
 from ttrpg_scribe.core.dice import SimpleDice
+from ttrpg_scribe.core.html import Tag
 
 
 @dataclass
@@ -280,3 +281,14 @@ LOW = StatisticBracket('Low')
 MODERATE = StatisticBracket('Moderate')
 HIGH = StatisticBracket('High')
 EXTREME = StatisticBracket('Extreme')
+
+_STATISTIC_ID = itertools.count(1)
+
+
+def inline_html(text: str, table: str, **data_attrs: str):
+    return Tag('span', text=text, attrs={
+        'class': 'statistic',
+        'data-table': table,
+        'id': f'statistic-{table}-{next(_STATISTIC_ID)}',
+        **{f'data-{k.replace('_', '-')}': v for k, v in data_attrs.items()}
+    })
