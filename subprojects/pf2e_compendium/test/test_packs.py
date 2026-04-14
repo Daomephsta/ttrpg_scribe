@@ -9,7 +9,6 @@ _BUGS: dict[str, tuple[type[Exception], str]] = {
 }
 
 
-@pytest.mark.usefixtures('setup_mongo')
 def test_read_document(test_document):
     match _BUGS.get(test_document['_id'], None):
         case ex_type, pattern:
