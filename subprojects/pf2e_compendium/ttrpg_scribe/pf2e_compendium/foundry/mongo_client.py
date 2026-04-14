@@ -17,7 +17,7 @@ from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 
 Document = dict[str, Any]
-client: MongoClient[Document] = MongoClient(*mongo_server.CONNECTION_ARGS)
+client: MongoClient[Document] = MongoClient(*mongo_server.CONNECTION_ARGS, timeoutMS=1000)
 db = client.pf2e
 _LOGGER = logging.getLogger(__name__)
 
