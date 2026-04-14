@@ -1,11 +1,5 @@
 import pytest
-from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import packs
-
-
-@pytest.fixture(scope='session')
-def setup_mongo():
-    foundry.initialise()
 
 
 _BUGS: dict[str, tuple[type[Exception], str]] = {

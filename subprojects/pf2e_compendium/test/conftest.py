@@ -1,5 +1,6 @@
 import pytest
 
+from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 
 
@@ -14,5 +15,6 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
 
 
 def sample_documents(sample: int | None):
+    foundry.initialise()
     pipeline: list[dict] = [{'$sample': {'size': sample}}] if sample is not None else []
     yield from mongo_client.db.all.aggregate(pipeline)

@@ -13,10 +13,14 @@ data_dir = (platformdirs.user_data_path('ttrpg_scribe') / 'pf2e_compendium/data'
 pf2e_dir = (data_dir / 'foundryvtt/pf2e').absolute()
 with (pf2e_dir/'system.json').open() as file:
     system = json.load(file)
+initialised = False
 _LOGGER = logging.getLogger(__name__)
 
 
 def initialise(force_rebuild: bool = False):
+    global initialised
+    if initialised:
+        return
     from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, mongo_server
 
     def check_for_updates():
@@ -59,3 +63,4 @@ def initialise(force_rebuild: bool = False):
     mongo_server.start()
     mongo_client.initialise()
     check_for_updates()
+    initialised = True
