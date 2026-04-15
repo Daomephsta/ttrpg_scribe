@@ -36,7 +36,7 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
             case 'Template':
                 with Args(raw_args, arg_sep='|', key_value_sep=':',
                           error_context='@Template') as args:
-                    args.ignore('damaging', 'options', 'traits')
+                    args.ignore('damaging', 'name', 'options', 'traits')
                     shape = args.consume_str('type') or args.consume_index(0)
                     distance = args.consume_str('distance')
                     if shape == 'line' and (width := args.consume_str('width')) is not None:
@@ -93,7 +93,7 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
                     amount = ' '.join(args.consume_positional())
                     return f'{amount} {tag}' if tag else amount
                 case 'act':
-                    args.ignore('options', 'traits')
+                    args.ignore('options', 'traits', 'variant')
                     action = args.consume_index(0).replace('-', ' ').title()
                     dc = args.consume_str('dc')
                     statistic = args.consume_str('statistic') or args.consume_str('skill')
