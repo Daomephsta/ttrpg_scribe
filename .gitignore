@@ -170,3 +170,4 @@ cython_debug/
 _build
 mongod
 .pdm-python
+.vscode/settings.json
