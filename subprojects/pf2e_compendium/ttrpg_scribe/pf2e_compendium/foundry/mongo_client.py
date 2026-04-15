@@ -186,15 +186,21 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
             self.obj['system']['attributes']['hp']['value'] += delta
 
         def damaging_actions(self, attack_delta: int, damage_delta: int):
+            def with_delta(formula: str, delta: int):
+                if formula.isnumeric():
+                    return str(int(formula) + delta)
+                else:
+                    return f'{formula}{damage_delta:+d}'
+
             for item in self.obj['items']:
                 if item['type'] not in ['melee', 'spell']:
                     continue
                 if 'bonus' in item['system']:
                     item['system']['bonus']['value'] += attack_delta
                 for damage_roll in item['system'].get('damageRolls', {}).values():
-                    damage_roll['damage'] += f'{damage_delta:+d}'
+                    damage_roll['damage'] = with_delta(damage_roll['damage'], damage_delta)
                 for damage in item['system'].get('damage', {}).values():
-                    damage['formula'] += f'{damage_delta:+d}'
+                    damage['formula'] = with_delta(damage['formula'], damage_delta)
 
     class PF2CreatureDocAdjuster(PF2ActorDocAdjuster, CreatureAdjuster[Document]):
         def perception(self, delta: int):
