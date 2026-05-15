@@ -6,8 +6,8 @@ from slugify import slugify
 
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
-from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
-from ttrpg_scribe.pf2e_compendium.actor import DetailedValue
+from ttrpg_scribe.pf2e_compendium.actions import SimpleAction, Strike
+from ttrpg_scribe.pf2e_compendium.actor import ActionsContainer, DetailedValue
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, roll_data
@@ -53,9 +53,7 @@ def _read_creature(json: Json) -> PF2Creature:
             yield name, Skill(name, info['base'], special)
 
     skills: dict[str, Skill] = dict(read_skills())
-    interactions: list[SimpleAction] = []
-    defenses: list[SimpleAction] = []
-    actions: list[Action] = []
+    actions = ActionsContainer()
     inventory: dict[str, int] = {}
 
     @dataclass
@@ -96,15 +94,7 @@ def _read_creature(json: Json) -> PF2Creature:
             item_roll_data = actor_roll_data | roll_data.item(item)
             match item['type']:
                 case 'action':
-                    name = item['name']
-                    desc = enrich(system.description.value(item), item_roll_data)
-                    match system.category(item):
-                        case 'interaction':
-                            interactions.append(SimpleAction(name, desc, cost=0))
-                        case 'defensive':
-                            defenses.append(_read_simple_action(item, item_roll_data))
-                        case 'offensive':
-                            actions.append(_read_simple_action(item, item_roll_data))
+                    actions.add(_read_simple_action(item, item_roll_data))
                 case 'lore':
                     # Coerce to proper skill slug
                     name = slugify(item['name'])
@@ -116,7 +106,7 @@ def _read_creature(json: Json) -> PF2Creature:
                         [x['label'] for x in system.variants(item, _or={}).values()]
                     )
                 case 'melee':
-                    actions.append(_read_strike(item))
+                    actions.add(_read_strike(item))
                 case 'weapon' | 'armor' | 'consumable' | 'equipment' |\
                      'treasure' | 'shield' | 'backpack' | 'ammo':
                     inventory[item['name']] = system.quantity(item)
@@ -152,7 +142,7 @@ def _read_creature(json: Json) -> PF2Creature:
                         location = system.location.value(item, _or=None)
                     spellcasting_lists[location].add_spell(item)
                 case 'condition':
-                    interactions.append(SimpleAction(
+                    actions.add(SimpleAction(
                         item['name'],
                         enrich(system.description.value(item), item_roll_data),
                         cost=0))
@@ -180,14 +170,12 @@ def _read_creature(json: Json) -> PF2Creature:
         skills=skills,
         inventory=inventory,
         abilities={k: v['mod'] for k, v in system.abilities(json).items()},
-        interactions=interactions,
         ac=attributes.ac.value(json),
         saves={k: v['value'] for k, v in system.saves(json).items()},
         max_hp=attributes.hp.max(json),
         immunities=[x['type'] for x in attributes.immunities(json, _or=[])],
         resistances={x['type']: x['value'] for x in attributes.resistances(json, _or=[])},
         weaknesses={x['type']: x['value'] for x in attributes.weaknesses(json, _or=[])},
-        defenses=defenses,
         speeds={'walk': attributes.speed.value(json) or 0,
               **{speed['type']: speed['value']
                 for speed in attributes.speed.otherSpeeds(json)}},
@@ -210,15 +198,15 @@ def _read_hazard(json: Json) -> PF2Hazard:
     attributes = system.attributes
     details = system.details
 
-    actions: list[Action] = []
+    actions = ActionsContainer()
     for i, item in enumerate(json['items']):
         try:
             item_roll_data = actor_roll_data | roll_data.item(item)
             match item['type']:
                 case 'action':
-                    actions.append(_read_simple_action(item, item_roll_data))
+                    actions.add(_read_simple_action(item, item_roll_data))
                 case 'melee':
-                    actions.append(_read_strike(item))
+                    actions.add(_read_strike(item))
                 case 'consumable':
                     # Items that don't need to be in the stat block
                     pass
@@ -337,7 +325,7 @@ def _read_simple_action(item, item_roll_data):
         case unknown:
             raise ValueError(f'Unknown action type {unknown}')
     return SimpleAction(item['name'], enrich(system.description.value(item), item_roll_data),
-                        cost, system.traits.value(item))
+                        cost, system.traits.value(item), category=system.category(item))
 
 
 def _read_strike(item):

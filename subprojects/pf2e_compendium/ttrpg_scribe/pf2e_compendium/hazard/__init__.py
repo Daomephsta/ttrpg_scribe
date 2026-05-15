@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
-from ttrpg_scribe.pf2e_compendium.actions import Action
-from ttrpg_scribe.pf2e_compendium.actor import DetailedValue, PF2Actor, Saves
+from ttrpg_scribe.pf2e_compendium.actor import (ActionsContainer,
+                                                DetailedValue, PF2Actor, Saves)
 
 
 @dataclass
@@ -20,7 +20,7 @@ class PF2Hazard(InitiativeParticipant, PF2Actor):
     hardness: int
     max_hp: int
     routine: str
-    actions: list[Action]
+    actions: ActionsContainer
     reset: str
     description: str
 
@@ -36,9 +36,6 @@ class PF2Hazard(InitiativeParticipant, PF2Actor):
         for template in templates:
             template(self)
         return self
-
-    def iter_actions(self) -> Iterable[Action]:
-        return self.actions
 
     def write_json(self, data: dict[str, Any]):
         data.update(
@@ -74,7 +71,7 @@ class PF2Hazard(InitiativeParticipant, PF2Actor):
             hardness=data['hardness'],
             max_hp=data['max_hp'],
             routine=data['routine'],
-            actions=[Action.from_json(action) for action in data['actions']],
+            actions=ActionsContainer.from_json(data['actions']),
             reset=data['reset'],
             description=data['description'],
         )

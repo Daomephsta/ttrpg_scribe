@@ -4,20 +4,22 @@ from ttrpg_scribe.pf2e_compendium.creature import PF2Creature, Sense
 
 def with_actions(*actions: Action) -> PF2Creature.Template:
     def template(creature: PF2Creature):
-        creature.actions += actions
+        for action in actions:
+            creature.actions.add(action)
     return template
 
 
 def without_actions(*action_names: str) -> PF2Creature.Template:
     def template(creature: PF2Creature):
-        creature.actions = [a for a in creature.actions
-                            if a.name not in action_names]
+        for name in action_names:
+            creature.actions.remove(name)
     return template
 
 
-def replace_actions(actions: dict[str, Action]) -> PF2Creature.Template:
+def replace_actions(*actions: Action) -> PF2Creature.Template:
     def template(creature: PF2Creature):
-        creature.actions = [actions.get(a.name, a) for a in creature.actions]
+        for action in actions:
+            creature.actions.replace(action)
     return template
 
 

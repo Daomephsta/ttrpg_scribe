@@ -58,7 +58,7 @@
 </p>
 <!-- Interactions -->
 <ul class="field-list">
-{% for interaction in data.interactions %}
+{% for interaction in data.actions.by_category('interaction') | sort(attribute='name') %}
     <li>{{ action(interaction, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
 {% endfor %}
 </ul>
@@ -93,7 +93,7 @@
 </p>
 <!-- Defenses -->
 <ul class="field-list">
-{% for defense in data.defenses %}
+{% for defense in data.actions.by_category('defensive') | sort(attribute='name') %}
     <li>{{ action(defense, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
 {% endfor %}
 </ul>
@@ -112,8 +112,8 @@
 </p>
 <!-- Actions -->
 <ul class="field-list">
-    {% for data in data.actions %}
-    <li>{{ action(data, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
+    {% for offense in data.actions.by_category('offensive') | sort(attribute='name') %}
+    <li>{{ action(offense, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
     {% endfor %}
 </ul>
 <!-- Spellcasting -->

@@ -1,9 +1,7 @@
-import itertools
 import re
-from abc import abstractmethod
-from typing import Callable, Iterable, overload
+from typing import Callable, overload
 
-from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction, Strike
+from ttrpg_scribe.pf2e_compendium.actions import SimpleAction, Strike
 from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, Save
 from ttrpg_scribe.pf2e_compendium.actor.adjustments import (Adjuster,
                                                             CreatureAdjuster,
@@ -21,7 +19,7 @@ def compose[A](*templates: PF2Actor.GenericTemplate[A]) -> PF2Actor.GenericTempl
 
 def map_all_text(mapper: Callable[[str], str]) -> PF2Actor.Template:
     def template(actor: PF2Actor):
-        for action in actor.iter_actions():
+        for action in actor.actions:
             match action:
                 case SimpleAction():
                     action.name = mapper(action.name)
@@ -93,12 +91,8 @@ class PF2ActorAdjuster[A: PF2Actor](Adjuster[A]):
     def max_hp(self, delta: int):
         self.obj.max_hp += delta
 
-    @abstractmethod
-    def iter_actions(self) -> Iterable[Action]:
-        ...
-
     def damaging_actions(self, attack_delta: int, damage_delta: int):
-        for action in self.iter_actions():
+        for action in self.obj.actions:
             match action:
                 case Strike():
                     action.bonus += attack_delta
@@ -123,16 +117,10 @@ class PF2CreatureAdjuster(PF2ActorAdjuster[PF2Creature], CreatureAdjuster[PF2Cre
             casting.attack += attack_delta
             casting.dc += dc_delta
 
-    def iter_actions(self) -> Iterable[Action]:
-        return itertools.chain(self.obj.actions, self.obj.defenses, self.obj.interactions)
-
 
 class PF2HazardAdjuster(PF2ActorAdjuster[PF2Hazard], HazardAdjuster[PF2Hazard]):
     def stealth(self, delta: int):
         self.obj.stealth.value += delta
-
-    def iter_actions(self) -> Iterable[Action]:
-        return self.obj.actions
 
 
 class _Adjustment:

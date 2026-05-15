@@ -20,7 +20,7 @@
     <li><b>Description</b> {{ data.description | safe }}</li>
     <hr>
     <li><b>Disable</b> <span data-dc-table="disable-dc">{{ data.disable | safe }}</span></li>
-    {% for action_data in data.actions %}
+    {% for action_data in data.actions | sort(attribute='name') %}
     <li data-dc-table="offense-dc">{{ action(action_data, {
         'Strike': 
             {'bonus_table': 'complex-strike-bonus', 'damage_table': 'complex-strike-damage'}

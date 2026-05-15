@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Callable, Self, TypedDict, Unpack
 
-from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
-from ttrpg_scribe.pf2e_compendium.actor import statistics
+from ttrpg_scribe.pf2e_compendium.actions import Action
+from ttrpg_scribe.pf2e_compendium.actor import ActionsContainer, statistics
 from ttrpg_scribe.pf2e_compendium.actor.statistics import (MODERATE,
                                                            StatisticBracket,
                                                            Table)
@@ -65,16 +65,14 @@ class CreatureBuilder:
     skills: dict[str, Skill]
     inventory: dict[str, int]
     abilities: Abilities[_Statistic[int]]
-    interactions: list[SimpleAction]
     ac: _Statistic[int]
     saves: Saves[_Statistic[int]]
     max_hp: _Statistic[int]
     immunities: list[str]
     resistances: dict[str, _Statistic[int]]
     weaknesses: dict[str, _Statistic[int]]
-    defenses: list[SimpleAction]
     speeds: dict[str, int]
-    actions: list[Action]
+    actions: ActionsContainer
     spellcasting: list[Spellcasting]
 
     type Template = Callable[[Self], Any]
@@ -99,7 +97,6 @@ class CreatureBuilder:
             'wis': _Statistic(ATTRIBUTE_MODIFIERS, level, MODERATE),
             'cha': _Statistic(ATTRIBUTE_MODIFIERS, level, MODERATE)
         }
-        self.interactions = []
         self.ac = _Statistic(ARMOUR_CLASS, level, MODERATE)
         self.saves = {
             'fortitude': _Statistic(SAVING_THROWS, level, MODERATE),
@@ -110,9 +107,8 @@ class CreatureBuilder:
         self.immunities = []
         self.resistances = {}
         self.weaknesses = {}
-        self.defenses = []
         self.speeds = {'walk': 25}
-        self.actions = []
+        self.actions = ActionsContainer()
         self.spellcasting = []
         self.apply(init_template)
 
@@ -141,14 +137,14 @@ class CreatureBuilder:
         senses: list[Sense]
         skills: list[Skill]
         inventory: dict[str, int]
-        interactions: list[tuple[str, str]]
         immunities: list[str]
-        defenses: list[SimpleAction]
         speeds: dict[str, int]
         actions: list[Action]
         spellcasting: list[Spellcasting]
 
     def update_append(self, **kwargs: Unpack['CreatureBuilder._UpdateAppendArgs']):
+        for action in kwargs.pop('actions', []):
+            self.actions.add(action)
         for field, value in kwargs.items():
             current = getattr(self, field)
             match current, value:
@@ -156,9 +152,9 @@ class CreatureBuilder:
                     current.extend(value)
                 case dict(), dict():
                     current.update(value)
-                case _, _:
-                    raise TypeError(f"Can't append {type(value).__name__} to "
-                                    "{type(current).__name__}")
+                case _:
+                    raise TypeError(f"Can't update {field} by appending {type(value).__name__} to "
+                                    f"{type(current).__name__}")
         return self
 
     class _UpdateArgs(TypedDict, total=False):
@@ -174,14 +170,12 @@ class CreatureBuilder:
         skills: dict[str, Skill]
         inventory: dict[str, int]
         abilities: Abilities[StatisticBracket | int]
-        interactions: list[SimpleAction]
         ac: StatisticBracket | int
         saves: Saves[StatisticBracket | int]
         max_hp: StatisticBracket | int
         immunities: list[str]
         resistances: dict[str, StatisticBracket | int]
         weaknesses: dict[str, StatisticBracket | int]
-        defenses: list[SimpleAction]
         speeds: dict[str, int]
         actions: list[Action]
         spellcasting: list[Spellcasting]
@@ -204,6 +198,8 @@ class CreatureBuilder:
                     _statistic_factory(RESISTANCES))
         update_dict(self.weaknesses, kwargs.pop('weaknesses', {}),
                     _statistic_factory(WEAKNESSES))
+        if 'actions' in kwargs:
+            self.actions = ActionsContainer(kwargs['actions'])
         for field, value in kwargs.items():
             current = getattr(self, field)
             if isinstance(current, _Statistic):
@@ -226,14 +222,12 @@ class CreatureBuilder:
             skills=self.skills,
             inventory=self.inventory,
             abilities={k: v.resolve() for k, v in self.abilities.items()},
-            interactions=self.interactions,
             ac=self.ac.resolve(),
             saves={k: v.resolve() for k, v in self.saves.items()},
             max_hp=self.max_hp.resolve(),
             immunities=self.immunities,
             resistances={k: v.resolve() for k, v in self.resistances.items()},
             weaknesses={k: v.resolve() for k, v in self.weaknesses.items()},
-            defenses=self.defenses,
             speeds=self.speeds,
             actions=self.actions,
             spellcasting=self.spellcasting

@@ -1,11 +1,11 @@
 import collections
-import itertools
 from dataclasses import dataclass, field
 from typing import Any, Callable, ClassVar, Iterable, Literal
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
-from ttrpg_scribe.pf2e_compendium.actions import Action, SimpleAction
-from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, Saves
+from ttrpg_scribe.pf2e_compendium.actions import Action
+from ttrpg_scribe.pf2e_compendium.actor import (ActionsContainer, PF2Actor,
+                                                Saves)
 from ttrpg_scribe.pf2e_compendium.actor.statistics import (StatisticBracket,
                                                            Table)
 from ttrpg_scribe.pf2e_compendium.creature import statistics
@@ -145,16 +145,14 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
     skills: dict[str, Skill]
     inventory: dict[str, int]
     abilities: Abilities[int]
-    interactions: list[SimpleAction]
     ac: int
     saves: Saves[int]
     max_hp: int
     immunities: list[str]
     resistances: dict[str, int]
     weaknesses: dict[str, int]
-    defenses: list[SimpleAction]
     speeds: dict[str, int]
-    actions: list[Action]
+    actions: ActionsContainer
     spellcasting: list[Spellcasting]
 
     def __post_init__(self):
@@ -192,9 +190,6 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
             template(self)
         return self
 
-    def iter_actions(self) -> Iterable[Action]:
-        return itertools.chain(self.actions, self.defenses, self.interactions)
-
     def write_json(self, data: dict[str, Any]):
         data.update(
             type='creature',
@@ -210,14 +205,12 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
             skills=self.skills,
             inventory=self.inventory,
             abilities=self.abilities,
-            interactions=self.interactions,
             ac=self.ac,
             saves=self.saves,
             max_hp=self.max_hp,
             immunities=self.immunities,
             resistances=self.resistances,
             weaknesses=self.weaknesses,
-            defenses=self.defenses,
             speeds=self.speeds,
             actions=self.actions,
             spellcasting=self.spellcasting
@@ -238,16 +231,14 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
             skills={name: Skill.from_json(skill) for name, skill in data['skills'].items()},
             inventory=data['inventory'],
             abilities=data['abilities'],
-            interactions=[SimpleAction.from_json(action) for action in data['interactions']],
             ac=data['ac'],
             saves=data['saves'],
             max_hp=data['max_hp'],
             immunities=data['immunities'],
             resistances=data['resistances'],
             weaknesses=data['weaknesses'],
-            defenses=[SimpleAction.from_json(action) for action in data['defenses']],
             speeds=data['speeds'],
-            actions=[Action.from_json(action) for action in data['actions']],
+            actions=ActionsContainer.from_json(data['actions']),
             spellcasting=[Spellcasting.from_json(e) for e in data.get('spellcasting', [])],
         )
 

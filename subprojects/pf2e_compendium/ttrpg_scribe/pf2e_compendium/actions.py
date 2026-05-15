@@ -1,18 +1,20 @@
 import re
 from functools import partial
-from typing import Any, Self
+from typing import Any, ClassVar, Literal, Self
 
 from ttrpg_scribe.core.dice import SimpleDice
 
 
 class Action:
+    type Category = Literal['interaction', 'defensive', 'offensive']
+    CATEGORIES: ClassVar[list[Category]] = ['interaction', 'defensive', 'offensive']
     traits: dict[str, Any]
+    category: Category
 
     def __init__(self, name: str, cost: str | int, traits: list[str] | dict[str, Any],
-                 trigger: str):
+                 trigger: str, category: Category | None):
         self.name = name
         self.cost = cost
-        self.trigger = trigger
 
         def parse_trait(trait: str) -> tuple[str, Any]:
             trait = trait.lower().replace(' ', '-')
@@ -25,6 +27,9 @@ class Action:
                 self.traits = traits
             case list():
                 self.traits = dict(parse_trait(t) for t in traits)
+
+        self.trigger = trigger
+        self.category = category or 'interaction'
 
     def kind(self):
         return self.__class__.__name__
@@ -66,8 +71,8 @@ class Action:
 
 class SimpleAction(Action):
     def __init__(self, name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
-                 trigger=''):
-        super().__init__(name, cost, traits, trigger)
+                 trigger='', category: 'Action.Category' = 'interaction'):
+        super().__init__(name, cost, traits, trigger, category)
         self.desc = desc
 
     @classmethod
@@ -83,8 +88,9 @@ class SimpleAction(Action):
 class Strike(Action):
     def __init__(self, name: str, weapon_type: str, bonus: int,
                  damage: list[tuple[SimpleDice | int, str]], cost: str | int = 1,
-                 traits: list[str] = [], trigger='', effects: list[str] = []):
-        super().__init__(name, cost, traits, trigger)
+                 traits: list[str] = [], trigger='', category: 'Action.Category' = 'offensive',
+                 effects: list[str] = []):
+        super().__init__(name, cost, traits, trigger, category)
         self.weapon_type = weapon_type
         self.bonus = bonus
         self.damage = list(damage)
