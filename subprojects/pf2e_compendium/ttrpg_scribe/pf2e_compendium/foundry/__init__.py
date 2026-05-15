@@ -58,6 +58,7 @@ def initialise(force_rebuild: bool = False):
                 task = bar.add_task(f'Downloading foundryvtt/pf2e-{VERSION}',
                                     total=None, subdesc='')
                 response = requests.get(url, stream=True)
+                response.raise_for_status()
                 bar.update(task, total=int(response.headers['Content-Length']))
                 chunk: bytes
                 for chunk in response.iter_content(chunk_size=4 * 1024):
