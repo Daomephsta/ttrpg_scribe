@@ -301,7 +301,7 @@ def update(progress: Progress):
     client.drop_database('pf2e')
 
     def build_ops_batch():
-        packs: list = foundry.system['packs']
+        packs: list = foundry.system_data('packs')
         with progress:
             task = progress.add_task('Loading packs', total=len(packs), subdesc='')
             for pack in packs:

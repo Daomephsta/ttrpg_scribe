@@ -17,7 +17,7 @@ def _initialise():
                 case dict():
                     visit(v, path + [k])
 
-    for language in foundry.system['languages']:
+    for language in foundry.system_data('languages'):
         if language['lang'] != 'en':
             continue
         with (foundry.pf2e_dir/cast(str, language['path'])).open(encoding='utf8') as file:

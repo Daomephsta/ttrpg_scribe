@@ -11,10 +11,19 @@ from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
 VERSION = '7.11.2'
 data_dir = (platformdirs.user_data_path('ttrpg_scribe') / 'pf2e_compendium/data').absolute()
 pf2e_dir = (data_dir / 'foundryvtt/pf2e').absolute()
-with (pf2e_dir/'system.json').open() as file:
-    system = json.load(file)
 initialised = False
 _LOGGER = logging.getLogger(__name__)
+
+
+def system_data(key: str):
+    global _system
+    system_json = pf2e_dir/'system.json'
+    if system_json.exists():
+        with system_json.open() as file:
+            _system = json.load(file)
+    if '_system' in globals():
+        return globals()['_system'][key]
+    raise RuntimeError('system.json loading failed')
 
 
 def initialise(force_rebuild: bool = False):
@@ -25,11 +34,11 @@ def initialise(force_rebuild: bool = False):
 
     def check_for_updates():
         if pf2e_dir.exists():
-            if system['version'] == VERSION:
+            if system_data('version') == VERSION:
                 _LOGGER.info(f'PF2e system already compatible ({VERSION})')
                 create = False
             else:
-                _LOGGER.info(f'Replacing {system['version']} with {VERSION}')
+                _LOGGER.info(f'Replacing {system_data('version')} with {VERSION}')
                 shutil.rmtree(pf2e_dir)
                 create = True
         else:
