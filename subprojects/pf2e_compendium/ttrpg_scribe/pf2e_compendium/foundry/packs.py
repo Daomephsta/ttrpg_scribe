@@ -342,11 +342,12 @@ def _read_strike(item):
         else:
             return SimpleDice.parse(json['damage']), damage_type
     system = JsonPath('system')
-    strike_type = 'melee'
-    if 'weaponType' in system(item):
-        strike_type = system.weaponType.value(item)
-    if any(t for t in system.traits.value(item) if t.startswith('thrown')):
+    if system.range(item, _or=None) is not None:
         strike_type = 'ranged'
+    elif any(t for t in system.traits.value(item) if t.startswith('thrown')):
+        strike_type = 'ranged'
+    else:
+        strike_type = 'melee'
     return Strike(
         item['name'],
         strike_type,
