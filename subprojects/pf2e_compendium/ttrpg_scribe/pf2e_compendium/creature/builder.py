@@ -199,7 +199,7 @@ class CreatureBuilder:
         update_dict(self.weaknesses, kwargs.pop('weaknesses', {}),
                     _statistic_factory(WEAKNESSES))
         if 'actions' in kwargs:
-            self.actions = ActionsContainer(kwargs['actions'])
+            self.actions = ActionsContainer(kwargs.pop('actions'))
         for field, value in kwargs.items():
             current = getattr(self, field)
             if isinstance(current, _Statistic):
