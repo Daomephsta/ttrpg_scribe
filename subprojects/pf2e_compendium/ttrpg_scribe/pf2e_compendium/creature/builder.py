@@ -127,8 +127,9 @@ class CreatureBuilder:
     def extreme[E](self, table: Table[E]) -> E:
         return table[self.level, statistics.EXTREME]
 
-    def apply(self, template: Template):
-        template(self)
+    def apply(self, *templates: Template):
+        for template in templates:
+            template(self)
         return self
 
     class _UpdateAppendArgs(TypedDict, total=False):
