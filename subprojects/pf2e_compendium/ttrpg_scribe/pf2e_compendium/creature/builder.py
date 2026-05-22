@@ -143,6 +143,8 @@ class CreatureBuilder:
         spellcasting: list[Spellcasting]
 
     def update_append(self, **kwargs: Unpack['CreatureBuilder._UpdateAppendArgs']):
+        for skill in kwargs.pop('skills', []):
+            self.skills[skill.name] = skill
         for action in kwargs.pop('actions', []):
             self.actions.add(action)
         for field, value in kwargs.items():
@@ -167,7 +169,7 @@ class CreatureBuilder:
         initiative_source: str
         languages: list[str]
         senses: list[Sense]
-        skills: dict[str, Skill]
+        skills: list[Skill]
         inventory: dict[str, int]
         abilities: Abilities[StatisticBracket | int]
         ac: StatisticBracket | int
@@ -192,6 +194,8 @@ class CreatureBuilder:
         def _statistic_factory[E](table: Table[E]):
             return lambda v: _Statistic(table, self.level, v)
 
+        for skill in kwargs.pop('skills', []):
+            self.skills[skill.name] = skill
         update_dict(self.abilities, kwargs.pop('abilities', {}))
         update_dict(self.saves, kwargs.pop('saves', {}))
         update_dict(self.resistances, kwargs.pop('resistances', {}),

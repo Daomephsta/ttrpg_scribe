@@ -281,8 +281,7 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
             size=size,
             traits=traits,
             perception=perception,
-            skills={skill.name: skill for skill in
-                    skills(lambda bracket: statistics.SKILLS[level, bracket])},
+            skills=skills(lambda bracket: statistics.SKILLS[level, bracket]),
             inventory=inventory,
             abilities=dict(abilities.items()),
             ac=ac,
