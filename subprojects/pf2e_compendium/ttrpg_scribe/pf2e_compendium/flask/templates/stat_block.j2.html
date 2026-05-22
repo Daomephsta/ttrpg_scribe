@@ -117,11 +117,3 @@ DC {{ _detailed_value(data.details, '%d' | format((10 + data.value) if from_modi
     {% endfor %}
 {% endif %}
 {% endmacro %}
-
-{% macro action(data, context) %}
-    {% if data.kind() == 'SimpleAction' %}
-    {{ simple_action(data) }}
-    {% elif data.kind() == 'Strike' %}
-    {{ strike_action(data, **context['Strike']) }}
-    {% endif %}
-{% endmacro %}

@@ -1,7 +1,7 @@
 {% extends 'content.j2.html' %}
 {% import 'component/adjustments.j2.html' as adjustments %}
 {% import 'component/analyse.j2.html' as analyse %}
-{% from 'stat_block.j2.html' import action, detailed_dc, detailed_int, stat_block, statistic %}
+{% from 'stat_block.j2.html' import action, detailed_dc, detailed_int, simple_action, stat_block, statistic, strike_action %}
 
 {% macro trap(data) %}
 {% set _ = DEPRECATED(trap, hazard) %}
@@ -12,6 +12,7 @@
 {% call stat_block(data.name, 'hazard', data.level, rarity=data.rarity, 
     traits=(['complex'] if data.complex else []) + data.traits, collapsible=collapsible, **kwargs) %}
 <ul class="field-list">
+    {% set COMPLEXITY = 'complex' if data.complex else 'simple' %}
     {% if data.complex %}
     <li data-dc-table="notice-dc"><b>Stealth</b> {{ detailed_int(data.stealth, 'stealth') }}</li>
     {% else %}
@@ -20,19 +21,6 @@
     <li><b>Description</b> {{ data.description | safe }}</li>
     <hr>
     <li><b>Disable</b> <span data-dc-table="disable-dc">{{ data.disable | safe }}</span></li>
-    {% for action_data in data.actions | sort(attribute='name') %}
-    <li data-dc-table="offense-dc">{{ action(action_data, {
-        'Strike': 
-            {'bonus_table': 'complex-strike-bonus', 'damage_table': 'complex-strike-damage'}
-            if data.complex 
-            else {'bonus_table': 'simple-strike-bonus', 'damage_table': 'simple-strike-damage'}
-        })
-    }}</li>
-    {% endfor %}
-    <li><hr></li>
-    {% if data.reset %}
-    <li><b>Reset</b> {{ data.reset | safe }}</li>
-    {% endif %}
     <!-- Hazards with a physical component always have all of ac, saves, and HP -->
     {% if data.ac %} 
         <li>
@@ -56,8 +44,30 @@
         {% endif %}
         </li>
     {% endif %}
+    <!-- Interactions -->
+    {% for action_data in data.actions.by_group('interaction') | sort(attribute='name') %}
+    <li>{{ simple_action(action_data) }}</li>
+    {% endfor %}
+    <!-- Defensive -->
+    {% for action_data in data.actions.by_group('defensive') | sort(attribute='name') %}
+    <li>{{ simple_action(action_data) }}</li>
+    {% endfor %}
+    <!-- Offensive -->
+    {% for action_data in data.actions.by_group('offensive') | sort(attribute='name') %}
+        <li data-dc-table="offense-dc">{{ simple_action(action_data) }}</li>
+    {% endfor %}
+    <!-- Strikes -->
+    {% for weapon_type in ['melee', 'ranged'] %}
+        {% for strike in data.actions.by_group(weapon_type) | sort(attribute='name') %}
+        <li data-dc-table="offense-dc">{{ strike_action(strike, bonus_table='{{ COMPLEXITY }}-strike-bonus', damage_table='{{ COMPLEXITY }}-strike-damage') }}</li>
+        {% endfor %}
+    {% endfor %}
     {% if data.complex %}
     <li data-damage-table="complex-strike-damage" data-dc-table="offense-dc"><b>Routine</b> {{ data.routine | safe }}</li>
+    {% endif %}
+    {% if data.reset %}
+    <li><hr></li>
+    <li><b>Reset</b> {{ data.reset | safe }}</li>
     {% endif %}
 </ul>
 {% endcall %}

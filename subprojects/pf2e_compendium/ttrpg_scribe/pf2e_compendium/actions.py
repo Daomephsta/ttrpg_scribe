@@ -86,12 +86,15 @@ class SimpleAction(Action):
 
 
 class Strike(Action):
-    def __init__(self, name: str, weapon_type: str, bonus: int,
+    type WeaponType = Literal['melee', 'ranged']
+    WEAPON_TYPES: ClassVar[list[WeaponType]] = ['melee', 'ranged']
+
+    def __init__(self, name: str, weapon_type: WeaponType, bonus: int,
                  damage: list[tuple[SimpleDice | int, str]], cost: str | int = 1,
                  traits: list[str] = [], trigger='', category: 'Action.Category' = 'offensive',
                  effects: list[str] = []):
         super().__init__(name, cost, traits, trigger, category)
-        self.weapon_type = weapon_type
+        self.weapon_type: 'Strike.WeaponType' = weapon_type
         self.bonus = bonus
         self.damage = list(damage)
         self.effects = list(effects)

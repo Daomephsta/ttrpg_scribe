@@ -1,7 +1,7 @@
 {% extends 'content.j2.html' %}
 {% import 'component/adjustments.j2.html' as adjustments %}
 {% import 'component/analyse.j2.html' as analyse %}
-{% from 'stat_block.j2.html' import action, stat_block as stat_block_base, statistic %}
+{% from 'stat_block.j2.html' import simple_action, stat_block as stat_block_base, statistic, strike_action %}
 
 {% macro stat_block(data, collapsible=False) %}
 {% set _ = DEPRECATED(stat_block, creature) %}
@@ -39,6 +39,13 @@
         {%- endif -%}
     {%- endfor -%}
 </p>
+<!-- Abilities -->
+<p>
+{% for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
+    <b>{{ key.title() }}</b> {{ statistic('%+d' % data.abilities[key], 'attribute', key) }}
+    {{- ', ' if not loop.last }}
+{% endfor %}
+</p>
 <!-- Inventory -->
 {% if data.inventory %}
 <p>
@@ -49,17 +56,10 @@
     {% endfor %}
 </p>
 {% endif %}
-<!-- Abilities -->
-<p>
-{% for key in ['str', 'dex', 'con', 'int', 'wis', 'cha'] %}
-    <b>{{ key.title() }}</b> {{ statistic('%+d' % data.abilities[key], 'attribute', key) }}
-    {{- ', ' if not loop.last }}
-{% endfor %}
-</p>
 <!-- Interactions -->
 <ul class="field-list">
-{% for interaction in data.actions.by_category('interaction') | sort(attribute='name') %}
-    <li>{{ action(interaction, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
+{% for interaction in data.actions.by_group('interaction') | sort(attribute='name') %}
+    <li>{{ simple_action(interaction) }}</li>
 {% endfor %}
 </ul>
 <hr>
@@ -91,10 +91,10 @@
         {%- endfor %}
     {% endif %}
 </p>
-<!-- Defenses -->
+<!-- Defensive -->
 <ul class="field-list">
-{% for defense in data.actions.by_category('defensive') | sort(attribute='name') %}
-    <li>{{ action(defense, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
+{% for defense in data.actions.by_group('defensive') | sort(attribute='name') %}
+    <li>{{ simple_action(defense) }}</li>
 {% endfor %}
 </ul>
 <hr>
@@ -110,10 +110,13 @@
         {{- ', ' if not loop.last }}
     {% endfor %}
 </p>
-<!-- Actions -->
-<ul class="field-list">
-    {% for offense in data.actions.by_category('offensive') | sort(attribute='name') %}
-    <li>{{ action(offense, {'Strike': {'bonus_table': 'strike-bonus', 'damage_table': 'strike-damage'} }) }}</li>
+<!-- Melee & Ranged Strikes -->
+<ul class="field-list" data-dc-table="offense-dc">
+    {% for offense in data.actions.by_group('melee') | sort(attribute='name') %}
+    <li>{{ strike_action(offense, bonus_table='strike-bonus', damage_table='strike-damage') }}</li>
+    {% endfor %}
+    {% for offense in data.actions.by_group('ranged') | sort(attribute='name') %}
+    <li>{{ strike_action(offense, bonus_table='strike-bonus', damage_table='strike-damage') }}</li>
     {% endfor %}
 </ul>
 <!-- Spellcasting -->
@@ -160,7 +163,12 @@
     </ul>
 </p>
 {% endfor %}
-<hr>
+<!-- Offensive -->
+<ul class="field-list" data-dc-table="offense-dc">
+    {% for offense in data.actions.by_group('offensive') | sort(attribute='name') %}
+    <li>{{ simple_action(offense) }}</li>
+    {% endfor %}
+</ul>
 {% endcall %}
 {% endmacro %}
 
