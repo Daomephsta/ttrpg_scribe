@@ -57,6 +57,9 @@ def zip_with(mappers: Iterable[Callable[[Any], Any] | None], data: Iterable[Any]
 @dataclass
 class Skill:
     type Attribute = Literal['str', 'dex', 'con', 'int', 'wis', 'cha']
+    type ID = Literal['acrobatics', 'arcana', 'athletics', 'crafting', 'deception', 'diplomacy',
+                      'intimidation', 'medicine', 'nature', 'occultism', 'performance', 'religion',
+                      'society', 'stealth', 'survival', 'thievery']
 
     SKILLS: ClassVar[dict[str, Attribute]] = {
         'acrobatics': 'dex',
@@ -113,11 +116,21 @@ class Skill:
         )
 
 
+def skill(name: Skill.ID, mod: int, special: dict[str, int] | list[str] = []) -> Skill:
+    return Skill(name, mod, special)
+
+
+def lore(name: str, mod: int, special: dict[str, int] | list[str] = []) -> Skill:
+    if 'lore' not in name:
+        name = f'{name}-lore'
+    return Skill(name, mod, special)
+
+
 @dataclass
 class Sense:
     name: str
     range: int | None = None
-    acuity: str | None = None
+    acuity: Literal['precise', 'imprecise', 'vague', None] = None
 
     @staticmethod
     def from_json(data: dict):
