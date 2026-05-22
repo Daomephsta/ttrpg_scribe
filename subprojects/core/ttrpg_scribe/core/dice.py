@@ -55,6 +55,9 @@ class SimpleDice(Rollable):
     def __sub__(self, malus: int) -> 'SimpleDice':
         return SimpleDice(self.count, self.size, self.mod - malus)
 
+    def resize(self, target: int) -> 'SimpleDice':
+        return SimpleDice(self.count, target, int(self.average() - (target + 1) / 2 * self.count))
+
     def __str__(self) -> str:
         if self.mod > 0:
             return f'{self.count}d{self.size} + {self.mod}'
