@@ -1,7 +1,7 @@
 import re
 from typing import Callable, overload
 
-from ttrpg_scribe.pf2e_compendium.actions import SimpleAction, Strike
+from ttrpg_scribe.pf2e_compendium.actions import Action, Strike
 from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, Save
 from ttrpg_scribe.pf2e_compendium.actor.adjustments import (Adjuster,
                                                             CreatureAdjuster,
@@ -21,7 +21,7 @@ def map_all_text(mapper: Callable[[str], str]) -> PF2Actor.Template:
     def template(actor: PF2Actor):
         for action in actor.actions:
             match action:
-                case SimpleAction():
+                case Action():
                     action.name = mapper(action.name)
                     action.desc = mapper(action.desc)
     return template

@@ -116,4 +116,7 @@ DC {{ _detailed_value(data.details, '%d' | format((10 + data.value) if from_modi
         {{ effect.replace('-', ' ') }}
     {% endfor %}
 {% endif %}
+{% if action.desc %}
+; {{ action.desc | safe }}
+{% endif %}
 {% endmacro %}

@@ -6,14 +6,17 @@ from ttrpg_scribe.core.dice import SimpleDice
 
 
 class Action:
+    type Cost = Literal[0, 1, 2, 3, 're', 'reaction', 'free'] | str
     type Category = Literal['interaction', 'defensive', 'offensive']
     CATEGORIES: ClassVar[list[Category]] = ['interaction', 'defensive', 'offensive']
     traits: dict[str, Any]
     category: Category
 
-    def __init__(self, name: str, cost: str | int, traits: list[str] | dict[str, Any],
-                 trigger: str, category: Category | None):
+    def __init__(self, name: str, desc: str = '', cost: Cost = 1,
+                 traits: list[str] | dict[str, Any] = [], trigger: str = '',
+                 category: Category = 'interaction'):
         self.name = name
+        self.desc = desc
         self.cost = cost
 
         def parse_trait(trait: str) -> tuple[str, Any]:
@@ -29,7 +32,7 @@ class Action:
                 self.traits = dict(parse_trait(t) for t in traits)
 
         self.trigger = trigger
-        self.category = category or 'interaction'
+        self.category = category
 
     def kind(self):
         return self.__class__.__name__
@@ -38,6 +41,7 @@ class Action:
         return dict(
             kind=self.kind(),
             name=self.name,
+            desc=self.desc,
             cost=self.cost,
             traits=self.traits,
             trigger=self.trigger
@@ -48,8 +52,8 @@ class Action:
         @staticmethod
         def from_json_as(data: dict, kind: type[Self]) -> Self:
             return kind.from_json_with(
-                partial(kind, name=data['name'], cost=data['cost'], traits=data['traits'],
-                        trigger=data['trigger']),
+                partial(kind, name=data['name'], desc=data['desc'], cost=data['cost'],
+                        traits=data['traits'], trigger=data['trigger']),
                 data
             )
 
@@ -57,8 +61,8 @@ class Action:
         if cls != Action and kind != cls.__name__:
             raise ValueError(f'Kind {kind} does not match cls {cls}')
         match kind:
-            case 'SimpleAction':
-                return from_json_as(data, SimpleAction)
+            case 'Action':
+                return from_json_as(data, Action)
             case 'Strike':
                 return from_json_as(data, Strike)
             case _ as kind:
@@ -69,40 +73,24 @@ class Action:
         ...
 
 
-class SimpleAction(Action):
-    def __init__(self, name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
-                 trigger='', category: 'Action.Category' = 'interaction'):
-        super().__init__(name, cost, traits, trigger, category)
-        self.desc = desc
-
-    @classmethod
-    def from_json_with(cls, curried_constructor: partial, data: dict) -> Self:
-        return curried_constructor(desc=data['desc'])
-
-    def to_json(self):
-        data = super().to_json()
-        data['desc'] = self.desc
-        return data
-
-
-def interaction(name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
+def interaction(name: str, desc: str = '', cost: Action.Cost = 1, traits: list[str] = [],
                  trigger=''):
-    return SimpleAction(name, desc, cost, traits, trigger, 'interaction')
+    return Action(name, desc, cost, traits, trigger, 'interaction')
 
 
 def passive(name: str, desc: str = '', traits: list[str] = [],
                  trigger=''):
-    return SimpleAction(name, desc, 0, traits, trigger, 'interaction')
+    return Action(name, desc, 0, traits, trigger, 'interaction')
 
 
-def defensive(name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
+def defensive(name: str, desc: str = '', cost: Action.Cost = 1, traits: list[str] = [],
                  trigger=''):
-    return SimpleAction(name, desc, cost, traits, trigger, 'defensive')
+    return Action(name, desc, cost, traits, trigger, 'defensive')
 
 
-def offensive(name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
+def offensive(name: str, desc: str = '', cost: Action.Cost = 1, traits: list[str] = [],
                  trigger=''):
-    return SimpleAction(name, desc, cost, traits, trigger, 'offensive')
+    return Action(name, desc, cost, traits, trigger, 'offensive')
 
 
 class Strike(Action):
@@ -110,10 +98,10 @@ class Strike(Action):
     WEAPON_TYPES: ClassVar[list[WeaponType]] = ['melee', 'ranged']
 
     def __init__(self, name: str, weapon_type: WeaponType, bonus: int,
-                 damage: list[tuple[SimpleDice | int, str]], cost: str | int = 1,
+                 damage: list[tuple[SimpleDice | int, str]], desc: str = '', cost: Action.Cost = 1,
                  traits: list[str] = [], trigger='', category: 'Action.Category' = 'offensive',
                  effects: list[str] = []):
-        super().__init__(name, cost, traits, trigger, category)
+        super().__init__(name, desc, cost, traits, trigger, category)
         self.weapon_type: 'Strike.WeaponType' = weapon_type
         self.bonus = bonus
         self.damage = list(damage)

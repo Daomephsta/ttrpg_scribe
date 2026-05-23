@@ -6,7 +6,7 @@ from slugify import slugify
 
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
-from ttrpg_scribe.pf2e_compendium.actions import SimpleAction, Strike
+from ttrpg_scribe.pf2e_compendium.actions import Action, Strike
 from ttrpg_scribe.pf2e_compendium.actor import ActionsContainer, DetailedValue
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
                                                    Spellcasting)
@@ -142,7 +142,7 @@ def _read_creature(json: Json) -> PF2Creature:
                         location = system.location.value(item, _or=None)
                     spellcasting_lists[location].add_spell(item)
                 case 'condition':
-                    actions.add(SimpleAction(
+                    actions.add(Action(
                         item['name'],
                         enrich(system.description.value(item), item_roll_data),
                         cost=0))
@@ -324,8 +324,9 @@ def _read_simple_action(item, item_roll_data):
             cost = 0
         case unknown:
             raise ValueError(f'Unknown action type {unknown}')
-    return SimpleAction(item['name'], enrich(system.description.value(item), item_roll_data),
-                        cost, system.traits.value(item), category=system.category(item))
+    return Action(item['name'], enrich(system.description.value(item), item_roll_data),
+                        cost, system.traits.value(item),
+                        category=system.category(item, _or=None) or 'interaction')
 
 
 def _read_strike(item):
@@ -353,6 +354,7 @@ def _read_strike(item):
         strike_type,
         system.bonus.value(item),
         [damage(data) for data in system.damageRolls(item).values()],
+        desc=system.description.value(item, _or=''),
         traits=system.traits.value(item),
         effects=system.attackEffects.value(item)
             if 'attackEffects' in system(item) else []
