@@ -85,6 +85,21 @@ class SimpleAction(Action):
         return data
 
 
+def interaction(name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
+                 trigger=''):
+    return SimpleAction(name, desc, cost, traits, trigger, 'interaction')
+
+
+def defensive(name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
+                 trigger=''):
+    return SimpleAction(name, desc, cost, traits, trigger, 'defensive')
+
+
+def offensive(name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
+                 trigger=''):
+    return SimpleAction(name, desc, cost, traits, trigger, 'offensive')
+
+
 class Strike(Action):
     type WeaponType = Literal['melee', 'ranged']
     WEAPON_TYPES: ClassVar[list[WeaponType]] = ['melee', 'ranged']
