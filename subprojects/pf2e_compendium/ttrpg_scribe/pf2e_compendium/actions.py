@@ -90,6 +90,11 @@ def interaction(name: str, desc: str = '', cost: str | int = 1, traits: list[str
     return SimpleAction(name, desc, cost, traits, trigger, 'interaction')
 
 
+def passive(name: str, desc: str = '', traits: list[str] = [],
+                 trigger=''):
+    return SimpleAction(name, desc, 0, traits, trigger, 'interaction')
+
+
 def defensive(name: str, desc: str = '', cost: str | int = 1, traits: list[str] = [],
                  trigger=''):
     return SimpleAction(name, desc, cost, traits, trigger, 'defensive')
