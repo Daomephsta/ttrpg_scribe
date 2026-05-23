@@ -59,7 +59,7 @@
     <!-- Strikes -->
     {% for weapon_type in ['melee', 'ranged'] %}
         {% for strike in data.actions.by_group(weapon_type) | sort(attribute='name') %}
-        <li data-dc-table="offense-dc">{{ strike_action(strike, bonus_table='{{ COMPLEXITY }}-strike-bonus', damage_table='{{ COMPLEXITY }}-strike-damage') }}</li>
+        <li data-dc-table="offense-dc">{{ strike_action(strike, bonus_table=COMPLEXITY ~ '-strike-bonus', damage_table=COMPLEXITY ~ '-strike-damage') }}</li>
         {% endfor %}
     {% endfor %}
     {% if data.complex %}
