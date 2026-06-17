@@ -9,12 +9,15 @@ from ttrpg_scribe.pf2e_compendium.foundry.enrich.damage import damage_roll
 
 
 def enrich(text: str, context: dict[str, Any] = {}) -> str:
+    def is_effect(s: str):
+        return any(s.startswith(prefix) for prefix in ['Spell Effect: ', 'Effect: '])
+
     def enricher(replacer: Callable[[str, str], str | Tag]) -> Callable[[re.Match[str]], str]:
         def wrapper(result: re.Match[str]) -> str:
             name, raw_args, display = result.groups()
             replacement = replacer(name, raw_args)
             if display:
-                if any(display.startswith(s) for s in ['Spell Effect: ', 'Effect: ']):
+                if is_effect(display):
                     return ''
                 match replacement:
                     case str():
@@ -26,7 +29,10 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
                         ]
                         return str(replacement)
             else:
-                return str(replacement)
+                replacement = str(replacement)
+                if is_effect(replacement):
+                    return ''
+                return replacement
         return wrapper
 
     def at_enrichers(name: str, raw_args: str) -> str | Tag:
