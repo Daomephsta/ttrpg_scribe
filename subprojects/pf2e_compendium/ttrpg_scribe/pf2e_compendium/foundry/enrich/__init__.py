@@ -10,7 +10,7 @@ from ttrpg_scribe.pf2e_compendium.foundry.enrich.damage import damage_roll
 
 def enrich(text: str, context: dict[str, Any] = {}) -> str:
     def is_effect(s: str):
-        return any(s.startswith(prefix) for prefix in ['Spell Effect: ', 'Effect: '])
+        return any(s.startswith(prefix) for prefix in ['Spell Effect: ', 'Effect: ', 'Aura: '])
 
     def enricher(replacer: Callable[[str, str], str | Tag]) -> Callable[[re.Match[str]], str]:
         def wrapper(result: re.Match[str]) -> str:
