@@ -14,6 +14,8 @@ def enrich(text: str, context: dict[str, Any] = {}) -> str:
             name, raw_args, display = result.groups()
             replacement = replacer(name, raw_args)
             if display:
+                if any(display.startswith(s) for s in ['Spell Effect: ', 'Effect: ']):
+                    return ''
                 match replacement:
                     case str():
                         return display
