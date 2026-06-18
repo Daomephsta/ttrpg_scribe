@@ -50,7 +50,7 @@ class Adjuster[T](ABC):
             self.name = f'{name.title()} {self.name}'
         starting_level = self.level
         self.level += level_delta(starting_level)
-        self.ac(mod_delta)
+        # Includes adjusting AC because it's a DC
         self.dcs(mod_delta)
         self.damaging_actions(attack_delta=mod_delta, damage_delta=mod_delta)
         self.saves(mod_delta)
