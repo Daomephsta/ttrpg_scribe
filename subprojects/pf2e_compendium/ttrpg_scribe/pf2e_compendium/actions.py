@@ -70,7 +70,7 @@ class Action:
 
     @classmethod
     def from_json_with(cls, curried_constructor: partial, data: dict) -> Self:
-        ...
+        return curried_constructor()
 
 
 def interaction(name: str, desc: str = '', cost: Action.Cost = 1, traits: list[str] = [],
