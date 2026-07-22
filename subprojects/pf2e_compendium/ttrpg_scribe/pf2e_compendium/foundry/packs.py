@@ -354,7 +354,7 @@ def _read_strike(item):
         strike_type,
         system.bonus.value(item),
         [damage(data) for data in system.damageRolls(item).values()],
-        desc=system.description.value(item, _or=''),
+        desc=enrich(system.description.value(item, _or='')),
         traits=system.traits.value(item),
         effects=system.attackEffects.value(item)
             if 'attackEffects' in system(item) else []
