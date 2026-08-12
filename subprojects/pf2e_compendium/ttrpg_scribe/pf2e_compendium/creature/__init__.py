@@ -167,6 +167,7 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
     speeds: dict[str, int]
     actions: ActionsContainer
     spellcasting: list[Spellcasting]
+    art: str | None = None
 
     def __post_init__(self):
         if 'construct' in self.traits:
@@ -226,7 +227,8 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
             weaknesses=self.weaknesses,
             speeds=self.speeds,
             actions=self.actions,
-            spellcasting=self.spellcasting
+            spellcasting=self.spellcasting,
+            art=self.art,
         )
 
     @classmethod
@@ -253,6 +255,7 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
             speeds=data['speeds'],
             actions=ActionsContainer.from_json(data['actions']),
             spellcasting=[Spellcasting.from_json(e) for e in data.get('spellcasting', [])],
+            art=data['art'],
         )
 
     type _Skills = Callable[[Callable[[StatisticBracket], int]], list[Skill]]

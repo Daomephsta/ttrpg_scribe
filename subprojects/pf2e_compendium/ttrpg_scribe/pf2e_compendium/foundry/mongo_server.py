@@ -3,6 +3,7 @@ import logging
 import shutil
 import subprocess
 
+from ttrpg_scribe import pf2e_compendium
 from ttrpg_scribe.pf2e_compendium import foundry
 
 _LOGGER = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ CONNECTION_ARGS = '127.0.0.1', 48165
 def start():
     IP, PORT = CONNECTION_ARGS
 
-    (mongo_dir := foundry.data_dir/'mongod').mkdir(parents=True, exist_ok=True)
+    (mongo_dir := pf2e_compendium.data_dir/'mongod').mkdir(parents=True, exist_ok=True)
     (db_data := mongo_dir/'data/db').mkdir(parents=True, exist_ok=True)
     (logs := mongo_dir/'logs').mkdir(parents=True, exist_ok=True)
 

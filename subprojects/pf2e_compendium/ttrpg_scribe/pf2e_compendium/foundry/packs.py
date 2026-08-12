@@ -180,7 +180,8 @@ def _read_creature(json: Json) -> PF2Creature:
               **{speed['type']: speed['value']
                 for speed in attributes.speed.otherSpeeds(json)}},
         actions=actions,
-        spellcasting=[builder.build() for builder in spellcasting_lists.values()]
+        spellcasting=[builder.build() for builder in spellcasting_lists.values()],
+        art=json['_id'],
     )
 
 

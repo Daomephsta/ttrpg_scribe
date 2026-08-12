@@ -5,11 +5,13 @@ from typing import Any, Iterable
 import flask
 from flask import Blueprint, Flask, json, render_template, request
 from markupsafe import Markup
+from werkzeug.exceptions import NotFound
 
 import ttrpg_scribe.core.flask
 import ttrpg_scribe.core.typescript
 import ttrpg_scribe.pf2e_compendium.foundry.enrich
 import ttrpg_scribe.pf2e_compendium.oracle
+from ttrpg_scribe import pf2e_compendium
 from ttrpg_scribe.encounter.flask import (EncounterSpec, InitiativeParticipant,
                                           SystemPlugin)
 from ttrpg_scribe.pf2e_compendium import foundry
@@ -73,6 +75,14 @@ def _content(type: str, content):
         'data': content,
         'render': True
     })
+
+
+@blueprint.get('/art/<doc_type>/<path:art>')
+def stat_block_art(doc_type: str, art: str):
+    try:
+        return flask.send_from_directory(pf2e_compendium.data_dir/'art', f'{doc_type}/{art}')
+    except NotFound:
+        return f'No art found for {doc_type}/{id}', 404
 
 
 @blueprint.get('/view/<doc_type>/<path:id>.json')

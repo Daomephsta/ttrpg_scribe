@@ -4,13 +4,13 @@ import shutil
 from io import BytesIO
 from zipfile import ZipFile
 
-import platformdirs
 import requests
 from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
 
+from ttrpg_scribe import pf2e_compendium
+
 VERSION = '8.1.2'
-data_dir = (platformdirs.user_data_path('ttrpg_scribe') / 'pf2e_compendium/data').absolute()
-pf2e_dir = (data_dir / 'foundryvtt/pf2e').absolute()
+pf2e_dir = (pf2e_compendium.data_dir / 'foundryvtt/pf2e').absolute()
 initialised = False
 _LOGGER = logging.getLogger(__name__)
 

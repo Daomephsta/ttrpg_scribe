@@ -9,7 +9,7 @@
 {% endmacro %}
 
 {% macro creature(data, collapsible=False) %}
-{% call stat_block_base(data.name, 'creature', data.level, data.size, data.rarity, data.traits, collapsible=collapsible, **kwargs) %}
+{% call stat_block_base(data.name, 'creature', data.level, data.size, data.rarity, data.traits, collapsible=collapsible, art=data.art, **kwargs) %}
 <p>
     <b>Perception</b> {{ statistic('%+d' % data.perception, 'perception') }};
     {% for sense in data.senses %}
@@ -62,6 +62,7 @@
     <li>{{ simple_action(interaction) }}</li>
 {% endfor %}
 </ul>
+
 <hr>
 <p>
     <b>AC</b> {{ statistic(data.ac, 'armour-class') }};

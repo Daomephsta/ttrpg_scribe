@@ -70,6 +70,10 @@
     margin-top: 8px;
     margin-bottom: 8px;
 }
+.stat-block #art {
+    float: right;
+    width: 300px;
+}
 .stat-block .view-spell {
     display: inline-block;
 }
