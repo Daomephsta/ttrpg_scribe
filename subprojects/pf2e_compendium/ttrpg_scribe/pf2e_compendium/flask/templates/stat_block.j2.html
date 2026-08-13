@@ -22,7 +22,7 @@
         {% endfor %}
         </div>
         {% if art %}
-        <img id="art" src="{{ url_for('pf2e_compendium.stat_block_art', doc_type=type, art=art) }}" alt/>
+        <img id="art" src="{{ url_for('pf2e_compendium.stat_block_art', art=art) }}" alt="Image of {{ name }} not found at {{ art }}"/>
         {% endif %}
         {{ caller() }}
     </div>

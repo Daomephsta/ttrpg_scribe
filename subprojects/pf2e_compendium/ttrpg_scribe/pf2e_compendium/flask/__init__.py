@@ -77,12 +77,12 @@ def _content(type: str, content):
     })
 
 
-@blueprint.get('/art/<doc_type>/<path:art>')
-def stat_block_art(doc_type: str, art: str):
+@blueprint.get('/art/<path:art>')
+def stat_block_art(art: str):
     try:
-        return flask.send_from_directory(pf2e_compendium.data_dir/'art', f'{doc_type}/{art}')
+        return flask.send_from_directory(pf2e_compendium.data_dir/'art', art)
     except NotFound:
-        return f'No art found for {doc_type}/{id}', 404
+        return f'No art found for {id}', 404
 
 
 @blueprint.get('/view/<doc_type>/<path:id>.json')

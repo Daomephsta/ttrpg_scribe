@@ -13,6 +13,8 @@ from pymongo.synchronous.collection import _WriteOp
 from rich.progress import Progress
 from slugify import slugify
 
+from ttrpg_scribe import pf2e_compendium
+from ttrpg_scribe.encounter.flask import itertools
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 
@@ -250,6 +252,7 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
         doc = adjust_doc(doc, doc_type)
         collection = TYPE_TO_COLL.get(doc_type, doc_type)
         doc['_id'], doc['foundry_id'] = doc_id, doc['_id']
+        doc['base_name'] = doc['name'] if ' (' not in doc['name'] else doc['name'][:doc['name'].find(' (')]
         doc['path'] = {}
         [doc['path']['pack'], *subfolders, doc['path']['stem']] = doc_id.split('/')
         doc['path']['subpath'] = '/'.join(subfolders)
@@ -296,6 +299,14 @@ def initialise():
     else:
         bulk_write(_purge_world_content())
 
+    art_dir = pf2e_compendium.data_dir/'art'
+    art_images = itertools.chain.from_iterable(art_dir.glob(f'**/*.{ext}', recurse_symlinks=True) for ext in ['png', 'webp'])
+    bulk_write(
+            pymongo.UpdateMany(
+                {'base_name': art.stem},
+                {'$set': {'art': art.relative_to(art_dir).as_posix()}},
+                namespace=f'pf2e.{art.relative_to(art_dir).parents[-2].stem}') 
+            for art in art_images)
 
 def update(progress: Progress):
     client.drop_database('pf2e')
@@ -321,6 +332,7 @@ def update(progress: Progress):
             IndexModel('path.pack'),
             IndexModel('path.subpath'),
             IndexModel('name'),
+            IndexModel('base_name'),
         ])
 
     [base, *rest] = db.list_collection_names()
