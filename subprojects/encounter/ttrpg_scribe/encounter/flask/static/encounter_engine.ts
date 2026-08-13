@@ -22,6 +22,7 @@ function sortInitiative()
     const rows = $trackerBody.find('tr').detach()
         .toArray().sort((a, b) => getInitiative(b) - getInitiative(a))
     $trackerBody.append(rows)
+    $('#tracker tbody tr').first().addClass('current-turn')
 }
 
 function nextTurn()
@@ -146,7 +147,6 @@ onload = (_) =>  {
         })
     }
     updateReinforcementControls()
-    $('#tracker tbody tr').first().addClass('current-turn')
     setRound(getRound())
 };
 
