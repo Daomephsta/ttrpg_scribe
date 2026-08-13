@@ -310,7 +310,7 @@ def initialise():
                 {'$set': {'art': art.as_posix()}},
                 namespace=f'pf2e.{art.parts[0]}')
 
-    bulk_write(art_paths({'png', 'webp'}))
+    bulk_write(art_paths({'.png', '.webp'}))
 
 def update(progress: Progress):
     client.drop_database('pf2e')
