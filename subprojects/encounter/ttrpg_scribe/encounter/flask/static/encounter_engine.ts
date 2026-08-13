@@ -33,6 +33,9 @@ function nextTurn()
         // @ts-ignore
         .uniqueSort() 
     const $next = $current.nextAll(':not(.dead)')
+    if ($next.length == 0) {
+        setRound(getRound() + 1)
+    }
     $([...$next, ...$prev]).first().addClass('current-turn')
 }
 
