@@ -1,3 +1,4 @@
+import JSON5 from 'json5'
 export {}
 
 const endpoints = JSON.parse($('#search-js-endpoints').text())
@@ -60,7 +61,7 @@ function search() {
         case 'complex':
         {
             try {
-            const query = JSON.parse($<HTMLTextAreaElement>('#complex_query').val()!)
+            const query = JSON5.parse($<HTMLTextAreaElement>('#complex_query').val()!)
             doSearch(endpoints.search, {query_type: 'complex', ...docTypeParam}, {
                 method: 'POST',
                 body: JSON.stringify(query),
@@ -68,7 +69,7 @@ function search() {
                     'Content-Type': 'application/json'
                 }
             })
-            } 
+            }
             catch (error) {
                 if (error instanceof SyntaxError) {
                     alert(error.message)
