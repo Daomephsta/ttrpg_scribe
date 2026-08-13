@@ -299,14 +299,18 @@ def initialise():
     else:
         bulk_write(_purge_world_content())
 
-    art_dir = pf2e_compendium.data_dir/'art'
-    art_images = itertools.chain.from_iterable(art_dir.glob(f'**/*.{ext}', recurse_symlinks=True) for ext in ['png', 'webp'])
-    bulk_write(
-            pymongo.UpdateMany(
+    def art_paths(suffixes: set[str]):
+        art_dir = pf2e_compendium.data_dir/'art'
+        for art in art_dir.glob(f'**/*.*', recurse_symlinks=True):
+            if art.suffix not in suffixes:
+                continue
+            art = art.relative_to(art_dir)
+            yield pymongo.UpdateMany(
                 {'base_name': art.stem},
-                {'$set': {'art': art.relative_to(art_dir).as_posix()}},
-                namespace=f'pf2e.{art.relative_to(art_dir).parents[-2].stem}') 
-            for art in art_images)
+                {'$set': {'art': art.as_posix()}},
+                namespace=f'pf2e.{art.parts[0]}')
+
+    bulk_write(art_paths({'png', 'webp'}))
 
 def update(progress: Progress):
     client.drop_database('pf2e')
