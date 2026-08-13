@@ -76,7 +76,6 @@ function search() {
             }
             break
         }
-        
     }
 }
 
@@ -85,4 +84,14 @@ $.ready.then(() =>
     updateQueryType()
     $('input[name="query_type"]').on('input', updateQueryType)
     $('.search-button').on('click', search)
+    $('#simple_query').on('keyup', e => {
+        if (e.key == 'Enter')
+            $('.search-button').trigger('click')
+    })
+    $('#complex_query').on('keyup', e => {
+        if (e.key == 'Enter' && (e.altKey || e.target.selectionEnd == e.target.textLength)) {
+            $('.search-button').trigger('click')
+            e.target.value = e.target.value.trim()
+        }
+    })
 })
