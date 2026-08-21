@@ -5,6 +5,9 @@ from ttrpg_scribe.pf2e_compendium.foundry import packs
 _BUGS: dict[str, tuple[type[Exception], str]] = {
     'lost-omens-bestiary/shining-kingdoms/lamp-blighter': (
         KeyError, 'rituals'
+    ),
+    'shades-of-blood-bestiary/book-1-thirst-for-blood/inizkar': (
+        KeyError, 'familiar'
     )
 }
 
