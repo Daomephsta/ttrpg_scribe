@@ -1,6 +1,5 @@
-from typing import Callable, Self
-from typing import Protocol
-
+from collections.abc import Callable
+from typing import Protocol, Self
 
 type Template[T] = Callable[[T], None]
 

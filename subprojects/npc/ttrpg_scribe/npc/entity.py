@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Mapping, Sequence
 from importlib import resources
 from random import Random
 from random import _inst as default_random
-from typing import Any, Callable, Mapping, Sequence, cast, overload
+from typing import Any, cast, overload, override
 
 import flask
 import yaml
@@ -56,6 +57,7 @@ class Feature[T](ABC):
     def from_yaml(yaml, name: str, display=None):
         return ChoiceFeature(name, yaml[name], display=display)
 
+    @override
     def __str__(self) -> str:
         return self.name
 
@@ -67,7 +69,8 @@ class ChoiceFeature[T](Feature[T]):
         super().__init__(name, **kwargs)
         self.choices = choices
 
-    def generator(self, builder: 'EntityBuilder'):
+    @override
+    def generator(self, builder: 'EntityBuilder') -> T:
         return builder.choose(self. choices)
 
 
@@ -77,7 +80,8 @@ class WeightedChoiceFeature[T](ChoiceFeature[T]):
         super().__init__(name, choices, **kwargs)
         self.weights = weights
 
-    def generator(self, builder: 'EntityBuilder'):
+    @override
+    def generator(self, builder: 'EntityBuilder') -> T:
         return builder.choose(self.choices, weights=self.weights)
 
 
@@ -87,6 +91,7 @@ class FilteredChoiceFeature[T](ChoiceFeature[T]):
         super().__init__(name, choices, **kwargs)
         self.filter = filter
 
+    @override
     def generator(self, builder: 'EntityBuilder') -> T:
         def dependent_filter(option):
             return self.filter(builder, option)
@@ -282,6 +287,7 @@ class Entity:
     def to_json(self) -> dict[str, str]:
         return {feature.name: feature.to_str(value) for feature, value in self}
 
+    @override
     def __getstate__(self) -> dict[str, str]:
         return self.to_json()
 
@@ -297,6 +303,7 @@ class Entity:
                                  value_mapper=lambda f, v: f.to_str(v)
                                  ).items())
 
+    @override
     def __str__(self) -> str:
         return f'Entity{self.feature_values}'
 
@@ -332,6 +339,7 @@ class FormattedNamer(Namer):
         self.format = format
         self.names = names
 
+    @override
     def name(self, builder: EntityBuilder, rng: Random) -> str:
         def part_type(part: str | list[str]) -> str:
             match part:
@@ -362,5 +370,6 @@ class Culture:
         culture_args: dict[str, Any] = config['CULTURES'][culture_name]
         return Culture(culture_name, culture_args['namer'], culture_args['races'])
 
+    @override
     def __str__(self) -> str:
         return self.name

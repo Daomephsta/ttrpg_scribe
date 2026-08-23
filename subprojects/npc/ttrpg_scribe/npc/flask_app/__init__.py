@@ -6,7 +6,6 @@ from flask_session import Session
 from werkzeug.exceptions import Forbidden, NotFound
 
 import ttrpg_scribe.core.flask
-import ttrpg_scribe.npc.flask_app.plugin
 from ttrpg_scribe.notes import paths
 from ttrpg_scribe.npc.entity import (Entity, EntityBuilder, EntityGenerator,
                                      Features)

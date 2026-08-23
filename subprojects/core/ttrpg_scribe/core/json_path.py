@@ -1,6 +1,6 @@
 import itertools
 import re
-from typing import Any, overload
+from typing import Any, overload, override
 
 from requests_cache import Callable
 
@@ -54,6 +54,7 @@ class JsonPath:
             return f(result)
         return _or
 
+    @override
     def __str__(self) -> str:
         def parts():
             for part in self.__path:
@@ -64,5 +65,6 @@ class JsonPath:
                         yield f'[{part}]'
         return ''.join(itertools.chain('$', parts()))
 
+    @override
     def __repr__(self) -> str:
         return f"JsonPath('{self}')"

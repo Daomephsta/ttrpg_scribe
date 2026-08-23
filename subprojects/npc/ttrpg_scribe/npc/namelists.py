@@ -1,5 +1,6 @@
+from collections.abc import Mapping
 from importlib import resources
-from typing import Any, Mapping
+from typing import Any
 
 import yaml
 

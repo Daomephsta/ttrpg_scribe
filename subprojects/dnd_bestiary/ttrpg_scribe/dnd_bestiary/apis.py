@@ -2,21 +2,22 @@ import logging
 import operator
 import re
 from abc import ABCMeta, abstractmethod
+from collections.abc import Callable
 from functools import cache
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any, Callable, Never
+from typing import Any, Never, override
 
 import flask
 from requests import Session
 from requests_cache import CachedSession
 
+from ttrpg_scribe.core import signals
 from ttrpg_scribe.dnd_bestiary.creature import DndCreature
 from ttrpg_scribe.dnd_bestiary.creature.ability import Ability, Skill
 from ttrpg_scribe.dnd_bestiary.creature.armour import ArmourClass
 from ttrpg_scribe.dnd_bestiary.creature.movement import Movement
 from ttrpg_scribe.dnd_bestiary.creature.sense import Sense
-from ttrpg_scribe.core import signals
 
 type ErrorHandler[T] = Callable[[Exception], T]
 type Template = Callable[[DndCreature], None]
@@ -62,6 +63,7 @@ class HttpApi[T](Api[T], metaclass=ABCMeta):
             self.__session = CachedSession((cache_dir()/cache_name).as_posix())
         return self.__session
 
+    @override
     def creature(self, index: str) -> DndCreature | T:
         url = self.base_url + index
         logging.debug('GET %s', url)
@@ -89,6 +91,7 @@ class HttpApi[T](Api[T], metaclass=ABCMeta):
 class Dnd5eApi[T](HttpApi[T]):
     base_url = 'https://www.dnd5eapi.co/api/monsters/'
 
+    @override
     def _parse_creature_data(self, data: dict[str, Any]) -> dict[str, Any]:
         skills = []
         saves = []

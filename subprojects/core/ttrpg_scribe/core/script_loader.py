@@ -2,12 +2,13 @@ import importlib.util
 import itertools
 import logging
 import sys
+from collections.abc import Sequence
 from importlib.abc import MetaPathFinder
 from importlib.machinery import ModuleSpec
 from importlib.util import spec_from_file_location
 from pathlib import Path
 from types import ModuleType
-from typing import Sequence
+from typing import override
 
 from ttrpg_scribe.notes import paths
 
@@ -43,6 +44,7 @@ class ScriptFinder(MetaPathFinder):
         _LOGGER.error(f'Could not resolve \'{fullname}\' at any of:\n\t{tried}')
         return None
 
+    @override
     def find_spec(self, fullname: str, path: Sequence[str] | None,
                   target: ModuleType | None = None) -> ModuleSpec | None:
         for location in self.locations:

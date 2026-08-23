@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-import subprocess
-from pathlib import Path
 import shutil
+import subprocess
 import sys
 import zipfile
-
+from pathlib import Path
 
 root = Path.cwd()
 subprojects = list((root/'subprojects').iterdir())

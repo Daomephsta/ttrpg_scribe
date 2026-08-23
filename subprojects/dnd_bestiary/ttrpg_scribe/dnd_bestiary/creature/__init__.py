@@ -1,7 +1,8 @@
 import json
 import math
 import re
-from typing import Any, Callable, Iterable, TypedDict, Unpack, cast
+from collections.abc import Callable, Iterable
+from typing import Any, TypedDict, Unpack, cast, override
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 
@@ -124,9 +125,11 @@ class DndCreature(InitiativeParticipant):
             template(args)
         return DndCreature(**args)
 
+    @override
     def initiative_mod(self) -> int:
         return DEX.mod(self)
 
+    @override
     def default_hp(self):
         return self._default_hp(self)
 
@@ -140,6 +143,7 @@ class DndCreature(InitiativeParticipant):
         con_bonus = count * mod(self.con)
         return count * size + con_bonus
 
+    @override
     def write_json(self, data: dict[str, Any]):
         data.update(
             name=self.name,

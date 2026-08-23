@@ -1,5 +1,5 @@
 import math
-from typing import Literal
+from typing import Literal, override
 
 from ttrpg_scribe.core.dice import SimpleDice, d
 
@@ -52,6 +52,7 @@ class Melee(Attack):
         super().__init__(name, dice, type, ability, attack, damage_bonus,
             f'{reach} ft.', extra)
 
+    @override
     def describe(self, attack_mod: int, damage: str) -> str:
         return f'*Melee Weapon Attack*: {attack_mod:+d} to hit, '\
                f'reach {self.range}, one target. *Hit*: {damage} damage'
@@ -67,6 +68,7 @@ class Ranged(Attack):
         super().__init__(name, dice, type, ability,  attack, damage_bonus,
             f"{range[0]}/{range[1]} ft.", extra)
 
+    @override
     def describe(self, attack_mod: int, damage: str) -> str:
         return f'*Ranged Weapon Attack*: {attack_mod:+d} to hit, '\
                f'range {self.range}, one target. *Hit*: {damage} damage'

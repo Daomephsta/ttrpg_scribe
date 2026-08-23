@@ -1,6 +1,5 @@
 from ttrpg_scribe.npc.race import Race
 
-
 HALFLING = Race('Halfling', ['Gutsy', 'Hillock', 'Jinxed', 'Nomadic',
             'Observant', 'Twilight', 'Wildwood'])
 HUMAN = Race('Human', ['Skilled', 'Versatile', 'Wintertouched'])

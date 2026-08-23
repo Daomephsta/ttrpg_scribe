@@ -1,7 +1,7 @@
-from typing import Any, Self
+from typing import Any, Self, override
 
 
-class Tag:
+class Tag(object):
     name: str
     children: list[Self | str]
     attrs: dict[str, str]
@@ -40,6 +40,7 @@ class Tag:
     def text(self, text: str):
         self.children = [text]
 
+    @override
     def __str__(self) -> str:
         opening_tag = ' '.join([self.name, *(f'{k}="{v}"' for k, v in self.attrs.items())])
         return (f'<{opening_tag}>{self.text}</{self.name}>')

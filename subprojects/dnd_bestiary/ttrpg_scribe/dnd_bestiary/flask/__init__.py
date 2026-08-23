@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any, cast, override
 
 import flask
 from flask import Blueprint, Flask, render_template
@@ -32,10 +32,12 @@ def create_app():
 class Dnd5ePlugin(SystemPlugin):
     compendium_blueprint = blueprint
 
+    @override
     @classmethod
     def read_participant(cls, data, extra={}) -> InitiativeParticipant:
         return DndCreature.from_json(data)
 
+    @override
     @classmethod
     def encounter_xp(cls, encounter: EncounterSpec) -> str:
         party: dict[str, dict[str, Any]] = flask.current_app.config['PARTY']

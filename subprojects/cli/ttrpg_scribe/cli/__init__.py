@@ -2,8 +2,8 @@ import importlib
 import logging
 import sys
 from argparse import ArgumentParser, Namespace, _SubParsersAction
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 _LOGGER = logging.getLogger(__name__)
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons

@@ -1,6 +1,8 @@
 from pathlib import Path
+from typing import override
 
 import flask
+
 import ttrpg_scribe.core.typescript
 import ttrpg_scribe.npc.flask_app
 from ttrpg_scribe.core.plugin import Plugin
@@ -12,10 +14,12 @@ class NpcPlugin(Plugin):
         static_folder='static', template_folder='templates')
     ttrpg_scribe.core.typescript.extend(_blueprint)
 
+    @override
     @classmethod
     def create_app(cls, instance_path: Path, config: flask.Config) -> flask.Flask:
         return ttrpg_scribe.npc.flask_app.create_app(instance_path, config)
 
+    @override
     @classmethod
     def configure(cls, main_app: flask.Flask):
         main_app.register_blueprint(cls._blueprint, url_prefix='/npc_plugin')

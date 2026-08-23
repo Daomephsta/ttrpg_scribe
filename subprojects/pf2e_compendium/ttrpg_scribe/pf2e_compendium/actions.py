@@ -1,6 +1,6 @@
 import re
 from functools import partial
-from typing import Any, ClassVar, Literal, Self
+from typing import Any, ClassVar, Literal, Self, override
 
 from ttrpg_scribe.core.dice import SimpleDice
 
@@ -112,6 +112,7 @@ class Strike(Action):
             return [4, 8]
         return [5, 10]
 
+    @override
     @classmethod
     def from_json_with(cls, curried_constructor: partial, data: dict) -> Self:
         return curried_constructor(
@@ -124,6 +125,7 @@ class Strike(Action):
             effects=data['effects']
         )
 
+    @override
     def to_json(self):
         data = super().to_json()
         data.update(

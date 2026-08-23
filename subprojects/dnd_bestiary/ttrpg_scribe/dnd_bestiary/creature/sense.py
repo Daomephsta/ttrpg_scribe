@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import override
 
 
 @dataclass
@@ -23,6 +24,7 @@ class Sense:
     def from_json(json):
         return Sense(**json)
 
+    @override
     def __str__(self) -> str:
         return f'{self.name} {self.range} ft. {self.condition}'\
             if self.condition else f'{self.name} {self.range} ft.'

@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from random import Random
 from random import _inst as default_random
-from typing import Any, Self
+from typing import Any, Self, override
 
 
 class Rollable:
@@ -16,6 +16,7 @@ class SimpleDice(Rollable):
     size: int
     mod: int
 
+    @override
     def roll(self, rng: Random = default_random) -> int:
         return sum(rng.randrange(1, self.size + 1)
             for _ in range(self.count))
@@ -58,6 +59,7 @@ class SimpleDice(Rollable):
     def resize(self, target: int) -> 'SimpleDice':
         return SimpleDice(self.count, target, int(self.average() - (target + 1) / 2 * self.count))
 
+    @override
     def __str__(self) -> str:
         if self.mod > 0:
             return f'{self.count}d{self.size} + {self.mod}'

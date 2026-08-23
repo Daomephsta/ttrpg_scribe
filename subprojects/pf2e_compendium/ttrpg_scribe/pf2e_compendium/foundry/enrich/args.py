@@ -1,5 +1,5 @@
 from collections.abc import Set
-from typing import overload
+from typing import overload, override
 
 
 class Args:
@@ -87,6 +87,7 @@ class Args:
             notes(e_value)
         return False
 
+    @override
     def __str__(self):
         args = ', '.join(k if self.__is_positional(k, v) else f'{k}={v}'
                          for k, v in self.keyed.items())

@@ -1,4 +1,11 @@
 {
+    "deprecateTypingAliases": true,
+    "reportDeprecated": "warning",
+    "reportDuplicateImport": "warning",
+    "reportImplicitOverride": "warning",
+    "reportUnreachable": "warning",
+    "reportUnusedImport": "warning",
+    "reportUnusedVariable": "warning",
     "venvPath": ".",
     "venv": ".venv"
 }

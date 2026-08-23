@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Self
+from typing import Any, Self, override
 
 
 @dataclass
@@ -17,5 +17,6 @@ class ArmourClass:
     def desc(self):
         return self.desc_format.format(ac=self.value)
 
+    @override
     def __str__(self) -> str:
         return self.desc()

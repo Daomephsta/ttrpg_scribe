@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Callable
+from collections.abc import Callable
+from typing import override
 
 
 class Adjuster[T](ABC):
@@ -92,6 +93,7 @@ class CreatureAdjuster[T](Adjuster[T]):
     def spellcasting(self, attack_delta: int, dc_delta: int):
         ...
 
+    @override
     def apply(self, name: str, level_delta: Callable[[int], int], mod_delta: int,
               hp_delta: Callable[[int], int], rename: bool) -> T:
         super().apply(name, level_delta, mod_delta, hp_delta, rename)
@@ -106,6 +108,7 @@ class HazardAdjuster[T](Adjuster[T]):
     def stealth(self, delta: int):
         ...
 
+    @override
     def apply(self, name: str, level_delta: Callable[[int], int], mod_delta: int,
               hp_delta: Callable[[int], int], rename: bool) -> T:
         super().apply(name, level_delta, mod_delta, hp_delta, rename)

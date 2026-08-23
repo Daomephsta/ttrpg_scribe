@@ -1,18 +1,15 @@
 import itertools
 import math
 import operator
-import re
-from ast import Name
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import reduce
-from os import wait
-from typing import Any
+from typing import Any, override
 
-from lark import Lark, Token, Transformer, Tree, v_args
+from lark import Lark, Transformer, v_args
 from requests_cache import Callable
-from ttrpg_scribe.core.dice import SimpleDice, d
 
+from ttrpg_scribe.core.dice import SimpleDice, d
 from ttrpg_scribe.pf2e_compendium.actor import statistics
 from ttrpg_scribe.pf2e_compendium.foundry.enrich.args import Args
 
@@ -83,6 +80,7 @@ class DamageInstance:
     def __truediv__(self, other):
         return self.__bin_op(operator.truediv, other)
 
+    @override
     def __str__(self) -> str:
         def helper(dice: list[SimpleDice | int], damage_types: list[str]):
             amount = f'<span class="damage-dice">{' + '.join(map(str, dice))}</span>'
@@ -182,10 +180,10 @@ class RollTransformer(Transformer):
 
     def _modifiers_flavour(self, damage: DamageInstance, children):
         match children:
-            case *_, str() as modifiers, list() as flavour:
+            case *_, str() as _modifiers, list() as flavour:
                 damage.add_category(*flavour)
                 raise NotImplementedError('Dice modifiers')
-            case *_, str() as modifiers:
+            case *_, str() as _modifiers:
                 raise NotImplementedError('Dice modifiers')
             case *_, list() as flavour:
                 damage.add_category(*flavour)

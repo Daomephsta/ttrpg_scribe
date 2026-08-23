@@ -1,4 +1,5 @@
-from typing import Any, Callable, Self
+from collections.abc import Callable
+from typing import Any, Self, override
 
 
 class Movement:
@@ -34,6 +35,7 @@ class Movement:
     def from_json(json):
         return Movement(**json)
 
+    @override
     def __str__(self) -> str:
         return self.desc_format.format(self.amount)
 

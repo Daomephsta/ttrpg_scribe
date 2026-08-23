@@ -2,7 +2,7 @@ import itertools
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Self
+from typing import Any, Self, override
 
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.html import Tag
@@ -28,6 +28,7 @@ class StatisticBracket:
     def __sub__(self, penalty: int):
         return StatisticBracket(self.name, self.rank, self.adjustment - penalty)
 
+    @override
     def __str__(self) -> str:
         parts = [self.name]
         if self.rank != 1:
@@ -40,6 +41,7 @@ class StatisticBracket:
             parts.append(f'(of {self.maximum})')
         return ' '.join(parts)
 
+    @override
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self}>'
 
@@ -104,6 +106,7 @@ class NumberCell(TableCell[int, int | tuple[int, int]]):
         self.low = low
         self.high = high if high is not None else low
 
+    @override
     @classmethod
     def parse(cls, data):
         match data:
@@ -112,6 +115,7 @@ class NumberCell(TableCell[int, int | tuple[int, int]]):
             case tuple():
                 return NumberCell(*data)
 
+    @override
     def value_for(self, rank: int, adjustment: int) -> int:
         if adjustment > 0:
             return self.high + adjustment
@@ -120,17 +124,21 @@ class NumberCell(TableCell[int, int | tuple[int, int]]):
         else:  # self.adjustment == 0
             return self.low + rank - 1  # Rank 1 is +0
 
+    @override
     def in_bracket(self, name: str, value: int) -> StatisticBracket:
         if self.high == self.low:
             return StatisticBracket(name)
         return StatisticBracket(name, rank=value - self.low + 1, maximum=self.high - self.low + 1)
 
+    @override
     def above_bracket(self, name: str, value: int) -> StatisticBracket:
         return StatisticBracket(name, adjustment=value - self.high)
 
+    @override
     def below_bracket(self, name: str, value: int) -> StatisticBracket:
         return StatisticBracket(name, adjustment=-(self.low - value))
 
+    @override
     @classmethod
     def between_brackets(cls, lower: TableCell, lower_name: str, upper: TableCell, upper_name: str,
                          value: int) -> StatisticBracket:
@@ -141,9 +149,11 @@ class NumberCell(TableCell[int, int | tuple[int, int]]):
             value
         )
 
+    @override
     def __contains__(self, value: int) -> bool:
         return self.low <= value <= self.high
 
+    @override
     def __eq__(self, value: object) -> bool:
         match value:
             case int():
@@ -151,17 +161,21 @@ class NumberCell(TableCell[int, int | tuple[int, int]]):
             case _:
                 return super().__eq__(value)
 
+    @override
     def __gt__(self, value: int) -> bool:
         return self.low > value
 
+    @override
     def __lt__(self, value: int) -> bool:
         return self.high < value
 
+    @override
     def __str__(self) -> str:
         if self.low == self.high:
             return f'NumberCell({self.low})'
         return f'NumberCell({self.low} to {self.high})'
 
+    @override
     def __repr__(self):
         return self.__str__()
 
@@ -171,25 +185,31 @@ class DiceCell(TableCell[SimpleDice, SimpleDice]):
         self.dice = dice
         self.average = math.floor(self.dice.average())
 
+    @override
     @classmethod
     def parse(cls, data):
         return DiceCell(data)
 
+    @override
     def value_for(self, rank: int, adjustment: int) -> SimpleDice:
         if adjustment != 0:
             return self.dice + adjustment
         else:  # self.adjustment == 0
             return self.dice + rank - 1  # Rank 1 is +0
 
+    @override
     def in_bracket(self, name: str, value: int) -> StatisticBracket:
         return StatisticBracket(name)
 
+    @override
     def above_bracket(self, name: str, value: int) -> StatisticBracket:
         return StatisticBracket(name, adjustment=value - self.average)
 
+    @override
     def below_bracket(self, name: str, value: int) -> StatisticBracket:
         return StatisticBracket(name, adjustment=value - self.average)
 
+    @override
     @classmethod
     def between_brackets(cls, lower: TableCell, lower_name: str,
                          upper: TableCell, upper_name: str, value: int) -> StatisticBracket:
@@ -199,18 +219,23 @@ class DiceCell(TableCell[SimpleDice, SimpleDice]):
             upper.average, upper_name,
             value)
 
+    @override
     def __contains__(self, value: int) -> bool:
         return value == self.average
 
+    @override
     def __gt__(self, value: int) -> bool:
         return self.average > value
 
+    @override
     def __lt__(self, value: int) -> bool:
         return self.average < value
 
+    @override
     def __str__(self) -> str:
         return f'DiceCell({self.dice})'
 
+    @override
     def __repr__(self):
         return self.__str__()
 

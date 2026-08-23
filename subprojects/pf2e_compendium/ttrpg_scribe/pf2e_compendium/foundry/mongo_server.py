@@ -4,7 +4,6 @@ import shutil
 import subprocess
 
 from ttrpg_scribe import pf2e_compendium
-from ttrpg_scribe.pf2e_compendium import foundry
 
 _LOGGER = logging.getLogger(__name__)
 CONNECTION_ARGS = '127.0.0.1', 48165

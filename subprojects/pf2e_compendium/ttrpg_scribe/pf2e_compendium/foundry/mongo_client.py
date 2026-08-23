@@ -2,8 +2,9 @@ import json
 import logging
 import os
 import re
+from collections.abc import Generator, Iterable
 from pathlib import Path
-from typing import Any, Generator, Iterable, Literal, cast, overload
+from typing import Any, Literal, cast, overload, override
 
 import plyvel
 import pymongo
@@ -14,7 +15,6 @@ from rich.progress import Progress
 from slugify import slugify
 
 from ttrpg_scribe import pf2e_compendium
-from ttrpg_scribe.encounter.flask import itertools
 from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 
@@ -148,6 +148,7 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
 
     class PF2ActorDocAdjuster(Adjuster[Document]):
         @property
+        @override
         def name(self) -> str:
             return self.obj['name']
 
@@ -156,6 +157,7 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
             self.obj['name'] = name
 
         @property
+        @override
         def level(self) -> int:
             return self.obj['system']['details']['level']['value']
 
@@ -163,9 +165,11 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
         def level(self, level: int):
             self.obj['system']['details']['level']['value'] = level
 
+        @override
         def ac(self, delta: int):
             self.obj['system']['attributes']['ac']['value'] += delta
 
+        @override
         def dcs(self, delta: int):
             for item in self.obj['items']:
                 if 'description' not in item['system']:
@@ -176,6 +180,7 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                     item['system']['description']['value']
                 )
 
+        @override
         def saves(self, delta: int):
             self.obj['system']['saves'] = {
                 save: data | {'value': data['value'] + delta}
@@ -183,10 +188,12 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                 if data['value'] is not None
             }
 
+        @override
         def max_hp(self, delta: int):
             self.obj['system']['attributes']['hp']['max'] += delta
             self.obj['system']['attributes']['hp']['value'] += delta
 
+        @override
         def damaging_actions(self, attack_delta: int, damage_delta: int):
             def with_delta(formula: str, delta: int):
                 if formula.isnumeric():
@@ -205,15 +212,18 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                     damage['formula'] = with_delta(damage['formula'], damage_delta)
 
     class PF2CreatureDocAdjuster(PF2ActorDocAdjuster, CreatureAdjuster[Document]):
+        @override
         def perception(self, delta: int):
             self.obj['system']['perception']['mod'] += delta
 
+        @override
         def skills(self, delta: int):
             for skill in self.obj['system']['skills'].values():
                 skill['base'] += delta
                 for special in skill.get('special', []):
                     special['base'] += delta
 
+        @override
         def spellcasting(self, attack_delta: int, dc_delta: int):
             for item in self.obj['items']:
                 if item['type'] != 'spellcastingEntry':
@@ -222,6 +232,7 @@ def _import_db(db: plyvel.DB, id_root: str, folder_paths: dict[str, str]
                 item['system']['spelldc']['dc'] += dc_delta
 
     class PF2HazardDocAdjuster(PF2ActorDocAdjuster, HazardAdjuster[Document]):
+        @override
         def stealth(self, delta: int):
             self.obj['system']['attributes']['stealth']['value'] += delta
 

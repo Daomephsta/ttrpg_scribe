@@ -1,6 +1,6 @@
 import pytest
-from ttrpg_scribe.pf2e_compendium.foundry import packs
 
+from ttrpg_scribe.pf2e_compendium.foundry import packs
 
 _BUGS: dict[str, tuple[type[Exception], str]] = {
     'lost-omens-bestiary/shining-kingdoms/lamp-blighter': (

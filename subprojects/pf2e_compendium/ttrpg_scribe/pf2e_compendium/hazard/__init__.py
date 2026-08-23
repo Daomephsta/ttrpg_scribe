@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, override
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actor import (ActionsContainer,
@@ -24,19 +24,23 @@ class PF2Hazard(InitiativeParticipant, PF2Actor):
     reset: str
     description: str
 
+    @override
     def initiative_mod(self) -> int:
         return self.stealth.value
 
+    @override
     def default_hp(self) -> int:
         return self.max_hp
 
     type Template = PF2Actor.GenericTemplate['PF2Hazard']
 
+    @override
     def apply(self, *templates: Template):
         for template in templates:
             template(self)
         return self
 
+    @override
     def write_json(self, data: dict[str, Any]):
         data.update(
             name=self.name,

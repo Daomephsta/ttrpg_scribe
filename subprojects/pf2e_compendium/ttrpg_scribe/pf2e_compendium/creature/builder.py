@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Self, TypedDict, Unpack
+from typing import Any, Self, TypedDict, Unpack, override
 
 from ttrpg_scribe.pf2e_compendium.actions import Action
 from ttrpg_scribe.pf2e_compendium.actor import ActionsContainer, statistics
@@ -19,7 +20,7 @@ class _Statistic[E]:
     table: Table[E]
     level: int
     bracket: StatisticBracket | None = None
-    override: E | None = None
+    value_override: E | None = None
 
     def __init__(self, table: Table[E], level: int, value: StatisticBracket | E):
         self.table = table
@@ -27,14 +28,14 @@ class _Statistic[E]:
         match value:
             case StatisticBracket():
                 self.bracket = value
-                self.override = None
+                self.value_override = None
             case _:
                 self.bracket = None
-                self.override = value
+                self.value_override = value
 
     def resolve(self) -> E:
-        if self.override is not None:
-            return self.override
+        if self.value_override is not None:
+            return self.value_override
         if self.bracket is not None:
             return self.table[self.level, self.bracket]
         raise RuntimeError('Illegal state: bracket and override are both None')
@@ -44,11 +45,12 @@ class _Statistic[E]:
             case StatisticBracket():
                 self.bracket = value
             case int():
-                self.override = value
+                self.value_override = value
 
+    @override
     def __repr__(self) -> str:
         return f'_Statistic(table=<Table {self.table.name}>, level={self.level}' +\
-               f', value={self.bracket or self.override!r})'
+               f', value={self.bracket or self.value_override!r})'
 
 
 @dataclass(eq=False, match_args=False)

@@ -1,4 +1,5 @@
-from typing import Callable, TypedDict, Unpack
+from collections.abc import Callable
+from typing import TypedDict, Unpack
 
 from ttrpg_scribe.dnd_bestiary.creature import DndCreature, ability
 from ttrpg_scribe.dnd_bestiary.creature.armour import ArmourClass

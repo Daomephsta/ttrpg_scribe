@@ -4,7 +4,7 @@ import random
 from abc import ABC, abstractmethod
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, override
 
 import flask
 from flask import Flask
@@ -25,7 +25,7 @@ class InitiativeParticipant(ABC):
         return data
 
     @abstractmethod
-    def write_json(self, data: dict[str, Any]): ...
+    def write_json(self, data: dict[str, Any]) -> None: ...
 
     @abstractmethod
     def initiative_mod(self) -> int: ...
@@ -64,6 +64,7 @@ class EncounterSpec:
 class SystemPlugin(Plugin):
     compendium_blueprint: flask.Blueprint
 
+    @override
     @classmethod
     def configure(cls, main_app: Flask):
         if 'SYSTEM' in main_app.config:

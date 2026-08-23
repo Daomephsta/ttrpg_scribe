@@ -1,6 +1,6 @@
-from abc import ABC
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable, Iterator, Literal, overload
+from typing import Any, Literal, Self, overload, override
 
 from ttrpg_scribe.pf2e_compendium.actions import Action, Strike
 
@@ -31,6 +31,7 @@ class ActionsContainer(Iterable[Action]):
         self.remove(action.name)
         self.add(action)
 
+    @override
     def __iter__(self) -> Iterator[Action]:
         return iter(self._by_name.values())
 
@@ -54,7 +55,7 @@ class ActionsContainer(Iterable[Action]):
         return ActionsContainer(Action.from_json(action) for action in data.values())
 
 
-class PF2Actor(ABC):
+class PF2Actor:
     name: str
     level: int
     rarity: str
@@ -66,9 +67,9 @@ class PF2Actor(ABC):
     actions: ActionsContainer
 
     type GenericTemplate[T] = Callable[[T], None]
-    type Template = GenericTemplate['PF2Actor']
+    type Template = GenericTemplate[Self]
 
-    def apply(self, *templates: Template):
+    def apply(self, *templates: Template) -> Self:
         for template in templates:
             template(self)
         return self

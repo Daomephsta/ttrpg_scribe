@@ -1,9 +1,8 @@
 import re
-from typing import Any, TypedDict, cast
+from typing import Any, TypedDict
 
 import frontmatter
 from markdown import Markdown
-
 
 MD_HEADER = re.compile('^# (.+)$', flags=re.MULTILINE)
 __renderer = Markdown(extensions=['admonition', 'attr_list', 'def_list',
@@ -30,7 +29,9 @@ _ALLOWED_SCRIPT_ATTRS = {'async', 'crossorigin', 'blocking', 'defer', 'fetchprio
 
 def parse_metadata(metadata: dict[str, Any]) -> Metadata:
     def as_list[E](name: str, element_type: type[E], default: list[E]) -> list[E]:
-        candidate = cast(list[E], metadata.get(name, default))
+        candidate = metadata.get(name, default)
+        if not isinstance(candidate, list):
+            raise TypeError(f'Value {candidate} of {name} must be a list')
         match candidate:
             case []:
                 return candidate
@@ -43,8 +44,6 @@ def parse_metadata(metadata: dict[str, Any]) -> Metadata:
                     raise TypeError(f'Elements [{args}] in {name} must each be'
                                     f' {element_type} not [{arg_types}]')
                 return candidate
-            case _:
-                raise TypeError(f'Value {candidate} of {name} must be a list')
 
     def sanitise(attrs: dict[str, str]):
         return {k: attrs[k] for k in (attrs.keys() & _ALLOWED_SCRIPT_ATTRS)}

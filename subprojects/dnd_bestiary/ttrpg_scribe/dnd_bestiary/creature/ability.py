@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import ClassVar, Self
+from typing import ClassVar, Self, override
 
 
 def mod(stat: int):
@@ -69,6 +69,7 @@ class Skill:
     def mod(self, creature) -> int:
         return mod(getattr(creature, self.ability))
 
+    @override
     def __hash__(self) -> int:
         return hash(self.name)
 

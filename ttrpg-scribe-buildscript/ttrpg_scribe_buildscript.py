@@ -1,7 +1,7 @@
-from pathlib import Path
 import shutil
 import subprocess
-from typing import MutableMapping
+from collections.abc import MutableMapping
+from pathlib import Path
 
 from pdm.backend.hooks import Context
 from pdm.backend.hooks.version import scm

@@ -1,6 +1,8 @@
 import collections
+import typing
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from typing import Any, Callable, ClassVar, Iterable, Literal
+from typing import Any, ClassVar, Literal, override
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action
@@ -145,7 +147,7 @@ type Abilities[V] = dict[Literal['str', 'dex', 'con', 'int', 'wis', 'cha'], V]
 
 
 @dataclass
-class PF2Creature(InitiativeParticipant, PF2Actor):
+class PF2Creature(PF2Actor, InitiativeParticipant):
     name: str
     level: int
     size: str
@@ -181,12 +183,14 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
         else:
             return self.abilities[Skill.attribute(skill)]
 
+    @override
     def initiative_mod(self) -> int:
         if self.initiative_source == 'perception':
             return self.perception
         else:
             return self.skill_mod(self.initiative_source)
 
+    @override
     def default_hp(self) -> int:
         return self.max_hp
 
@@ -199,12 +203,8 @@ class PF2Creature(InitiativeParticipant, PF2Actor):
 
     type Template = PF2Actor.GenericTemplate['PF2Creature']
 
-    def apply(self, *templates: Template):
-        for template in templates:
-            template(self)
-        return self
-
-    def write_json(self, data: dict[str, Any]):
+    @typing.override
+    def write_json(self, data: dict[str, Any]) -> None:
         data.update(
             type='creature',
             name=self.name,

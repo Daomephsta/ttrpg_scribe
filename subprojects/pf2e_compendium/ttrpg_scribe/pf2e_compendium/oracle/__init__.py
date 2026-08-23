@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import flask
+
 import ttrpg_scribe.core.typescript
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client
 

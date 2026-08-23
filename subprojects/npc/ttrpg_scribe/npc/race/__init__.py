@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, override
 
 BY_NAME: dict[str, 'Race'] = {}
 
@@ -12,6 +12,7 @@ class Subrace:
     def name(self):
         return f'{self.subname} {self.parent.name}'
 
+    @override
     def __str__(self) -> str:
         return self.subname
 
@@ -39,12 +40,15 @@ class Race:
         args.update(overrides)
         return Race(**args)
 
+    @override
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Race) and self.name == other.name
 
+    @override
     def __hash__(self) -> int:
         return hash(self.name)
 
+    @override
     def __str__(self) -> str:
         return self.name
 

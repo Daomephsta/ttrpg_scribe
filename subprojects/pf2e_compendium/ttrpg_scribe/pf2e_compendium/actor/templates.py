@@ -1,5 +1,6 @@
 import re
-from typing import Callable, overload
+from collections.abc import Callable
+from typing import overload, override
 
 from ttrpg_scribe.pf2e_compendium.actions import Action, Strike
 from ttrpg_scribe.pf2e_compendium.actor import PF2Actor, Save
@@ -57,6 +58,7 @@ def rename(full: str, *other_names: tuple[str, str]) -> PF2Actor.Template:
 
 class PF2ActorAdjuster[A: PF2Actor](Adjuster[A]):
     @property
+    @override
     def name(self) -> str:
         return self.obj.name
 
@@ -65,6 +67,7 @@ class PF2ActorAdjuster[A: PF2Actor](Adjuster[A]):
         self.obj.name = name
 
     @property
+    @override
     def level(self) -> int:
         return self.obj.level
 
@@ -72,12 +75,15 @@ class PF2ActorAdjuster[A: PF2Actor](Adjuster[A]):
     def level(self, level: int):
         self.obj.level = level
 
+    @override
     def ac(self, delta: int):
         self.obj.ac += delta
 
+    @override
     def dcs(self, delta: int):
         self.obj = self.obj.apply(adjust_all_dcs(delta))
 
+    @override
     def saves(self, delta: int):
         self.obj.saves = {
             save: mod + delta
@@ -88,9 +94,11 @@ class PF2ActorAdjuster[A: PF2Actor](Adjuster[A]):
     def set_save(self, save: Save, value: int):
         self.obj.saves[save] = value
 
+    @override
     def max_hp(self, delta: int):
         self.obj.max_hp += delta
 
+    @override
     def damaging_actions(self, attack_delta: int, damage_delta: int):
         for action in self.obj.actions:
             match action:
@@ -105,13 +113,16 @@ class PF2ActorAdjuster[A: PF2Actor](Adjuster[A]):
 
 
 class PF2CreatureAdjuster(PF2ActorAdjuster[PF2Creature], CreatureAdjuster[PF2Creature]):
+    @override
     def perception(self, delta: int):
         self.obj.perception += delta
 
+    @override
     def skills(self, delta: int):
         for skill in self.obj.skills.values():
             skill.mod += delta
 
+    @override
     def spellcasting(self, attack_delta: int, dc_delta: int):
         for casting in self.obj.spellcasting:
             casting.attack += attack_delta
@@ -119,6 +130,7 @@ class PF2CreatureAdjuster(PF2ActorAdjuster[PF2Creature], CreatureAdjuster[PF2Cre
 
 
 class PF2HazardAdjuster(PF2ActorAdjuster[PF2Hazard], HazardAdjuster[PF2Hazard]):
+    @override
     def stealth(self, delta: int):
         self.obj.stealth.value += delta
 

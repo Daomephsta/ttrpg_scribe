@@ -1,5 +1,6 @@
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from ttrpg_scribe.core.html import Tag
 from ttrpg_scribe.pf2e_compendium.actor import statistics

@@ -1,6 +1,7 @@
 import math
 import re
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any, override
 
 import flask
 from flask import Blueprint, Flask, json, render_template, request
@@ -194,6 +195,7 @@ class Pf2ePlugin(SystemPlugin):
     _CREATURE_XP_BY_DELTA = {-4: 10, -3: 15, -2: 20, -1: 30, 0: 40, 1: 60, 2: 80, 3: 120}
     compendium_blueprint = blueprint
 
+    @override
     @classmethod
     def configure(cls, main_app: Flask):
         super().configure(main_app)
@@ -209,6 +211,7 @@ class Pf2ePlugin(SystemPlugin):
             f'{mongo_id} does not resolve to PF2Creature | PF2Hazard'
         return data
 
+    @override
     @classmethod
     def read_participant(cls, data: dict[str, Any] | InitiativeParticipant | str,
                          extra: dict[str, Any] = {}) -> InitiativeParticipant:
@@ -247,6 +250,7 @@ class Pf2ePlugin(SystemPlugin):
 
         return participant
 
+    @override
     @classmethod
     def encounter_xp(cls, encounter: EncounterSpec) -> str:
         def resolve_level(participant: InitiativeParticipant) -> int:

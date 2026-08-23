@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, override
 
 from ttrpg_scribe.core.json_path import JsonPath
 
@@ -6,12 +6,8 @@ __SYSTEM = JsonPath('system')
 
 
 class Flags(str):
+    @override
     def __getitem__(self, key):
-        match key:
-            case str():
-                return Flags(f'{self}.{key}')
-            case _:
-                return super().__getitem__(key)
         if isinstance(key, str):
             return Flags(f'{self}.{key}')
         else:

@@ -1,13 +1,14 @@
+import re
+import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import reduce
 from pathlib import Path
-import re
-import sys
+
+import yaml
 
 from ttrpg_scribe.core import markdown
 from ttrpg_scribe.notes import paths
-import yaml
 
 
 @dataclass
