@@ -1,0 +1,24 @@
+# Based on https://github.com/foundryvtt/pf2e/blob/v14-dev/roll-grammar.peggy
+?expressions: expression ("," expression)*
+?expression: (pool | term) expr_op*
+expr_op: "+" (pool | term) -> add
+    | "-" (pool | term) -> sub
+?term: term_operand term_op*
+term_op: "*" term_operand -> mul
+    | "/" term_operand -> div
+?term_operand: dice_term | function_term | grouping | flavoured_number | _number
+function_term: IDENTIFIER "(" expression? ("," expression)* ")"
+dice_term: (grouping | function_term | _number)? ("d" | "D") (grouping | function_term | _number | IDENTIFIER) MODIFIERS? flavour?
+data_reference: "@" IDENTIFIER ("." IDENTIFIER)+
+?grouping: "(" expression ")" flavour?
+pool: "{" expression ("," expression)* "}" MODIFIERS? flavour?
+flavoured_number: _number flavour
+flavour: "[" _flavour_string ("," _flavour_string)* "]"
+_flavour_string: /[a-z]+/ | data_reference
+_number: SIGNED_NUMBER | data_reference
+IDENTIFIER: /[a-z$_]/i /[a-z$_0-9]/i*
+MODIFIERS: /[^ (){}\[\]+\-*\/,]/+
+
+%import common.SIGNED_NUMBER
+WHITESPACE: " "
+%ignore WHITESPACE

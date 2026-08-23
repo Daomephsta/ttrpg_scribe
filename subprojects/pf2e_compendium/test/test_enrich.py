@@ -8,21 +8,32 @@ from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 TEST_CONTEXT = {
     'actor': {
         'level': 3
+    },
+    'item': {
+        'damage': {
+            'type': 'spirit'
+        }
     }
 }
 
-
 @pytest.mark.parametrize(['text', 'expected'], [
+    ('@Damage[15]', [('15', '')]),
+    ('@Damage[15[fire]]', [('15', 'fire')]),
+    ('@Damage[d6]', [('1d6', '')]),
+    ('@Damage[1d6]', [('1d6', '')]),
     ('@Damage[1d6[fire]]{ouch!}', ([('1d6', 'fire')], 'ouch!')),
+    ('@Damage[2d6[fire]|options:area-damage]', [('2d6', 'fire')]),
+    ('@Damage[(1d6)[fire]]', [('1d6', 'fire')]),
     ('@Damage[(1d6 + 3)[fire]]', [('1d6 + 3', 'fire')]),
+    ('@Damage[1d6[persistent,fire]]', [('1d6', 'persistent fire')]),
+    ('@Damage[(@actor.level)d6[fire]]', [(f'{TEST_CONTEXT['actor']['level']}d6', 'fire')]),
+    ('@Damage[1d6[@item.damage.type]]', [('1d6', 'spirit')]),
+    ('@Damage[(5[splash])[fire]]', [('5', 'splash fire')]),
     ('@Damage[5d6[acid],5d6[cold],5d6[fire]]',
      [('5d6', 'acid'), ('5d6', 'cold'), ('5d6', 'fire')]),
+    ('@Damage[{1d4,1d6}[fire]]', [('1d4 + 1d6', 'fire')]),
     ('@Damage[(2d6 + 4 + (2d6[precision]))[slashing]]',
      [('2d6 + 4', 'slashing'), ('2d6', 'precision slashing')]),
-    ('@Damage[(5[splash])[fire]]', [('5', 'splash fire')]),
-    ('@Damage[1d6[persistent,fire]]', [('1d6', 'persistent fire')]),
-    ('@Damage[2d6[fire]|options:area-damage]', [('2d6', 'fire')]),
-    ('@Damage[(@actor.level)d6[fire]]', [(f'{TEST_CONTEXT['actor']['level']}d6', 'fire')])
 ])
 def test_damage_enricher(text: str,
                          expected: tuple[list[tuple[str, str]], str] | list[tuple[str, str]]):
