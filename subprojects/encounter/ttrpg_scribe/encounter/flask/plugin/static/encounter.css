@@ -10,3 +10,8 @@
     list-style: none;
     padding-left: 0;
 }
+@media print {
+    .launch-encounter {
+        display: none;
+    }
+}
