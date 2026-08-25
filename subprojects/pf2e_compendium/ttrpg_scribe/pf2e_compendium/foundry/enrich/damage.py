@@ -36,7 +36,7 @@ class DamageInstance:
         self.shortLabel = False
 
     @staticmethod
-    def ensure(damage) -> DamageInstance:
+    def ensure(damage) -> 'DamageInstance':
         if isinstance(damage, int):
             return DamageInstance(damage)
         return damage
