@@ -5,12 +5,13 @@ from dataclasses import dataclass, field
 from typing import Any, ClassVar, Literal, override
 
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
-from ttrpg_scribe.pf2e_compendium.actions import Action
+from ttrpg_scribe.pf2e_compendium.actions import Action, interaction
 from ttrpg_scribe.pf2e_compendium.actor import (ActionsContainer, PF2Actor,
                                                 Saves)
 from ttrpg_scribe.pf2e_compendium.actor.statistics import (StatisticBracket,
                                                            Table)
 from ttrpg_scribe.pf2e_compendium.creature import statistics
+from ttrpg_scribe.pf2e_compendium.creature.senses import Sense
 
 
 @dataclass
@@ -128,21 +129,6 @@ def lore(name: str, mod: int, special: dict[str, int] | list[str] = []) -> Skill
     return Skill(name, mod, special)
 
 
-@dataclass
-class Sense:
-    name: str
-    range: int | None = None
-    acuity: Literal['precise', 'imprecise', 'vague', None] = None
-
-    @staticmethod
-    def from_json(data: dict):
-        return Sense(
-            name=data['name'],
-            range=data['range'],
-            acuity=data['acuity'],
-        )
-
-
 type Abilities[V] = dict[Literal['str', 'dex', 'con', 'int', 'wis', 'cha'], V]
 
 
@@ -176,6 +162,10 @@ class PF2Creature(PF2Actor, InitiativeParticipant):
             self.immunities += ['bleed', 'death effects', 'disease', 'healing', 'necromancy',
                                 'nonlethal attacks', 'poison', 'doomed', 'drained', 'fatigued',
                                 'paralyzed', 'sickened', 'unconscious ',]
+        for sense in self.senses:
+            # Avoid clobbering any existing descriptions of senses
+            if sense.description is not None and not self.actions.contains_name(sense.name):
+                self.actions.add(interaction(sense.name, sense.description, cost=0))
 
     def skill_mod(self, skill: str) -> int:
         if skill in self.skills:

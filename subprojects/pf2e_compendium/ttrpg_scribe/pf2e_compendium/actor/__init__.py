@@ -47,6 +47,9 @@ class ActionsContainer(Iterable[Action]):
         names = self._names_by_group[group]
         return (self._by_name[name] for name in names)
 
+    def contains_name(self, name: str):
+        return name in self._by_name
+
     def to_json(self) -> dict[str, Any]:
         return {name: action.to_json() for name, action in self._by_name.items()}
 
