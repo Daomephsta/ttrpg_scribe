@@ -8,9 +8,13 @@ term_op: "*" term_operand -> mul
     | "/" term_operand -> div
 ?term_operand: dice_term | function_term | grouping | flavoured_number | _number
 function_term: IDENTIFIER "(" expression? ("," expression)* ")"
-dice_term: (grouping | function_term | _number)? ("d" | "D") (grouping | function_term | _number | IDENTIFIER) MODIFIERS? flavour?
+dice_term: _dice_count "d"i _dice_size MODIFIERS? flavour?
+    | "d"i _dice_size MODIFIERS? flavour? -> die_term
+_dice_count: grouping | function_term | _number
+_dice_size: grouping | function_term | _number | IDENTIFIER
 data_reference: "@" IDENTIFIER ("." IDENTIFIER)+
-?grouping: "(" expression ")" flavour?
+?grouping: "(" expression ")"
+    | "(" expression ")" flavour -> flavoured_expression
 pool: "{" expression ("," expression)* "}" MODIFIERS? flavour?
 flavoured_number: _number flavour
 flavour: "[" _flavour_string ("," _flavour_string)* "]"

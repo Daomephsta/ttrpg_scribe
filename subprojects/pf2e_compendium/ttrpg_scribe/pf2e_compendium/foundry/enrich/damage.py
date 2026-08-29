@@ -4,7 +4,7 @@ import operator
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import reduce
-from typing import Any, override
+from typing import Any, NamedTuple, Self, override
 
 from lark import Lark, Transformer, v_args
 from requests_cache import Callable
@@ -41,9 +41,10 @@ class DamageInstance:
             return DamageInstance(damage)
         return damage
 
-    def add_category(self, *category: str):
+    def flavour(self, *category: str) -> Self:
         for _, existing in self.dice:
             existing.extend(category)
+        return self
 
     def __bin_op(self, op: Callable[[Any, Any], Any], other):
         match other:
@@ -93,6 +94,15 @@ class RollTransformer(Transformer):
         super().__init__(visit_tokens=True)
         self.context = context
 
+    class Tag[T](NamedTuple):
+        name: str
+        value: T
+
+    @classmethod
+    def args_by_tags(cls, children: list[Any], tags: list[str]):
+        tagged_args = {t.name: t.value for t in children if isinstance(t, cls.Tag)}
+        return [tagged_args.get(t) for t in tags]
+
     def expressions(self, children: list[DamageInstance]):
         return reduce(lambda a, b: a + b, children)
 
@@ -141,25 +151,20 @@ class RollTransformer(Transformer):
             case unknown:
                 raise SyntaxError(f'Unknown function {unknown}')
 
+    @v_args(inline=True)
+    def dice_term(self, count: int, size: int, *other):
+        return self._modifiers_flavour(DamageInstance(count * d(size)), other)
 
-    def dice_term(self, children):
-        match children[:2]:
-            case int() as count, int() as size:
-                damage = DamageInstance(count * d(size))
-            case int() as size, *_:
-                damage = DamageInstance(1 * d(size))
-            case _:
-                raise ValueError(f'Unexpected children {children}')
-        return self._modifiers_flavour(damage, children)
+    @v_args(inline=True)
+    def die_term(self, size: int, *other):
+        return self._modifiers_flavour(DamageInstance(d(size)), other)
 
     def data_reference(self, path: list[str]):
         return reduce(lambda a, b: a[b], path, initial=self.context)
 
     @v_args(inline=True)
-    def grouping(self, damage, flavour):
-        damage = DamageInstance.ensure(damage)
-        damage.add_category(*flavour)
-        return damage
+    def flavoured_expression(self, damage, flavour):
+        return DamageInstance.ensure(damage).flavour(*flavour.value)
 
     def pool(self, children):
         damage = reduce(lambda a, b: a + b, itertools.takewhile(lambda c: isinstance(c, DamageInstance), children))
@@ -167,24 +172,22 @@ class RollTransformer(Transformer):
 
     @v_args(inline=True)
     def flavoured_number(self, number, flavour):
-        return DamageInstance(number, flavour)
+        return DamageInstance(number, flavour.value)
 
-    def flavour(self, children):
-        return [str(t) for t in children]
+    def flavour(self, children) -> 'RollTransformer.Tag[list[str]]':
+        return self.Tag('flavour', [str(t) for t in children])
 
     IDENTIFIER = str
-    MODIFIERS = str
+    def MODIFIERS(self, modifiers):
+        return self.Tag('modifiers', modifiers)
 
     def SIGNED_NUMBER(self, child):
         return float(child) if '.' in child else int(child)
 
     def _modifiers_flavour(self, damage: DamageInstance, children):
-        match children:
-            case *_, str() as _modifiers, list() as flavour:
-                damage.add_category(*flavour)
-                raise NotImplementedError('Dice modifiers')
-            case *_, str() as _modifiers:
-                raise NotImplementedError('Dice modifiers')
-            case *_, list() as flavour:
-                damage.add_category(*flavour)
+        modifiers, flavour = self.args_by_tags(children, ['modifiers', 'flavour'])
+        if modifiers is not None:
+            raise NotImplementedError('Dice modifiers')
+        if flavour is not None:
+            damage.flavour(*flavour)
         return damage
