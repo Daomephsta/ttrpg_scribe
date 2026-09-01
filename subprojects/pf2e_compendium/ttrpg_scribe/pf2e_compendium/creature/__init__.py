@@ -4,6 +4,8 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, Literal, override
 
+from slugify import slugify
+
 from ttrpg_scribe.encounter.flask import InitiativeParticipant
 from ttrpg_scribe.pf2e_compendium.actions import Action, interaction
 from ttrpg_scribe.pf2e_compendium.actor import (ActionsContainer, PF2Actor,
@@ -82,14 +84,17 @@ class Skill:
         'survival': 'wis',
         'thievery': 'dex'
     }
+    slug: str
     name: str
     mod: int
     special: dict[str, int]
 
-    def __init__(self, name: str, mod: int, special: dict[str, int] | list[str] = []):
-        if not self.is_valid(name):
-            raise ValueError(f"Unknown skill '{name}'")
-        self.name = name
+    def __init__(self, slug: str, mod: int, special: dict[str, int] | list[str] = [], name: str | None = None):
+        if not self.is_valid(slug):
+            raise ValueError(f"Unknown skill '{slug}'")
+        self.slug = slug
+        self.name = name if name is not None else\
+                slug.replace('-', ' ').title()
         self.mod = mod
         match special:
             case dict():
@@ -113,20 +118,22 @@ class Skill:
     @staticmethod
     def from_json(data: dict):
         return Skill(
-            name=data['name'],
+            slug=data['slug'],
             mod=data['mod'],
             special=data['special'],
+            name=data['name'],
         )
 
 
-def skill(name: Skill.ID, mod: int, special: dict[str, int] | list[str] = []) -> Skill:
-    return Skill(name, mod, special)
+def skill(slug: Skill.ID, mod: int, special: dict[str, int] | list[str] = []) -> Skill:
+    return Skill(slug, mod, special)
 
 
-def lore(name: str, mod: int, special: dict[str, int] | list[str] = []) -> Skill:
-    if 'lore' not in name:
-        name = f'{name}-lore'
-    return Skill(name, mod, special)
+def lore(slug_base: str, mod: int, special: dict[str, int] | list[str] = [], name: str | None = None) -> Skill:
+    slug = slugify(slug_base)
+    if 'lore' not in slug:
+        slug += '-lore'
+    return Skill(slug, mod, special, name or slug_base)
 
 
 type Abilities[V] = dict[Literal['str', 'dex', 'con', 'int', 'wis', 'cha'], V]

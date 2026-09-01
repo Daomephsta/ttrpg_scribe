@@ -28,7 +28,7 @@
     <b>Skills</b>
     {% set skill_joiner = joiner(', ') %}
     {%- for skill in data.skills.values() -%}
-        {{ skill_joiner() }}{{ skill.name | title }} {{ statistic('%+d' % skill.mod, 'skill', skill.name | slug) }}
+        {{ skill_joiner() }}{{ skill.name }} {{ statistic('%+d' % skill.mod, 'skill', skill.slug) }}
         {%- if skill.special %} 
         (
         {%- set condition_joiner = joiner(', ') -%}

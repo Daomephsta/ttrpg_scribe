@@ -3,14 +3,12 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from slugify import slugify
-
 from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
 from ttrpg_scribe.pf2e_compendium.actions import Action, Strike
 from ttrpg_scribe.pf2e_compendium.actor import ActionsContainer, DetailedValue
 from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
-                                                   Spellcasting)
+                                                   Spellcasting, lore)
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, roll_data
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
@@ -97,14 +95,14 @@ def _read_creature(json: Json) -> PF2Creature:
                 case 'action':
                     actions.add(_read_simple_action(item, item_roll_data))
                 case 'lore':
-                    # Coerce to proper skill slug
-                    name = slugify(item['name'])
-                    if 'lore' not in name:
-                        name = f'{name}-lore'
-                    skills[name] = Skill(
-                        name,
+                    slug_base: str = item['name']
+                    if (base_end := slug_base.find(' (')) != -1:
+                        slug_base = slug_base[:base_end]
+                    skill = skills[skill.slug] = lore(
+                        slug_base,
                         system.mod.value(item),
-                        [x['label'] for x in system.variants(item, _or={}).values()]
+                        [x['label'] for x in system.variants(item, _or={}).values()],
+                        item['name']
                     )
                 case 'melee':
                     actions.add(_read_strike(item))
