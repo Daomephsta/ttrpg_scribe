@@ -1,6 +1,7 @@
 {% extends 'content.j2.html' %}
 {% import 'component/adjustments.j2.html' as adjustments %}
 {% import 'component/analyse.j2.html' as analyse %}
+{% from 'helpers.j2.html' import join, unpack_join %}
 {% from 'stat_block.j2.html' import simple_action, stat_block as stat_block_base, statistic, strike_action %}
 
 {% macro stat_block(data, collapsible=False) %}
@@ -75,21 +76,23 @@
 <p>
     <b>HP</b> {{ statistic(data.max_hp, 'hit-points') }}
     {%- if data.immunities %};
-        <b>Immunities</b> {{ data.immunities | join(', ') }}
+        <b>Immunities</b>
+        {% call(immunity) join(data.immunities, ', ') %}
+            {{ immunity.replace('-', ' ') -}}
+        {% endcall %}
     {%- endif -%}
+
     {%- if data.resistances %};
         <b>Resistances</b>
-        {% set resistance_joiner = joiner(', ') %}
-        {% for damage_type, amount in data.resistances.items() -%}
-        {{ resistance_joiner() }}{{ damage_type }} {{ statistic(amount, 'resistance', damage_type | slug) }}
-        {%- endfor %}
+        {% call(damage_type, amount) unpack_join(data.resistances.items(), ', ') %}
+            {{ damage_type.replace('-', ' ') }} {{ statistic(amount, 'resistance', damage_type | slug) -}}
+        {% endcall %}
     {%- endif -%}
     {%- if data.weaknesses %};
         <b>Weaknesses</b>
-        {% set weakness_joiner = joiner(', ') %}
-        {% for damage_type, amount in data.weaknesses.items() -%}
-        {{ weakness_joiner() }}{{ damage_type }} {{ statistic(amount, 'weakness', damage_type | slug) }}
-        {%- endfor %}
+        {% call(damage_type, amount) unpack_join(data.weaknesses.items(), ', ') %}
+            {{ damage_type.replace('-', ' ') }} {{ statistic(amount, 'weakness', damage_type | slug) -}}
+        {%- endcall %}
     {% endif %}
 </p>
 <!-- Defensive -->

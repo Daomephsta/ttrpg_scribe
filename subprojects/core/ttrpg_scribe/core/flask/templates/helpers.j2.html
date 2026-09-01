@@ -1,0 +1,13 @@
+{% macro join(elements, sep) %}
+    {% set join_str = joiner(sep) %}
+    {% for element in elements -%}
+        {{ join_str() }}{{ caller(element) }}
+    {%- endfor %}
+{% endmacro %}
+
+{% macro unpack_join(elements, sep) %}
+    {% set join_str = joiner(sep) %}
+    {% for element in elements -%}
+        {{ join_str() }}{{ caller(*element) }}
+    {%- endfor %}
+{% endmacro %}
