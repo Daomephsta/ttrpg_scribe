@@ -2,6 +2,7 @@
 import shutil
 import subprocess
 import sys
+import time
 import zipfile
 from pathlib import Path
 
@@ -26,6 +27,8 @@ def clean():
 
 def setup_build_dependencies():
     subprocess.run(['npm', 'ci'], check=True)
+    subprocess.run(['pdm', 'build'],
+        cwd=root/'ttrpg-scribe-buildscript', check=True)
     # Install plugins sequentially to avoid contention over ttrpg-scribe-buildscript/.pdm-build
     for project in subprojects:
         if (plugins := project/'.pdm-plugin').exists():
@@ -34,6 +37,7 @@ def setup_build_dependencies():
             ['pdm', 'install', '--plugins'],
             cwd=project, check=True
         )
+
 
 
 def build_wheels():
@@ -57,6 +61,7 @@ def build_wheels():
     while len(build_tasks) > 0:
         try:
             build_tasks = [task for task in build_tasks if is_running(task)]
+            time.sleep(1)
         except subprocess.CalledProcessError as e:
             for task in build_tasks:
                 task.terminate()
