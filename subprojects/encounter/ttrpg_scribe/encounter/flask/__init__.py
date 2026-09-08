@@ -101,7 +101,10 @@ def create_app(instance_path: str | Path, system: SystemPlugin, config: flask.Co
 
     @app.post('/party/set')
     def set_party():
-        flask.current_app.config['PARTY'] = list(flask.request.form.keys())
+        flask.current_app.config.update(
+            PARTY=list(flask.request.form.keys() - {'party_level'}),
+            PARTY_LEVEL=int(flask.request.form['party_level'])
+        )
         return flask.redirect(flask.url_for('configure_party',
             code=HTTPStatus.SEE_OTHER))
 

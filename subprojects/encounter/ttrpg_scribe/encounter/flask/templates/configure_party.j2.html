@@ -9,20 +9,23 @@
             flex-direction: column;
             align-items: center;
         }
+        #party-level {
+            width: 3em;
+        }
         #party {
-            display: grid;
-            grid-template-columns: 2em auto;
-            flex-direction: column;
             width: 33%;
             margin-left: auto;
             margin-right: auto;
+        }
+        #characters {
+            display: grid;
+            grid-template-columns: 2em auto;
         }
         #add-character {
             margin: auto 2px;
         }
         input[type="submit"] {
-            grid-column-start: 1;
-            grid-column-end: 3;
+            width: 100%;
         }
         </style>
         {{ dependencies.JQUERY }}
@@ -31,14 +34,21 @@
     <div id="centered">
         <h1>Configure Party</h1>
         <form action="/encounter/party/set" method="post" id="party">
-        {% for name in config.PARTY | sort %}
-            {% set id = "character-" + (name | slug) %}
-            <input type="checkbox" name="{{ name }}" id="{{ id }}" checked>
-            <label class="character" for="{{ id }}">{{ name }}</label>
-        {% endfor %}
-            <input type="button" value="+" id="add-character">
-            <input type="text" id="add-character-name">
-            <input type="submit" value="Set Party" style="margin-top: 5px;">
+            <label>
+                Party Level
+                <input type="number" id="party-level" name="party_level" value="{{ config.PARTY_LEVEL }}">
+            </label>
+            <fieldset id="characters">
+                <legend>Characters</legend>
+                {% for name in config.PARTY | sort %}
+                {% set id = "character-" + (name | slug) %}
+                <input type="checkbox" name="{{ name }}" id="{{ id }}" checked>
+                <label class="character" for="{{ id }}">{{ name }}</label>
+                {% endfor %}
+                <input type="button" value="+" id="add-character">
+                <input type="text" id="add-character-name">
+            </fieldset>
+            <input type="submit" value="Set Party">
         </form>
     </div>
 </html>
