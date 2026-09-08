@@ -5,6 +5,7 @@ import sys
 import time
 import zipfile
 from pathlib import Path
+from typing import Any
 
 root = Path.cwd()
 subprojects = list((root/'subprojects').iterdir())
@@ -42,28 +43,34 @@ def setup_build_dependencies():
 
 def build_wheels():
     print('Building wheels')
-    build_tasks = [
-        subprocess.Popen(
+    build_tasks: list[tuple[subprocess.Popen[bytes], dict[str, Any]]] = [(
+            subprocess.Popen(
             ['pdm', 'build', '--no-clean', '-d', dest, *(['-v'] if '-v' in sys.argv else [])],
             cwd=project
-        ) for project in subprojects
+            ),
+            {'cwd': project}
+        )
+        for project in subprojects
     ]
 
-    def is_running(task: subprocess.Popen):
+    def is_running(task: subprocess.Popen[bytes], task_info: dict[str, Any]):
         match task.poll():
             case None:
                 return True
             case 0:
                 return False
             case err:
-                raise subprocess.CalledProcessError(err, task.args)
+                e = subprocess.CalledProcessError(err, task.args)
+                for k, v in task_info.items():
+                    e.add_note(f'{k}={v}')
+                raise e
 
     while len(build_tasks) > 0:
         try:
-            build_tasks = [task for task in build_tasks if is_running(task)]
+            build_tasks = [task for task in build_tasks if is_running(*task)]
             time.sleep(1)
         except subprocess.CalledProcessError as e:
-            for task in build_tasks:
+            for task, _ in build_tasks:
                 task.terminate()
             raise e from None
 
