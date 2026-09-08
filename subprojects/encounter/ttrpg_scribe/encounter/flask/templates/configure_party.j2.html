@@ -10,15 +10,19 @@
             align-items: center;
         }
         #party {
-            display: flex;
+            display: grid;
+            grid-template-columns: 2em auto;
             flex-direction: column;
             width: 33%;
             margin-left: auto;
             margin-right: auto;
         }
-        .character {
-            display: inline-block;
-            width: 5em;
+        #add-character {
+            margin: auto 2px;
+        }
+        input[type="submit"] {
+            grid-column-start: 1;
+            grid-column-end: 3;
         }
         </style>
         {{ dependencies.JQUERY }}
@@ -28,14 +32,12 @@
         <h1>Configure Party</h1>
         <form action="/encounter/party/set" method="post" id="party">
         {% for name in config.PARTY | sort %}
-            <label>
-                <span class="character">{{ name }}</span><input type="checkbox" name="{{ name }}" checked>
-            </label>
+            {% set id = "character-" + (name | slug) %}
+            <input type="checkbox" name="{{ name }}" id="{{ id }}" checked>
+            <label class="character" for="{{ id }}">{{ name }}</label>
         {% endfor %}
-            <div>
-                <input type="text" class="character" id="add-character-name">
-                <input type="button" value="+" id="add-character">
-            </div>
+            <input type="button" value="+" id="add-character">
+            <input type="text" id="add-character-name">
             <input type="submit" value="Set Party" style="margin-top: 5px;">
         </form>
     </div>
