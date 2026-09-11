@@ -130,7 +130,7 @@ function generate(oracleEndpoint: string, compendiumContentEndpoint: string) {
 $.ready.then(() => 
 {
     addSpecification()
-    $('#add').on('click', event => addSpecification())
+    $('#add').on('click', _ => addSpecification())
     const oracleEndpoint = $('#oracle-endpoint').text().trim()
     const compendiumContentEndpoint = $('#compendium-content-endpoint').text().trim()
     $('#generate').on('click', _ => generate(oracleEndpoint, compendiumContentEndpoint))

@@ -28,7 +28,7 @@ function sortInitiative()
 function nextTurn()
 {
     const $current = $('.current-turn').removeClass('current-turn')
-    
+
     const $prev: JQuery<HTMLElement> = $current.prevAll(':not(.dead)')
         // @ts-ignore
         .uniqueSort() 
@@ -81,14 +81,14 @@ function saveRow(row: HTMLElement): [string, RowData]
 
 function save()
 {
-    const json = Object.fromEntries($('#tracker tbody tr').map((i, e) => [saveRow(e)]).get())
+    const json = Object.fromEntries($('#tracker tbody tr').map((_, e) => [saveRow(e)]).get())
     const blob = new Blob([JSON.stringify(json)], {
         type: 'application/json',
     })
     const url = URL.createObjectURL(blob)
     $('a', {href: url, download: `encounter_${new Date().toISOString()}.json`})
         .appendTo(document.body)
-        .each((i, e) => e.click())
+        .each((_, e) => e.click())
         .remove()
     URL.revokeObjectURL(url)
 }
@@ -119,7 +119,7 @@ function load() {
     form.addEventListener('submit', (event: SubmitEvent) => {
         const files = (event.target as HTMLFormElement).file_picker.files
         if (files.length > 0)
-            files[0].text().then(contents => loadFrom(JSON.parse(contents)))
+            files[0].text().then((contents: string) => loadFrom(JSON.parse(contents)))
     },
     {
         once: true

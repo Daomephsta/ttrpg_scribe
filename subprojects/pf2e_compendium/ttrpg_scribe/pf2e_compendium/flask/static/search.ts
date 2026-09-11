@@ -90,9 +90,10 @@ $.ready.then(() =>
             $('.search-button').trigger('click')
     })
     $('#complex_query').on('keyup', e => {
-        if (e.key == 'Enter' && (e.altKey || e.target.selectionEnd == e.target.textLength)) {
+        const query = e.target as HTMLTextAreaElement
+        if (e.key == 'Enter' && (e.altKey || query.selectionEnd == query.textLength)) {
             $('.search-button').trigger('click')
-            e.target.value = e.target.value.trim()
+            query.value = query.value.trim()
         }
     })
 })

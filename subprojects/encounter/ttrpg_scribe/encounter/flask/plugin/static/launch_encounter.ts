@@ -19,7 +19,10 @@ function launchEncounter(event: JQuery.ClickEvent)
 }
 
 const DICE = /(?:(?<dice_count>\d+)d(?<dice_size>\d+) \+ )?(?<base>\d+)/
-var randomInteger = (min, max) => Math.floor(min + Math.random() * (max - min))
+function randomInteger(min: number, max: number)
+{
+    return Math.floor(min + Math.random() * (max - min))
+}
 
 function launchRandomEncounter(event: JQuery.ClickEvent) 
 {

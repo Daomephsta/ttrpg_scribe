@@ -32,9 +32,6 @@ function cultureChanged() {
 
     for (const [race, subraces] of races) {
         if (subraces.length > 0) {
-            const $group = $('<optgroup>', {label: race})
-                .append(new Option(race))
-
             const group = document.createElement('optgroup')
             group.label = race
             group.appendChild(new Option(race))
@@ -58,7 +55,7 @@ function raceChanged() {
         subraceInput.value = raceInput.selectedOptions[0].getAttribute('subrace')
 }
 
-function setFeedback(text, duration) {
+function setFeedback(text: string, duration: number) {
     const $feedback = $('#feedback').text(text)
     setTimeout(() => $feedback.text(''), duration)
 }
@@ -104,7 +101,7 @@ function save(saveNpcEndpoint: string) {
         })
 }
 
-window.addEventListener('load', event => {
+window.addEventListener('load', _ => {
     regionChanged()
     cultureChanged()
 })
