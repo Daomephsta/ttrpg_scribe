@@ -20,6 +20,12 @@ interface SearchResult {
     worldContent?: boolean
 }
 
+const SHORT_ALIASES = {
+    'level': 'system.details.level.value',
+    'rarity': 'system.traits.rarity',
+    'traits': 'system.traits.value',
+}
+
 function search() {
     function doSearch(endpoint: string, searchParams: {[key: string]: string}, init: RequestInit): Promise<void> {
         const url = new URL(endpoint, document.baseURI)
@@ -60,15 +66,18 @@ function search() {
         }
         case 'complex':
         {
-            try {
-            const query = JSON5.parse($<HTMLTextAreaElement>('#complex_query').val()!)
-            doSearch(endpoints.search, {query_type: 'complex', ...docTypeParam}, {
-                method: 'POST',
-                body: JSON.stringify(query),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
+            try
+            {
+                // Map root level property aliases to full names
+                const query = Object.fromEntries(
+                    Object.entries(JSON5.parse($<HTMLTextAreaElement>('#complex_query').val()!))
+                        .map(([k, v]) => [SHORT_ALIASES[k] || k, v])
+                )
+                doSearch(endpoints.search, {query_type: 'complex', ...docTypeParam}, {
+                    method: 'POST',
+                    body: JSON.stringify(query),
+                    headers: {'Content-Type': 'application/json'}
+                })
             }
             catch (error) {
                 if (error instanceof SyntaxError) {
