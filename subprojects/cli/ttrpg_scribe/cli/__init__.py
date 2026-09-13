@@ -9,7 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
-def make_app(project_dir: str | Path, debug: bool | None = None):
+def make_app(project_dir: str | Path, base_port: int, debug: bool | None = None, gm_info: bool = False):
     from http import HTTPStatus
 
     from werkzeug.middleware.dispatcher import DispatcherMiddleware
@@ -20,6 +20,8 @@ def make_app(project_dir: str | Path, debug: bool | None = None):
 
     project_dir = Path(project_dir)
     app = ttrpg_scribe.notes.create_app(project_dir)
+    app.config['BASE_PORT'] = base_port
+    app.config['GM_INFO'] = gm_info
     if debug is not None:
         app.debug = debug
     app.jinja_options.update(
@@ -78,7 +80,7 @@ def check_structure(project_dir: Path) -> bool:
     return True
 
 
-def start(project: Path, debug: bool, gm_info: bool):
+def start(project: Path, port: int, debug: bool, gm_info: bool):
     import dotenv
     import waitress
 
@@ -91,10 +93,8 @@ def start(project: Path, debug: bool, gm_info: bool):
                         format='%(name)s @ %(levelname)s: %(message)s')
 
     force_debug = True if debug else None
-    app = make_app(project, debug=force_debug)
-    app.config['GM_INFO'] = gm_info
-
-    host, port = '127.0.0.1', 48164
+    app = make_app(project, port, debug=force_debug, gm_info=gm_info)
+    host = '127.0.0.1'
     if debug:
         app.run(host, port, debug=True)
     else:
@@ -126,12 +126,12 @@ def new(project_dir: Path, system: str):
 
 
 def pf2e_foundry(parent: _SubParsersAction):
-    def start_mongo(rebuild: bool):
+    def start_mongo(port: int, rebuild: bool):
         from ttrpg_scribe.pf2e_compendium import foundry
 
         logging.basicConfig(level=logging.INFO,
                             format='%(name)s @ %(levelname)s: %(message)s')
-        foundry.initialise(rebuild)
+        foundry.initialise(port, rebuild)
         logging.info('Mongo server ready')
         try:
             while True:  # Keep server alive until termination
@@ -150,7 +150,8 @@ def pf2e_foundry(parent: _SubParsersAction):
     add_subcommand(subparsers, 'dir', lambda _: print_dir())
 
     mongo_parser = add_subcommand(subparsers, 'mongo',
-                                  lambda args: start_mongo(rebuild=args.rebuild))
+                                  lambda args: start_mongo(args.port, rebuild=args.rebuild))
+    mongo_parser.add_argument('--port', type=int, default=48165)
     mongo_parser.add_argument('--rebuild', action='store_true')
 
 
@@ -220,7 +221,8 @@ def main():
     subcommands = parser.add_subparsers()
 
     start_parser = add_subcommand(subcommands, 'start',
-                                  lambda args: start(args.project, args.debug, args.gm_info))
+                                  lambda args: start(args.project, args.port, args.debug, args.gm_info))
+    start_parser.add_argument('--port', type=int, default=48164)
     start_parser.add_argument('--debug', action='store_true')
     start_parser.add_argument('--gm-info', action='store_true', dest='gm_info', default=True)
     start_parser.add_argument('--no-gm-info', action='store_false', dest='gm_info')

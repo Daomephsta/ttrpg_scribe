@@ -26,7 +26,7 @@ def system_data(key: str):
     raise RuntimeError('system.json loading failed')
 
 
-def initialise(force_rebuild: bool = False):
+def initialise(port: int, force_rebuild: bool = False):
     global initialised
     if initialised:
         return
@@ -70,7 +70,7 @@ def initialise(force_rebuild: bool = False):
         elif force_rebuild:
             mongo_client.update(progress())
 
-    mongo_server.start()
-    mongo_client.initialise()
+    mongo_server.start(port)
+    mongo_client.initialise(port)
     check_for_updates()
     initialised = True

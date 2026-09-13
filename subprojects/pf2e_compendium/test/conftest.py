@@ -15,6 +15,6 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
 
 
 def sample_documents(sample: int | None):
-    foundry.initialise()
+    foundry.initialise(48165)
     pipeline: list[dict] = [{'$sample': {'size': sample}}] if sample is not None else []
     yield from mongo_client.db.all.aggregate(pipeline)

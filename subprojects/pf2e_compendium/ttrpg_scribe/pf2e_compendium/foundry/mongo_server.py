@@ -5,13 +5,11 @@ import subprocess
 
 from ttrpg_scribe import pf2e_compendium
 
+IP = '127.0.0.1'
 _LOGGER = logging.getLogger(__name__)
-CONNECTION_ARGS = '127.0.0.1', 48165
 
 
-def start():
-    IP, PORT = CONNECTION_ARGS
-
+def start(port: int):
     (mongo_dir := pf2e_compendium.data_dir/'mongod').mkdir(parents=True, exist_ok=True)
     (db_data := mongo_dir/'data/db').mkdir(parents=True, exist_ok=True)
     (logs := mongo_dir/'logs').mkdir(parents=True, exist_ok=True)
@@ -32,9 +30,9 @@ def start():
         '--dbpath', db_data.as_posix(),
         '--logpath', rotate(5),
         '--bind_ip', IP,
-        '--port', str(PORT)
+        '--port', str(port)
     ], env={'GLIBC_TUNABLES': 'glibc.pthread.rseq=0'})
-    _LOGGER.info(f'Starting MongoDB at {IP}:{PORT}')
+    _LOGGER.info(f'Starting MongoDB at {IP}:{port}')
 
     def stop():
         _LOGGER.info('Stopping mongo server')

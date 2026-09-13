@@ -10,6 +10,7 @@ import plyvel
 import pymongo
 import pymongo.errors
 from pymongo import IndexModel, InsertOne, MongoClient
+from pymongo.database import Database
 from pymongo.synchronous.collection import _WriteOp
 from rich.progress import Progress
 from slugify import slugify
@@ -19,8 +20,8 @@ from ttrpg_scribe.pf2e_compendium import foundry
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_server
 
 Document = dict[str, Any]
-client: MongoClient[Document] = MongoClient(*mongo_server.CONNECTION_ARGS, timeoutMS=5000)
-db = client.pf2e
+client: MongoClient[Document]
+db: Database[Document]
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -304,7 +305,11 @@ def load_world_content(world: Path):
     bulk_write(build_ops_batch())
 
 
-def initialise():
+def initialise(port: int):
+    global client, db
+    client = MongoClient(mongo_server.IP, port, timeoutMS=5000)
+    db = client.pf2e
+
     if (world := os.environ.get('PF2E_COMPENDIUM_FOUNDRY_WORLD')) is not None:
         load_world_content(Path(world))
     else:
