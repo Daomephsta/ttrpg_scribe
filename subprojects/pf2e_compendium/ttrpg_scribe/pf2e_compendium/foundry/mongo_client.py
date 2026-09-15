@@ -83,11 +83,11 @@ def unionOf(collections: list[str]):
         }
 
 
-def bulk_write(ops: Iterable[_WriteOp]):
+def bulk_write(ops: Iterable[_WriteOp], context: str):
     ops = list(ops)  # Resolve before submitting
     if len(ops) == 0:
         return
-    _LOGGER.info('Submitting bulk write')
+    _LOGGER.info(f'Submitting bulk write for {context}')
     try:
         result = client.bulk_write(ops)
         _LOGGER.info(f'Inserted: {result.inserted_count} Upserted: {result.upserted_count} '
@@ -302,7 +302,7 @@ def load_world_content(world: Path):
                 continue
             yield from _import_db_from_path(content_type, world.stem, folder_paths)
 
-    bulk_write(build_ops_batch())
+    bulk_write(build_ops_batch(), 'world content')
 
 
 def initialise(port: int):
@@ -313,7 +313,7 @@ def initialise(port: int):
     if (world := os.environ.get('PF2E_COMPENDIUM_FOUNDRY_WORLD')) is not None:
         load_world_content(Path(world))
     else:
-        bulk_write(_purge_world_content())
+        bulk_write(_purge_world_content(), 'world content purge')
 
     def art_paths(suffixes: set[str]):
         art_dir = pf2e_compendium.data_dir/'art'
@@ -326,7 +326,7 @@ def initialise(port: int):
                 {'$set': {'art': art.as_posix()}},
                 namespace=f'pf2e.{art.parts[0]}')
 
-    bulk_write(art_paths({'.png', '.webp'}))
+    bulk_write(art_paths({'.png', '.webp'}), 'art paths')
 
 def update(progress: Progress):
     client.drop_database('pf2e')
@@ -352,8 +352,8 @@ def update(progress: Progress):
             for family in families:
                 yield UpdateOne({'name': family['name']}, {'$set': {'family': family['creature_family']}}, namespace='pf2e.npc')
 
-    bulk_write(foundry_data_ops())
-    bulk_write(aon_data_ops())
+    bulk_write(foundry_data_ops(), 'Foundry data')
+    bulk_write(aon_data_ops(), 'AoN data')
 
     for name in db.list_collection_names():
         db[name].create_indexes([
