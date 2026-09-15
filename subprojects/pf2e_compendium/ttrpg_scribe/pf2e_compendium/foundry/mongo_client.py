@@ -9,8 +9,7 @@ from typing import Any, Literal, cast, overload, override
 import plyvel
 import pymongo
 import pymongo.errors
-import requests
-from pymongo import IndexModel, InsertOne, MongoClient, UpdateMany, UpdateOne
+from pymongo import IndexModel, InsertOne, MongoClient, UpdateOne
 from pymongo.database import Database
 from pymongo.synchronous.collection import _WriteOp
 from rich.progress import Progress
@@ -350,7 +349,7 @@ def update(progress: Progress):
         if path.exists():
             with path.open() as file:
                 families = json.load(file)
-            for i, family in enumerate(families, start=1):
+            for family in families:
                 yield UpdateOne({'name': family['name']}, {'$set': {'family': family['creature_family']}}, namespace='pf2e.npc')
 
     bulk_write(foundry_data_ops())
