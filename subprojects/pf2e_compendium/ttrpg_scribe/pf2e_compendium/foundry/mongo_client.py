@@ -350,7 +350,11 @@ def update(progress: Progress):
             with path.open() as file:
                 families = json.load(file)
             for family in families:
-                yield UpdateOne({'name': family['name']}, {'$set': {'family': family['creature_family']}}, namespace='pf2e.npc')
+                query = {'name': family['name']}
+                # Rulebook sources should override non-rulebook
+                if 'Rulebooks' not in family['source_category']:
+                    query['family'] = {'$exists': False}
+                yield UpdateOne(query, {'$set': {'family': family['creature_family']}}, namespace='pf2e.npc')
 
     bulk_write(foundry_data_ops(), 'Foundry data')
     bulk_write(aon_data_ops(), 'AoN data')
