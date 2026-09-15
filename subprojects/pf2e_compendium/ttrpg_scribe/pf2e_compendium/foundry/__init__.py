@@ -52,9 +52,9 @@ def initialise(port: int, force_rebuild: bool = False):
                TextColumn('{task.fields[subdesc]}'),
             )
 
-        if create:
+        def fetch_foundry_system(bar: Progress):
             url = f'https://github.com/foundryvtt/pf2e/releases/download/pf2e-{VERSION}/system.zip'
-            with BytesIO() as buffer, progress() as bar:
+            with BytesIO() as buffer:
                 task = bar.add_task(f'Downloading foundryvtt/pf2e-{VERSION}',
                                     total=None, subdesc='')
                 response = requests.get(url, stream=True)
@@ -66,6 +66,37 @@ def initialise(port: int, force_rebuild: bool = False):
                     bar.advance(task, len(chunk))
                 with ZipFile(buffer) as zip:
                     zip.extractall(pf2e_dir)
+
+        def fetch_aon_data(bar: Progress):
+            url = f'https://elasticsearch.aonprd.com/aon/_search'
+            task = bar.add_task('Fetching creature families from AoN', total=None, subdesc='')
+            response = requests.get(url, json={
+                'size': 10000,
+                'query': {
+                    'bool': {
+                        'filter': [
+                            {'term': {'category': 'creature'}},
+                            {'exists': {'field': 'creature_family'}}
+                        ]
+                    }
+                },
+                '_source': [
+                    'name',
+                    'creature_family',
+                    'source_category'
+                ],
+            })
+            response.raise_for_status()
+            path = pf2e_compendium.data_dir/'archives_of_nethys/creature_families.json'
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open('w') as file:
+                json.dump([e['_source'] for e in response.json()['hits']['hits']], file)
+            bar.update(task, total=1, completed=1)
+
+        if create:
+            with progress() as bar:
+                fetch_foundry_system(bar)
+                fetch_aon_data(bar)
                 mongo_client.update(bar)
         elif force_rebuild:
             mongo_client.update(progress())

@@ -9,7 +9,8 @@ from typing import Any, Literal, cast, overload, override
 import plyvel
 import pymongo
 import pymongo.errors
-from pymongo import IndexModel, InsertOne, MongoClient
+import requests
+from pymongo import IndexModel, InsertOne, MongoClient, UpdateMany, UpdateOne
 from pymongo.database import Database
 from pymongo.synchronous.collection import _WriteOp
 from rich.progress import Progress
@@ -331,7 +332,7 @@ def initialise(port: int):
 def update(progress: Progress):
     client.drop_database('pf2e')
 
-    def build_ops_batch():
+    def foundry_data_ops():
         packs: list = foundry.system_data('packs')
         with progress:
             task = progress.add_task('Loading packs', total=len(packs), subdesc='')
@@ -344,7 +345,16 @@ def update(progress: Progress):
                 progress.advance(task)
             progress.update(task, subdesc='')
 
-    bulk_write(build_ops_batch())
+    def aon_data_ops():
+        path = pf2e_compendium.data_dir/'archives_of_nethys/creature_families.json'
+        if path.exists():
+            with path.open() as file:
+                families = json.load(file)
+            for i, family in enumerate(families, start=1):
+                yield UpdateOne({'name': family['name']}, {'$set': {'family': family['creature_family']}}, namespace='pf2e.npc')
+
+    bulk_write(foundry_data_ops())
+    bulk_write(aon_data_ops())
 
     for name in db.list_collection_names():
         db[name].create_indexes([
