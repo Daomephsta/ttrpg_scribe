@@ -9,7 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 # Imports used by single functions are at the top of said functions for autocomplete speed reasons
 
 
-def make_app(project_dir: str | Path, base_port: int, debug: bool | None = None, gm_info: bool = False):
+def make_app(project_dir: str | Path, debug: bool | None = None, gm_info: bool = False):
     from http import HTTPStatus
 
     from werkzeug.middleware.dispatcher import DispatcherMiddleware
@@ -20,7 +20,6 @@ def make_app(project_dir: str | Path, base_port: int, debug: bool | None = None,
 
     project_dir = Path(project_dir)
     app = ttrpg_scribe.notes.create_app(project_dir)
-    app.config['BASE_PORT'] = base_port
     app.config['GM_INFO'] = gm_info
     if debug is not None:
         app.debug = debug
@@ -93,7 +92,7 @@ def start(project: Path, port: int, debug: bool, gm_info: bool):
                         format='%(name)s @ %(levelname)s: %(message)s')
 
     force_debug = True if debug else None
-    app = make_app(project, port, debug=force_debug, gm_info=gm_info)
+    app = make_app(project, debug=force_debug, gm_info=gm_info)
     host = '127.0.0.1'
     if debug:
         app.run(host, port, debug=True)

@@ -202,7 +202,7 @@ class Pf2ePlugin(SystemPlugin):
         ttrpg_scribe.pf2e_compendium.oracle.extend(main_app)
         main_app.config['TOOLS'].insert(-1, (blueprint.url_prefix, 'Compendium', {}))
         main_app.config['TOOLS'].append(('/oracle/encounter', 'Encounter Oracle', {}))
-        foundry.initialise(main_app.config['BASE_PORT'] + 1)
+        foundry.initialise(port=48165)
 
     @classmethod
     def participant_from_id(cls, mongo_id: str) -> PF2Creature | PF2Hazard:
