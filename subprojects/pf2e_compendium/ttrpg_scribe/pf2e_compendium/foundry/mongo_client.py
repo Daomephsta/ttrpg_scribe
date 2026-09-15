@@ -93,7 +93,7 @@ def bulk_write(ops: Iterable[_WriteOp]):
         _LOGGER.info(f'Inserted: {result.inserted_count} Upserted: {result.upserted_count} '
               f'Modified: {result.modified_count} Deleted: {result.deleted_count}')
     except pymongo.errors.ClientBulkWriteException as ex:
-        _LOGGER.error(f'{type(ex).__name__} {json.dumps(ex.details, indent=2)}')
+        _LOGGER.error(f'{type(ex).__name__} {json.dumps(ex.details, indent=2, default=repr)}')
 
 
 def _purge_world_content():
