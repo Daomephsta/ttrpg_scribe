@@ -142,6 +142,8 @@ class IWR:
 
     @staticmethod
     def from_json(data: dict):
+        if 'value' in data:
+            return ValuedIWR.from_json(data)
         return IWR(
             type=data['type'],
             exceptions=data['exceptions'],
