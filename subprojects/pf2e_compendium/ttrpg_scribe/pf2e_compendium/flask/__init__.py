@@ -240,8 +240,13 @@ class Pf2ePlugin(SystemPlugin):
             case 'elite':
                 participant = participant.apply(elite)
 
-        if (name := extra.get('name')) is not None:
-            participant = participant.apply(rename(name))
+        match extra.get('name'):
+            case str() as name:
+                participant = participant.apply(rename(name))
+            case list() as args:
+                participant = participant.apply(rename(*args))
+            case list() as args, dict() as kwargs:
+                participant = participant.apply(rename(*args, **kwargs))
 
         if 'initiative' in extra:
             if isinstance(participant, PF2Hazard):

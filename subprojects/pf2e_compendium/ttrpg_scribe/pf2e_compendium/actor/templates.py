@@ -46,11 +46,12 @@ def replace_in_all_text(*replacements: tuple[str, str]) -> PF2Actor.Template:
     return map_all_text(apply_replacements)
 
 
-def rename(full: str, *other_names: tuple[str, str]) -> PF2Actor.Template:
+def rename(full: str, *other_names: tuple[str, str], all_text = True) -> PF2Actor.Template:
     def template(actor: PF2Actor):
         name_cases = ((case(actor.name), case(full))
             for case in [str.lower, str.title, str.capitalize])
-        actor.apply(replace_in_all_text(*other_names, *name_cases))
+        if all_text:
+            actor.apply(replace_in_all_text(*other_names, *name_cases))
         # Change the name after, so name replacement in other text works
         actor.name = full
     return template
