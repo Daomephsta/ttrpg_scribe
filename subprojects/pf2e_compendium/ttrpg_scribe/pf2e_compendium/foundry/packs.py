@@ -7,8 +7,9 @@ from ttrpg_scribe.core.dice import SimpleDice
 from ttrpg_scribe.core.json_path import JsonPath
 from ttrpg_scribe.pf2e_compendium.actions import Action, Strike
 from ttrpg_scribe.pf2e_compendium.actor import ActionsContainer, DetailedValue
-from ttrpg_scribe.pf2e_compendium.creature import (PF2Creature, Sense, Skill,
-                                                   Spellcasting, lore)
+from ttrpg_scribe.pf2e_compendium.creature import (IWR, PF2Creature, Sense,
+                                                   Skill, Spellcasting,
+                                                   ValuedIWR, lore)
 from ttrpg_scribe.pf2e_compendium.foundry import mongo_client, roll_data
 from ttrpg_scribe.pf2e_compendium.foundry.enrich import enrich
 from ttrpg_scribe.pf2e_compendium.hazard import PF2Hazard
@@ -153,6 +154,24 @@ def _read_creature(json: Json) -> PF2Creature:
         except Exception as e:
             e.add_note(f'Item {i}: {item['name']}')
             raise
+
+    def read_iwrs(key: str):
+        def tuples():
+            for e in attributes[key](json, _or=[]):
+                if 'value' in e:
+                    yield e['type'], ValuedIWR(
+                        e['type'], e['value'],
+                        exceptions=e.get('exceptions', []),
+                        double_vs=e.get('doubleVs', [])
+                    )
+                else:
+                    yield e['type'], IWR(
+                        e['type'],
+                        exceptions=e.get('exceptions', []),
+                    )
+
+        return dict(tuples())
+
     size: str = system.traits.size.value(json)
 
     return PF2Creature(
@@ -172,9 +191,9 @@ def _read_creature(json: Json) -> PF2Creature:
         ac=attributes.ac.value(json),
         saves={k: v['value'] for k, v in system.saves(json).items()},
         max_hp=attributes.hp.max(json),
-        immunities=[x['type'] for x in attributes.immunities(json, _or=[])],
-        resistances={x['type']: x['value'] for x in attributes.resistances(json, _or=[])},
-        weaknesses={x['type']: x['value'] for x in attributes.weaknesses(json, _or=[])},
+        immunities=read_iwrs('immunities'),
+        resistances=read_iwrs('resistances'),
+        weaknesses=read_iwrs('weaknesses'),
         speeds={'walk': attributes.speed.value(json) or 0,
               **{speed['type']: speed['value']
                 for speed in attributes.speed.otherSpeeds(json)}},

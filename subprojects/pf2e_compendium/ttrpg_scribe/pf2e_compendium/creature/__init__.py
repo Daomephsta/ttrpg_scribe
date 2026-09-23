@@ -135,6 +135,42 @@ def lore(slug_base: str, mod: int, special: dict[str, int] | list[str] = [], nam
         slug += '-lore'
     return Skill(slug, mod, special, name or slug_base)
 
+@dataclass
+class IWR:
+    type: str
+    exceptions: list[str] = field(default_factory=list)
+
+    @staticmethod
+    def from_json(data: dict):
+        return IWR(
+            type=data['type'],
+            exceptions=data['exceptions'],
+        )
+
+@dataclass(init=False)
+class ValuedIWR(IWR):
+    value: int
+    double_vs: list[str] = field(default_factory=list)
+
+    def __init__(self, iwr_type: str, value: int,
+                 exceptions: list[str] | None = None,
+                 double_vs: list[str] | None = None):
+        self.type = iwr_type
+        self.value = value
+        self.exceptions = exceptions or []
+        self.double_vs = double_vs or []
+
+    @override
+    @staticmethod
+    def from_json(data: dict):
+        return ValuedIWR(
+            iwr_type=data['type'],
+            value=data['value'],
+            double_vs=data['double_vs'],
+            exceptions=data['exceptions'],
+        )
+
+
 
 type Abilities[V] = dict[Literal['str', 'dex', 'con', 'int', 'wis', 'cha'], V]
 
@@ -156,9 +192,9 @@ class PF2Creature(PF2Actor, InitiativeParticipant):
     ac: int
     saves: Saves[int]
     max_hp: int
-    immunities: list[str]
-    resistances: dict[str, int]
-    weaknesses: dict[str, int]
+    immunities: dict[str, IWR]
+    resistances: dict[str, IWR]
+    weaknesses: dict[str, IWR]
     speeds: dict[str, int]
     actions: ActionsContainer
     spellcasting: list[Spellcasting]
@@ -166,9 +202,11 @@ class PF2Creature(PF2Actor, InitiativeParticipant):
 
     def __post_init__(self):
         if 'construct' in self.traits:
-            self.immunities += ['bleed', 'death effects', 'disease', 'healing', 'necromancy',
-                                'nonlethal attacks', 'poison', 'doomed', 'drained', 'fatigued',
-                                'paralyzed', 'sickened', 'unconscious ',]
+            self.immunities.update({type: IWR(type) for type in [
+                'bleed', 'death effects', 'disease', 'healing', 'necromancy',
+                'nonlethal attacks', 'poison', 'doomed', 'drained', 'fatigued',
+                'paralyzed', 'sickened', 'unconscious',
+            ]})
         for sense in self.senses:
             # Avoid clobbering any existing descriptions of senses
             if sense.description is not None and not self.actions.contains_name(sense.name):
@@ -246,9 +284,9 @@ class PF2Creature(PF2Actor, InitiativeParticipant):
             ac=data['ac'],
             saves=data['saves'],
             max_hp=data['max_hp'],
-            immunities=data['immunities'],
-            resistances=data['resistances'],
-            weaknesses=data['weaknesses'],
+            immunities={type: IWR.from_json(iwr) for type, iwr in data['immunities'].items()},
+            resistances={type: IWR.from_json(iwr) for type, iwr in data['resistances'].items()},
+            weaknesses={type: IWR.from_json(iwr) for type, iwr in data['weaknesses'].items()},
             speeds=data['speeds'],
             actions=ActionsContainer.from_json(data['actions']),
             spellcasting=[Spellcasting.from_json(e) for e in data.get('spellcasting', [])],

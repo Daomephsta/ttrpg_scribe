@@ -7,9 +7,9 @@ from ttrpg_scribe.pf2e_compendium.actor import ActionsContainer, statistics
 from ttrpg_scribe.pf2e_compendium.actor.statistics import (MODERATE,
                                                            StatisticBracket,
                                                            Table)
-from ttrpg_scribe.pf2e_compendium.creature import (Abilities, PF2Creature,
+from ttrpg_scribe.pf2e_compendium.creature import (IWR, Abilities, PF2Creature,
                                                    Saves, Sense, Skill,
-                                                   Spellcasting)
+                                                   Spellcasting, ValuedIWR)
 from ttrpg_scribe.pf2e_compendium.creature.statistics import (
     ARMOUR_CLASS, ATTRIBUTE_MODIFIERS, HIT_POINTS, PERCEPTION, RESISTANCES,
     SAVING_THROWS, WEAKNESSES)
@@ -232,9 +232,9 @@ class CreatureBuilder:
             ac=self.ac.resolve(),
             saves={k: v.resolve() for k, v in self.saves.items()},
             max_hp=self.max_hp.resolve(),
-            immunities=self.immunities,
-            resistances={k: v.resolve() for k, v in self.resistances.items()},
-            weaknesses={k: v.resolve() for k, v in self.weaknesses.items()},
+            immunities={type: IWR(type) for type in self.immunities},
+            resistances={k: ValuedIWR(k, v.resolve()) for k, v in self.resistances.items()},
+            weaknesses={k: ValuedIWR(k, v.resolve()) for k, v in self.weaknesses.items()},
             speeds=self.speeds,
             actions=self.actions,
             spellcasting=self.spellcasting
