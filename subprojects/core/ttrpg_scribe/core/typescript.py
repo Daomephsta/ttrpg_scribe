@@ -9,6 +9,7 @@ from typing import overload
 import flask
 from werkzeug.exceptions import NotFound
 
+_LOGGER = logging.getLogger(__name__)
 _IS_DEV = 'site-packages' not in __file__
 
 
@@ -20,7 +21,7 @@ def ensure_compiled(instance_dir: Path):
 
     rollup = shutil.which('rollup')
     if rollup is None:
-        logging.warning('rollup not installed')
+        _LOGGER.warning('rollup not installed')
         return
     for subproject in __subprojects().iterdir():
         if not (subproject/'rollup.config.mjs').exists():
@@ -62,7 +63,8 @@ def static_javascript_patch(scaffold: flask.Blueprint | flask.Flask):
         assert scaffold.static_folder is not None
         if not filename.endswith('.js'):
             filename = f'{filename}.js'
-        reload = flask.current_app.debug and 'site-packages' not in __file__
+        _LOGGER.info(f'Request for {flask.request.path} intercepted')
+        reload = flask.current_app.debug or _IS_DEV
         if reload:
             assert __file__.endswith('core/ttrpg_scribe/core/typescript.py'), __file__
             root_relative = Path(scaffold.static_folder).relative_to(__subprojects())

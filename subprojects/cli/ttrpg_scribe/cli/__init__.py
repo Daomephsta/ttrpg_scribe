@@ -52,8 +52,7 @@ def make_app(project_dir: str | Path, debug: bool | None = None, gm_info: bool =
             plugin_apps[f'/{id}'] = plugin_app
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, plugin_apps)
 
-    if app.debug:
-        ttrpg_scribe.core.typescript.ensure_compiled(Path(app.instance_path))
+    ttrpg_scribe.core.typescript.ensure_compiled(Path(app.instance_path))
 
     @app.post('/clean', endpoint='clean')
     def clean_endpoint():
